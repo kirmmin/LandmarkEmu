@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.Shared", "LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj", "{84488BCB-B68E-4DCE-8153-990DF4B6C560}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.AuthServer", "LandmarkEmulator.AuthServer\LandmarkEmulator.AuthServer.csproj", "{EDA8D947-7D64-438D-BF38-6AEB83477DDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84488BCB-B68E-4DCE-8153-990DF4B6C560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84488BCB-B68E-4DCE-8153-990DF4B6C560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84488BCB-B68E-4DCE-8153-990DF4B6C560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84488BCB-B68E-4DCE-8153-990DF4B6C560}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDA8D947-7D64-438D-BF38-6AEB83477DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDA8D947-7D64-438D-BF38-6AEB83477DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDA8D947-7D64-438D-BF38-6AEB83477DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDA8D947-7D64-438D-BF38-6AEB83477DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C92941DA-CF33-4007-815A-1EB549D58ED3}
+	EndGlobalSection
+EndGlobal
