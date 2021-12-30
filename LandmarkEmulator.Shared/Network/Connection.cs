@@ -2,6 +2,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network
@@ -10,88 +11,85 @@ namespace LandmarkEmulator.Shared.Network
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-        public class UdpState
-        {
-            public UdpState (UdpClient c, IPEndPoint e)
-            {
-                client = c;
-                endpoint = e;
-            }
-
-            public UdpClient client;
-            public IPEndPoint endpoint;
-        }
-        UdpState connection;
-
-        public delegate void MessageEvent(UdpState state, byte[] message);
+        public delegate void MessageEvent(EndPoint state, byte[] message);
         /// <summary>
         /// Raised on <see cref="NetworkSession"/> creation for a new client.
         /// </summary>
         public event MessageEvent OnMessage;
 
-        private volatile bool shutdownRequested;
+        private IPAddress _host;
+        private uint _port;
+        private Thread sampleUdpThread;
 
+        /// <summary>
+        /// Creates a new <see cref="Connection"/> for the provided details that will listen to data receives and emit <see cref="MessageEvent"/>.
+        /// </summary>
+        /// <param name="host">Host IP Address to listed on</param>
+        /// <param name="port">Port to listen on</param>
         public Connection(IPAddress host, uint port)
         {
-            var connection = SetupUdpClient(host, port);
+            _host = host;
+            _port = port;
 
-            _ = Task.Run(() =>
-            {
-                log.Info($"Listening on port {port}");
-                while (!shutdownRequested)
-                {
-                    this.connection.client.BeginReceive(new AsyncCallback(OnReceive), connection);
-                }
-            });
-        }
-
-        private UdpState SetupUdpClient(IPAddress host, uint port)
-        {
-            IPEndPoint localEP = new IPEndPoint(host, (int)port);
-            UdpClient udpClient = new UdpClient();
-            udpClient.ExclusiveAddressUse = false;
-            udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            udpClient.Client.Bind(localEP);
-
-            connection = new UdpState(udpClient, localEP);
-            return new UdpState(udpClient, localEP);
-        }
-
-        private void OnReceive(IAsyncResult ar)
-        {
             try
             {
-                var state = (UdpState)ar.AsyncState;
-
-                byte[] receiveBytes = state.client.EndReceive(ar, ref state.endpoint);
-                OnMessage(state, receiveBytes);
+                //Starting the UDP Server thread.
+                sampleUdpThread = new Thread(new ThreadStart(StartReceiving));
+                sampleUdpThread.Start();
             }
             catch (Exception e)
             {
-                //You may also get a SocketException if you close it in a separate thread.
-                if (e is ObjectDisposedException || e is SocketException)
-                {
-                    //Log it as a trace here
-                    return;
-                }
-                //Wasn't an exception we were looking for so rethrow it.
-                throw;
+                sampleUdpThread.Abort();
             }
         }
 
-        public void SendBytes(IPEndPoint endPoint, byte[] data)
+        private void StartReceiving()
         {
-            var sender = new UdpClient();
-            sender.ExclusiveAddressUse = false;
-            sender.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            sender.Client.Bind(connection.endpoint);
-            sender.Send(data, data.Length, endPoint);
-            sender.Close();
+            try
+            {
+                //Create a UDP socket.
+                Socket soUdp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                IPEndPoint localIpEndPoint = new IPEndPoint(_host, (int)_port);
+                
+                // We don't bind exclusively because we need to use the same socket address to send data in SendBytes.
+                soUdp.ExclusiveAddressUse = false;
+                soUdp.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+                soUdp.Bind(localIpEndPoint);
+                while (true)
+                {
+                    // TODO: Make the UdpBufferSize something that is passed in.
+                    byte[] buffer = new byte[512];
+                    IPEndPoint tmpIpEndPoint = new IPEndPoint(_host, (int)_port);
+                    EndPoint remoteEP = (tmpIpEndPoint);
+                    int bytesReceived = soUdp.ReceiveFrom(buffer, ref remoteEP); // This is a blocking call. The thread will wait to hear back from the Socket
+                    if (bytesReceived > 0)
+                    {
+                        Span<byte> data = new Span<byte>(buffer, 0, bytesReceived); // Remove the extra bytes that were unused in this packet.
+                        OnMessage(remoteEP, data.ToArray()); // Emit a MessageEvent to subscribers.
+                    }
+                }
+            }
+            catch (SocketException se)
+            {
+                log.Error("A Socket Exception has occurred!" + se.ToString());
+            }
         }
 
-        public void Shutdown()
+        /// <summary>
+        /// Sends the given <see cref="byte[]"/> to the target <see cref="EndPoint"/>.
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="data"></param>
+        public void SendBytes(EndPoint endPoint, byte[] data)
         {
-            shutdownRequested = true;
+            Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint localIpEndPoint = new IPEndPoint(_host, (int)_port);
+            sender.ExclusiveAddressUse = false;
+            sender.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            sender.Bind(localIpEndPoint);
+            sender.SendTo(data, endPoint);
+            sender.Close(); // Close the Socket so another may be opened.
         }
     }
 }

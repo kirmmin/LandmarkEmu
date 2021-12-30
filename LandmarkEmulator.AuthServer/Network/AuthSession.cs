@@ -6,7 +6,7 @@ namespace LandmarkEmulator.AuthServer.Network
 {
     public class AuthSession : GameSession
     {
-        public override void OnAccept(IPEndPoint ep)
+        public override void OnAccept(EndPoint ep)
         {
             base.OnAccept(ep);
 

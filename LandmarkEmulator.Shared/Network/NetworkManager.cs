@@ -18,14 +18,14 @@ namespace LandmarkEmulator.Shared.Network
         public static void Initialise(string host, uint port)
         {
             connection = new Connection(IPAddress.Parse(host), port);
-            connection.OnMessage += (state, message) =>
+            connection.OnMessage += (remoteEP, message) =>
             {
-                if (sessions.TryGetValue(state.endpoint, out T session))
+                if (sessions.TryGetValue(remoteEP, out T session))
                     session.OnData(message);
                 else
                 {
                     var newSession = new T();
-                    newSession.OnAccept(state.endpoint);
+                    newSession.OnAccept(remoteEP);
 
                     pendingAdd.Enqueue(newSession);
                 }

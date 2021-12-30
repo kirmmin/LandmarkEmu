@@ -8,16 +8,16 @@ namespace LandmarkEmulator.Shared.Network
         public bool Disconnected { get; private set; }
         public SocketHeartbeat Heartbeat { get; } = new SocketHeartbeat();
 
-        public IPEndPoint Endpoint { get; private set; }
+        public EndPoint Endpoint { get; private set; }
 
-        public delegate void SendEvent(IPEndPoint endpoint, byte[] message);
+        public delegate void SendEvent(EndPoint endpoint, byte[] message);
 
         /// <summary>
         /// Raised on <see cref="NetworkSession"/> creation for a new client.
         /// </summary>
         public event SendEvent OnSend;
 
-        public virtual void OnAccept(IPEndPoint ep)
+        public virtual void OnAccept(EndPoint ep)
         {
             Endpoint = ep;
         }

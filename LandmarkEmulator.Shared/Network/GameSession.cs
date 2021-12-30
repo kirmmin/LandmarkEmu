@@ -160,7 +160,7 @@ namespace LandmarkEmulator.Shared.Network
         [ProtocolMessageHandler(ProtocolMessageOpcode.DataFragment)]
         public void HandleDataFragment(DataFragment dataFragment)
         {
-            log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}, {BitConverter.ToString(dataFragment.Data)}");
+            log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}");
 
             if (NextSequence == null)
                 NextSequence = dataFragment.Sequence;
