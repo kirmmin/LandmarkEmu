@@ -16,7 +16,8 @@ namespace LandmarkEmulator.Shared.Network
 
         private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
         private readonly Queue<ProtocolPacket> outgoingPackets = new();
-        private readonly DataStreamHandler inputStream;
+        private readonly DataStreamInput inputStream;
+        private readonly DataStreamOutput outputStream;
 
         public uint SessionId { get; private set; }
 
@@ -28,10 +29,20 @@ namespace LandmarkEmulator.Shared.Network
 
         public GameSession()
         {
-            inputStream = new DataStreamHandler(this);
+            inputStream = new DataStreamInput(this);
             inputStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket);
+            };
+            outputStream = new DataStreamOutput(this);
+            outputStream.OnData += (sequence, gamePacket) =>
+            {
+                if (!gamePacket.IsFragment)
+                    EnqueueProtocolMessage(new DataWhole
+                    {
+                        Sequence = sequence,
+                        Data = gamePacket.Data
+                    });
             };
         }
 
@@ -121,7 +132,7 @@ namespace LandmarkEmulator.Shared.Network
             }
         }
 
-        public void EnqueueMessage(IWritable message)
+        public void EnqueueProtocolMessage(IWritable message)
         {
             if (!MessageManager.GetOpcodeData(message, out (ProtocolMessageOpcode, bool) opcodeData))
             {
@@ -137,7 +148,7 @@ namespace LandmarkEmulator.Shared.Network
             List<byte> data = new();
             var writer = new GamePacketWriter(data);
 
-            writer.Write((ushort)packet.Opcode);
+            writer.WriteBE((ushort)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
             byte[] newData = data.ToArray();
@@ -147,6 +158,15 @@ namespace LandmarkEmulator.Shared.Network
             log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
 
             SendRaw(newData);
+        }
+
+        protected void PackAndSend(byte[] data)
+        {
+            // Send to Output Stream for Packing
+            log.Info($"Packing Data for Send! {BitConverter.ToString(data)}");
+            outputStream.PackData(data);
+
+            // Output Stream will emit the packed data to be added to outgoingPackets Queue to be sent.
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.SessionRequest)]
@@ -164,7 +184,8 @@ namespace LandmarkEmulator.Shared.Network
             if (request.Protocol != "LoginUdp_10")
                 throw new InvalidOperationException();
 
-            EnqueueMessage(new SessionReply
+            outputStream.SetFragmentSize(clientUdpLength);
+            EnqueueProtocolMessage(new SessionReply
             {
                 SessionId   = SessionId,
                 CRCSeed     = 0,

@@ -18,12 +18,12 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.Write(SessionId);
-            writer.Write(CRCSeed);
+            writer.WriteBE(SessionId);
+            writer.WriteBE(CRCSeed);
             writer.Write(CRCLength);
-            writer.Write(Compression);
-            writer.Write(UdpLength);
-            writer.Write(Unknown0);
+            writer.WriteBE(Compression);
+            writer.WriteBE(UdpLength);
+            writer.WriteBE(Unknown0);
         }
     }
 }

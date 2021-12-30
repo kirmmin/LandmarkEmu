@@ -13,6 +13,12 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         {
             log.Info($"{request.SessionId}, {request.Locale}, {request.ThirdPartyAuthTicket}");
             log.Info($"{request.SystemFingerPrint}");
+
+            session.EnqueueMessage(new LoginReply
+            {
+                LoggedIn = true,
+                Status   = 1
+            });
         }
     }
 }

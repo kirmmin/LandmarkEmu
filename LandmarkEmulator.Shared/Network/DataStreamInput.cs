@@ -1,18 +1,14 @@
-﻿using LandmarkEmulator.Shared.Network.Message;
-using LandmarkEmulator.Shared.Network.Message.Model;
+﻿using LandmarkEmulator.Shared.Network.Message.Model;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
 {
-    public class DataStreamHandler
+    public class DataStreamInput : DataStreamBase
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
-
-        protected GameSession _session;
 
         public delegate void DataEvent(byte[] message);
         /// <summary>
@@ -20,25 +16,12 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public event DataEvent OnData;
 
-        /// <summary>
-        /// Used to track Ack packet sequences.
-        /// </summary>
-        public ushort? LastAck { get; protected set; } = null;
-
-        /// <summary>
-        /// Used to track data packet sequences.
-        /// </summary>
-        public ushort? NextSequence { get; protected set; } = null;
-
         private int _lastProcessedFragment = -1;
-        private byte[] _rc4_key;
 
-        protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
-
-        public DataStreamHandler(GameSession session)
+        public DataStreamInput(GameSession session)
+            : base (session)
         {
-            _session = session;
-            _rc4_key = Convert.FromBase64String("F70IaxuU8C/w7FPXY1ibXw==");
+            
         }
 
         public void ProcessDataFragment(DataFragment dataFragment)
@@ -76,7 +59,7 @@ namespace LandmarkEmulator.Shared.Network
             if (ack > lastAck)
             {
                 LastAck = ack;
-                _session.EnqueueMessage(new Ack
+                _session.EnqueueProtocolMessage(new Ack
                 {
                     Sequence = ack
                 });
@@ -169,9 +152,9 @@ namespace LandmarkEmulator.Shared.Network
                     var reader = new GamePacketReader(piece);
                     byte[] parsedData;
                     if (piece.Length > 1 && reader.ReadUShortBE() == 0)
-                        parsedData = Encryption.RC4.Decrypt(_rc4_key, new Span<byte>(piece, 1, piece.Length - 1).ToArray());
+                        parsedData = Encryption.RC4.Decrypt(RC4Key, new Span<byte>(piece, 1, piece.Length - 1).ToArray());
                     else
-                        parsedData = Encryption.RC4.Decrypt(_rc4_key, piece);
+                        parsedData = Encryption.RC4.Decrypt(RC4Key, piece);
                     OnData(parsedData); // Emit the parsed data packet to subscribers
                 }
             }

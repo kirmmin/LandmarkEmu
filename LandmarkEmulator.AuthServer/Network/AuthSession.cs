@@ -4,6 +4,7 @@ using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 
 namespace LandmarkEmulator.AuthServer.Network
@@ -11,6 +12,7 @@ namespace LandmarkEmulator.AuthServer.Network
     public class AuthSession : GameSession
     {
         private readonly ConcurrentQueue<AuthPacket> incomingPackets = new();
+        private readonly Queue<AuthPacket> outgoingPackets = new();
 
         public override void OnAccept(EndPoint ep)
         {
@@ -31,6 +33,9 @@ namespace LandmarkEmulator.AuthServer.Network
         {
             while (CanProcessPackets && incomingPackets.TryDequeue(out AuthPacket packet))
                 HandleAuthPacket(packet);
+
+            while (CanProcessPackets && outgoingPackets.TryDequeue(out AuthPacket packet))
+                SendPacket(packet);
         }
 
         private void HandleAuthPacket(AuthPacket packet)
@@ -70,6 +75,28 @@ namespace LandmarkEmulator.AuthServer.Network
             {
                 log.Error(exception);
             }
+        }
+
+        private void SendPacket(AuthPacket packet)
+        {
+            List<byte> data = new();
+            var writer = new GamePacketWriter(data);
+
+            writer.Write((byte)packet.Opcode);
+            writer.WriteBytes(packet.Data);
+
+            PackAndSend(data.ToArray());
+        }
+
+        public void EnqueueMessage(IWritable message)
+        {
+            if (!AuthMessageManager.GetOpcode(message, out AuthMessageOpcode opcode))
+            {
+                log.Warn("Failed to send message with no attribute!");
+                return;
+            }
+
+            outgoingPackets.Enqueue(new AuthPacket(opcode, message));
         }
     }
 }

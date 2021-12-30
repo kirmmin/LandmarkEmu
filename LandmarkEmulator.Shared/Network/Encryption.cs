@@ -58,7 +58,7 @@ namespace LandmarkEmulator.Shared.Network
             var crc = crc32(ref data, ((crcSeed) >> 0));
             List<byte> crcData = new();
             var writer = new GamePacketWriter(crcData);
-            writer.Write((ushort)crc);
+            writer.WriteBE((ushort)crc);
             var newData = data.ToList();
             newData.AddRange(crcData);
             return newData.ToArray();

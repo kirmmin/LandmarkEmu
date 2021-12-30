@@ -21,7 +21,7 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
         public void Write(GamePacketWriter writer)
         {
             writer.Write(CompressionFlag);
-            writer.Write(Sequence);
+            writer.WriteBE(Sequence);
         }
     }
 }
