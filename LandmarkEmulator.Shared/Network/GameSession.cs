@@ -16,7 +16,7 @@ namespace LandmarkEmulator.Shared.Network
 
         private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
         private readonly Queue<ProtocolPacket> outgoingPackets = new();
-        protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
+        private readonly DataStreamHandler inputStream;
 
         public uint SessionId { get; private set; }
 
@@ -26,17 +26,10 @@ namespace LandmarkEmulator.Shared.Network
         private uint serverUdpLength { get; set; } = 512u;
         private ushort serverCompression { get; set; } = 0x100;
 
-        /// <summary>
-        /// Used to track Ack packet sequences.
-        /// </summary>
-        protected ushort? LastAck { get; set; } = null;
-        protected ushort? NextAck { get; set; } = null;
-
-        /// <summary>
-        /// Used to track data packet sequences.
-        /// </summary>
-        protected ushort? LastSequence { get; set; } = null;
-        protected ushort? NextSequence { get; set; } = null;
+        public GameSession()
+        {
+            inputStream = new DataStreamHandler(this);
+        }
 
         public override void OnData(byte[] data)
         {
@@ -48,7 +41,7 @@ namespace LandmarkEmulator.Shared.Network
             base.OnData(data);
         }
 
-        protected override void OnDisconnect()
+        public override void OnDisconnect()
         {
             base.OnDisconnect();
         }
@@ -162,45 +155,7 @@ namespace LandmarkEmulator.Shared.Network
         {
             log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}");
 
-            if (NextSequence == null)
-                NextSequence = dataFragment.Sequence;
-
-            if (dataFragment.Sequence > NextSequence)
-            {
-                log.Warn($"Sequence out of order, expected {NextSequence} but received {dataFragment.Sequence}");
-                OnDisconnect();
-
-                // TODO: Handle out of order packets
-                // this.emit("outoforder", null, this._nextSequence, sequence);
-
-                throw new InvalidOperationException();
-            }
-
-            int lastAck = LastAck ?? -1;
-            ushort ack = dataFragment.Sequence;
-            for (ushort i = 1; i <= ushort.MaxValue; i++)
-            {
-                ushort j = (ushort)((lastAck + i) & 0xFFFF);
-                if (DataPackets[j] != null)
-                    ack = j;
-                else
-                    break;
-            }
-
-            if (ack > lastAck)
-            {
-                LastAck = ack;
-                EnqueueMessage(new Ack
-                {
-                    Sequence = ack
-                });
-                log.Warn($"FIRE ACK {LastAck}");
-            }
-
-            DataPackets[dataFragment.Sequence] = new DataPacket(dataFragment.Data, true);
-
-            NextSequence = (ushort)((LastAck + 1) & 0xFFFF);
+            inputStream.ProcessDataFragment(dataFragment);
         }
     }
-
 }

@@ -48,7 +48,7 @@ namespace LandmarkEmulator.Shared.Network
         {
         }
 
-        protected virtual void OnDisconnect()
+        public virtual void OnDisconnect()
         {
             Disconnected = true;
 
