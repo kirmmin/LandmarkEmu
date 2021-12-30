@@ -1,4 +1,5 @@
 ﻿using LandmarkEmulator.AuthServer.Network;
+using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.Shared;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
@@ -27,6 +28,7 @@ namespace LandmarkEmulator.AuthServer
             log.Info("Initialising...");
 
             MessageManager.Initialise();
+            AuthMessageManager.Initialise();
             NetworkManager<AuthSession>.Initialise("0.0.0.0", 20042);
 
             ServerManager.Initialise(lastTick =>

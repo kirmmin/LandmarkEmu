@@ -16,9 +16,9 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            CRCLength = reader.ReadUInt();
-            SessionId = reader.ReadUInt();
-            UdpLength = reader.ReadUInt();
+            CRCLength = reader.ReadUIntBE();
+            SessionId = reader.ReadUIntBE();
+            UdpLength = reader.ReadUIntBE();
             Protocol  = reader.ReadNullTerminatedString();
         }
     }

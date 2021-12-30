@@ -11,9 +11,9 @@
         public void Read(GamePacketReader reader)
         {
             reader.ReadByte();
-            Sequence = reader.ReadUShort();
+            Sequence = reader.ReadUShortBE();
             Data     = reader.ReadBytes(reader.BytesRemaining - 2);
-            CRC      = reader.ReadUShort();
+            CRC      = reader.ReadUShortBE();
         }
 
         public void Write(GamePacketWriter writer)

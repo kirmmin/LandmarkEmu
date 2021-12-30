@@ -15,7 +15,7 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
         public void Read(GamePacketReader reader)
         {
             CompressionFlag = reader.ReadByte();
-            Sequence = reader.ReadUShort();
+            Sequence = reader.ReadUShortBE();
         }
 
         public void Write(GamePacketWriter writer)

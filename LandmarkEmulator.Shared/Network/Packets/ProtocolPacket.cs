@@ -17,7 +17,7 @@ namespace LandmarkEmulator.Shared.Network.Packets
         {
             var reader = new GamePacketReader(data);
 
-            Opcode = (ProtocolMessageOpcode)reader.ReadUShort();
+            Opcode = (ProtocolMessageOpcode)reader.ReadUShortBE();
             Data   = reader.ReadBytes(reader.BytesRemaining);
             Size   = (uint)Data.Length;
         }

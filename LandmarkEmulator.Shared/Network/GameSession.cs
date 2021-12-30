@@ -29,6 +29,28 @@ namespace LandmarkEmulator.Shared.Network
         public GameSession()
         {
             inputStream = new DataStreamHandler(this);
+            inputStream.OnData += (gamePacket) =>
+            {
+                OnGamePacket(gamePacket);
+            };
+        }
+
+        /// <summary>
+        /// This is fired to alert the Class inheritor that a packet is here for it to handle.
+        /// </summary>
+        /// <remarks>GameSession only handles Protocol packets directly. AuthSession, WorldSession, and any others would handle Game Packets.</remarks>
+        protected virtual void OnGamePacket(byte[] data)
+        {
+            // deliberately empty
+        }
+
+        /// <summary>
+        /// This is fired between incoming packets being parsed and outgoing packets being sent, to allow for the Class inheritor to handle its packets.
+        /// </summary>
+        /// <remarks>This is called from within Update().</remarks>
+        protected virtual void OnProcessPackets(double lastTick)
+        {
+            // deliberately empty
         }
 
         public override void OnData(byte[] data)
@@ -46,11 +68,13 @@ namespace LandmarkEmulator.Shared.Network
             base.OnDisconnect();
         }
 
-        public override void Update(double lastTick)
+        public sealed override void Update(double lastTick)
         {
             // process pending packet queue
             while (CanProcessPackets && incomingPackets.TryDequeue(out ProtocolPacket packet))
                 HandleProtocolPacket(packet);
+
+            OnProcessPackets(lastTick);
 
             while (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket packet))
                 SendPacket(packet);
