@@ -21,7 +21,7 @@ namespace LandmarkEmulator.Shared.Network.Message
 
         private static ImmutableDictionary<ProtocolMessageOpcode, MessageFactoryDelegate> protocolMessagefactories;
         private static ImmutableDictionary<ProtocolMessageOpcode, MessageHandlerDelegate> protocolMessageHandlers;
-        private static ImmutableDictionary<Type, ProtocolMessageOpcode> protocolMessageOpcodes;
+        private static ImmutableDictionary<Type, (ProtocolMessageOpcode, bool)> protocolMessageOpcodes;
 
         private static ImmutableDictionary<GameMessageOpcode, MessageFactoryDelegate> clientMessageFactories;
         private static ImmutableDictionary<Type, GameMessageOpcode> serverMessageOpcodes;
@@ -39,7 +39,7 @@ namespace LandmarkEmulator.Shared.Network.Message
         private static void InitialiseProtocolMessages()
         {
             var messageFactories = new Dictionary<ProtocolMessageOpcode, MessageFactoryDelegate>();
-            var messageOpcodes   = new Dictionary<Type, ProtocolMessageOpcode>();
+            var messageOpcodes   = new Dictionary<Type, (ProtocolMessageOpcode, bool)>();
 
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes()
                 .Concat(Assembly.GetEntryAssembly().GetTypes()))
@@ -53,7 +53,7 @@ namespace LandmarkEmulator.Shared.Network.Message
                     NewExpression @new = Expression.New(type.GetConstructor(Type.EmptyTypes));
                     messageFactories.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
                 }
-                messageOpcodes.Add(type, attribute.Opcode);
+                messageOpcodes.Add(type, (attribute.Opcode, attribute.UseEncryption));
             }
 
             protocolMessagefactories = messageFactories.ToImmutableDictionary();
@@ -215,7 +215,7 @@ namespace LandmarkEmulator.Shared.Network.Message
             log.Info($"Initialised {clientMessageHandlers.Count} game message handler(s).");
         }
 
-        public static bool GetOpcode(IWritable message, out ProtocolMessageOpcode opcode)
+        public static bool GetOpcodeData(IWritable message, out (ProtocolMessageOpcode, bool) opcode)
         {
             return protocolMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }

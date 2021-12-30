@@ -4,11 +4,6 @@ using LandmarkEmulator.Shared.Network.Packets;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network
 {
@@ -19,9 +14,9 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public bool CanProcessPackets { get; set; } = true;
 
-        private FragmentedBuffer onDeck;
-        private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new ConcurrentQueue<ProtocolPacket>();
-        private readonly ConcurrentQueue<ProtocolPacket> outgoingPackets = new ConcurrentQueue<ProtocolPacket>();
+        private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
+        private readonly Queue<ProtocolPacket> outgoingPackets = new();
+        protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
 
         public uint SessionId { get; private set; }
 
@@ -30,6 +25,18 @@ namespace LandmarkEmulator.Shared.Network
         private uint clientUdpLength { get; set; }
         private uint serverUdpLength { get; set; } = 512u;
         private ushort serverCompression { get; set; } = 0x100;
+
+        /// <summary>
+        /// Used to track Ack packet sequences.
+        /// </summary>
+        protected ushort? LastAck { get; set; } = null;
+        protected ushort? NextAck { get; set; } = null;
+
+        /// <summary>
+        /// Used to track data packet sequences.
+        /// </summary>
+        protected ushort? LastSequence { get; set; } = null;
+        protected ushort? NextSequence { get; set; } = null;
 
         public override void OnData(byte[] data)
         {
@@ -99,13 +106,13 @@ namespace LandmarkEmulator.Shared.Network
 
         public void EnqueueMessage(IWritable message)
         {
-            if (!MessageManager.GetOpcode(message, out ProtocolMessageOpcode opcode))
+            if (!MessageManager.GetOpcodeData(message, out (ProtocolMessageOpcode, bool) opcodeData))
             {
                 log.Warn("Failed to send message with no attribute!");
                 return;
             }
 
-            outgoingPackets.Enqueue(new ProtocolPacket(opcode, message));
+            outgoingPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2));
         }
 
         protected void SendPacket(ProtocolPacket packet)
@@ -116,9 +123,13 @@ namespace LandmarkEmulator.Shared.Network
             writer.Write((ushort)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
-            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(data.ToArray())}");
+            byte[] newData = data.ToArray();
+            if (packet.UseEncryption)
+                newData = Encryption.AppendCRC(newData, 0);
 
-            SendRaw(data.ToArray());
+            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
+
+            SendRaw(newData);
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.SessionRequest)]
@@ -150,6 +161,45 @@ namespace LandmarkEmulator.Shared.Network
         public void HandleDataFragment(DataFragment dataFragment)
         {
             log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}, {BitConverter.ToString(dataFragment.Data)}");
+
+            if (NextSequence == null)
+                NextSequence = dataFragment.Sequence;
+
+            if (dataFragment.Sequence > NextSequence)
+            {
+                log.Warn($"Sequence out of order, expected {NextSequence} but received {dataFragment.Sequence}");
+                OnDisconnect();
+
+                // TODO: Handle out of order packets
+                // this.emit("outoforder", null, this._nextSequence, sequence);
+
+                throw new InvalidOperationException();
+            }
+
+            int lastAck = LastAck ?? -1;
+            ushort ack = dataFragment.Sequence;
+            for (ushort i = 1; i <= ushort.MaxValue; i++)
+            {
+                ushort j = (ushort)((lastAck + i) & 0xFFFF);
+                if (DataPackets[j] != null)
+                    ack = j;
+                else
+                    break;
+            }
+
+            if (ack > lastAck)
+            {
+                LastAck = ack;
+                EnqueueMessage(new Ack
+                {
+                    Sequence = ack
+                });
+                log.Warn($"FIRE ACK {LastAck}");
+            }
+
+            DataPackets[dataFragment.Sequence] = new DataPacket(dataFragment.Data, true);
+
+            NextSequence = (ushort)((LastAck + 1) & 0xFFFF);
         }
     }
 

@@ -2,7 +2,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network
 {
@@ -23,7 +23,6 @@ namespace LandmarkEmulator.Shared.Network
         }
         UdpState connection;
 
-
         public delegate void MessageEvent(UdpState state, byte[] message);
         /// <summary>
         /// Raised on <see cref="NetworkSession"/> creation for a new client.
@@ -36,37 +35,14 @@ namespace LandmarkEmulator.Shared.Network
         {
             var connection = SetupUdpClient(host, port);
 
-            var thread = new Thread(() =>
+            _ = Task.Run(() =>
             {
-                try
+                log.Info($"Listening on port {port}");
+                while (!shutdownRequested)
                 {
-                    log.Info($"Listening on port {port}");
-                    while (!shutdownRequested)
-                    {
-                        if (connection.client.Client == null)
-                            connection = SetupUdpClient(host, port);
-
-                        this.connection.client.BeginReceive(new AsyncCallback(OnReceive), connection);
-                        Thread.Sleep(1);
-                    }
-                }
-                catch (SocketException e)
-                {
-                    log.Error(e);
-                }
-                finally
-                {
-                    try
-                    {
-                        log.Warn($"Listener thread is closing?");
-                        connection.client.Close();
-                    }
-                    catch { }
+                    this.connection.client.BeginReceive(new AsyncCallback(OnReceive), connection);
                 }
             });
-
-            thread.IsBackground = true;
-            thread.Start();
         }
 
         private UdpState SetupUdpClient(IPAddress host, uint port)
@@ -86,8 +62,6 @@ namespace LandmarkEmulator.Shared.Network
             try
             {
                 var state = (UdpState)ar.AsyncState;
-                if (state.client.Client == null)
-                    return;
 
                 byte[] receiveBytes = state.client.EndReceive(ar, ref state.endpoint);
                 OnMessage(state, receiveBytes);

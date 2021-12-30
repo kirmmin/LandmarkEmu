@@ -10,8 +10,8 @@ namespace LandmarkEmulator.Shared.Network.Packets
         /// </summary>
         public uint Size { get; protected set; }
         public ProtocolMessageOpcode Opcode { get; protected set; }
-
         public byte[] Data { get; protected set; }
+        public bool UseEncryption { get; protected set; }
 
         public ProtocolPacket(byte[] data)
         {
@@ -22,9 +22,10 @@ namespace LandmarkEmulator.Shared.Network.Packets
             Size   = (uint)Data.Length;
         }
 
-        public ProtocolPacket(ProtocolMessageOpcode opcode, IWritable message)
+        public ProtocolPacket(ProtocolMessageOpcode opcode, IWritable message, bool useEncryption)
         {
             Opcode = opcode;
+            UseEncryption = useEncryption;
 
             List<byte> data = new();
             var writer = new GamePacketWriter(data);

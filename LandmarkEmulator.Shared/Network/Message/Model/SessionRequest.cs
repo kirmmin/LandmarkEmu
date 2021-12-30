@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network.Message.Model
 {
-    [ProtocolMessage(ProtocolMessageOpcode.SessionRequest)]
+    [ProtocolMessage(ProtocolMessageOpcode.SessionRequest, useEncryption: false)]
     public class SessionRequest : IReadable
     {
         public uint CRCLength { get; set; }

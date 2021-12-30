@@ -13,7 +13,7 @@ namespace LandmarkEmulator.Shared.Network
         private static readonly ConcurrentQueue<T> pendingAdd = new();
         private static readonly ConcurrentQueue<T> pendingRemove = new();
 
-        private static readonly Dictionary<IPEndPoint, T> sessions = new();
+        private static readonly Dictionary<EndPoint, T> sessions = new();
 
         public static void Initialise(string host, uint port)
         {
@@ -39,7 +39,7 @@ namespace LandmarkEmulator.Shared.Network
 
         public static void Shutdown()
         {
-            connection?.Shutdown();
+            //connection?.Shutdown();
         }
 
         public static void Update(double lastTick)

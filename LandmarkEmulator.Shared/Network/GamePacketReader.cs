@@ -1,7 +1,6 @@
 ﻿using NLog;
 using System;
 using System.Buffers.Binary;
-using System.IO;
 using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
@@ -13,7 +12,6 @@ namespace LandmarkEmulator.Shared.Network
         public uint BytesRemaining => (uint)(stream.Length - currentBytePosition);
 
         private int currentBytePosition;
-        private byte currentBitValue;
         private byte[] stream;
 
         public GamePacketReader(byte[] input)
@@ -28,7 +26,6 @@ namespace LandmarkEmulator.Shared.Network
                 return;
 
             currentBytePosition = 0;
-            currentBitValue = 0;
         }
 
         public byte ReadByte(uint bits = 8u)

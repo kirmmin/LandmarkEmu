@@ -1,6 +1,6 @@
 ﻿namespace LandmarkEmulator.Shared.Network.Message.Model
 {
-    [ProtocolMessage(ProtocolMessageOpcode.DataFragment)]
+    [ProtocolMessage(ProtocolMessageOpcode.DataFragment, useEncryption: true)]
     public class DataFragment : IReadable, IWritable
     {
         public ushort Sequence { get; set; }

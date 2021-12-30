@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network.Message.Model
 {
-    [ProtocolMessage(ProtocolMessageOpcode.SessionReply)]
+    [ProtocolMessage(ProtocolMessageOpcode.SessionReply, useEncryption: true)]
     public class SessionReply : IWritable
     {
         public uint SessionId { get; set; }
