@@ -39,6 +39,7 @@ namespace LandmarkEmulator.Shared.Network
             }
             catch (Exception e)
             {
+                log.Error(e.ToString());
                 sampleUdpThread.Abort();
             }
         }

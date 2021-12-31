@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network.Message.Model;
+﻿using LandmarkEmulator.Shared.Network.Cryptography;
+using LandmarkEmulator.Shared.Network.Message.Model;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,12 @@ namespace LandmarkEmulator.Shared.Network
         public event DataEvent OnData;
 
         private int _lastProcessedFragment = -1;
+        private Arc4Provider arc4Provider;
 
         public DataStreamInput(GameSession session)
             : base (session)
         {
-            
+            arc4Provider = new Arc4Provider(RC4Key);
         }
 
         public void ProcessDataFragment(DataFragment dataFragment)
@@ -150,11 +152,14 @@ namespace LandmarkEmulator.Shared.Network
                 {
                     // sometimes there's an extra 0x00 byte in the beginning that trips up the RC4
                     var reader = new GamePacketReader(piece);
-                    byte[] parsedData;
+                    byte[] parsedData = piece;
                     if (piece.Length > 1 && reader.ReadUShortBE() == 0)
-                        parsedData = Encryption.RC4.Decrypt(RC4Key, new Span<byte>(piece, 1, piece.Length - 1).ToArray());
+                    {
+                        parsedData = new Span<byte>(piece, 1, piece.Length - 1).ToArray();
+                        arc4Provider.Decrypt(parsedData);
+                    }
                     else
-                        parsedData = Encryption.RC4.Decrypt(RC4Key, piece);
+                        arc4Provider.Decrypt(parsedData);
                     OnData(parsedData); // Emit the parsed data packet to subscribers
                 }
             }

@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network.Message;
+﻿using LandmarkEmulator.Shared.Network.Cryptography;
+using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.Shared.Network.Message.Model;
 using LandmarkEmulator.Shared.Network.Packets;
 using System;
@@ -87,8 +88,8 @@ namespace LandmarkEmulator.Shared.Network
 
             OnProcessPackets(lastTick);
 
-            while (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket packet))
-                SendPacket(packet);
+            if (outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
+                SendPacket(outPacket);
 
             base.Update(lastTick);
         }
@@ -153,7 +154,7 @@ namespace LandmarkEmulator.Shared.Network
 
             byte[] newData = data.ToArray();
             if (packet.UseEncryption)
-                newData = Encryption.AppendCRC(newData, 0);
+                newData = CrcProvider.AppendCRC(newData, 0);
 
             log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
 

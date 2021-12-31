@@ -19,7 +19,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             writer.WriteLE(Status);
             writer.Write(IsMember);
             writer.Write(IsInternal);
-            writer.WritePrefixedString(Namespace);
+            writer.Write(Namespace);
             writer.WriteLE(0u); // TODO: Figure out how to write "byteswithlength" type.
         }
     }

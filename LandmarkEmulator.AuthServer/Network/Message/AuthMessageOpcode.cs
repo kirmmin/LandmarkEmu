@@ -2,7 +2,9 @@
 {
     public enum AuthMessageOpcode
     {
-        LoginRequest        = 0x0001,
-        LoginReply          = 0x0002    
+        LoginRequest             = 0x01,
+        LoginReply               = 0x02,
+        CharacterSelectInfoReply = 0x0C,
+        ServerListReply          = 0x0E,
     }
 }

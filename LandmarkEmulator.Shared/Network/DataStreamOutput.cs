@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using LandmarkEmulator.Shared.Network.Cryptography;
+using NLog;
 using System;
 using System.Collections.Generic;
 
@@ -15,15 +16,17 @@ namespace LandmarkEmulator.Shared.Network
         public event DataEvent OnData;
 
         private uint _fragmentSize;
+        private Arc4Provider arc4Provider;
 
         public DataStreamOutput(GameSession session)
             : base (session)
         {
+            arc4Provider = new Arc4Provider(RC4Key);
         }
 
         public void PackData(byte[] data)
         {
-            data = Encryption.RC4.Encrypt(RC4Key, data);
+            arc4Provider.Encrypt(data);
             if (data[0] == 0)
             {
                 List<byte> tmp = new List<byte> { 0 };

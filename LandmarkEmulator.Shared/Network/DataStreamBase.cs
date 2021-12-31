@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
 {
@@ -16,7 +18,7 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public ushort? NextSequence { get; protected set; } = null;
 
-        public byte[] RC4Key { get; protected set; }
+        public byte[] RC4Key { get; private set; }
 
         protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
 
