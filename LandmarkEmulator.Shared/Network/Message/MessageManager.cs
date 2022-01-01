@@ -9,13 +9,13 @@ using System.Reflection;
 
 namespace LandmarkEmulator.Shared.Network.Message
 {
-    public delegate void MessageHandlerDelegate(NetworkSession session, IReadable message);
+    public delegate void MessageHandlerDelegate(NetworkSession session, IProtocol message);
 
     public static class MessageManager
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-        private delegate IReadable MessageFactoryDelegate();
+        private delegate IProtocol MessageFactoryDelegate();
 
         private static ImmutableDictionary<ProtocolMessageOpcode, MessageFactoryDelegate> protocolMessagefactories;
         private static ImmutableDictionary<ProtocolMessageOpcode, MessageHandlerDelegate> protocolMessageHandlers;
@@ -39,7 +39,7 @@ namespace LandmarkEmulator.Shared.Network.Message
                 if (attribute == null)
                     continue;
 
-                if (typeof(IReadable).IsAssignableFrom(type))
+                if (typeof(IProtocol).IsAssignableFrom(type))
                 {
                     NewExpression @new = Expression.New(type.GetConstructor(Type.EmptyTypes));
                     messageFactories.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
@@ -70,7 +70,7 @@ namespace LandmarkEmulator.Shared.Network.Message
                         continue;
 
                     ParameterExpression sessionParameter = Expression.Parameter(typeof(NetworkSession));
-                    ParameterExpression messageParameter = Expression.Parameter(typeof(IReadable));
+                    ParameterExpression messageParameter = Expression.Parameter(typeof(IProtocol));
 
                     ParameterInfo[] parameterInfo = method.GetParameters();
 
@@ -96,7 +96,7 @@ namespace LandmarkEmulator.Shared.Network.Message
                         #region Debug
                         Debug.Assert(parameterInfo.Length == 1);
                         Debug.Assert(typeof(NetworkSession).IsAssignableFrom(type));
-                        Debug.Assert(typeof(IReadable).IsAssignableFrom(parameterInfo[0].ParameterType));
+                        Debug.Assert(typeof(IProtocol).IsAssignableFrom(parameterInfo[0].ParameterType));
                         #endregion
 
                         MethodCallExpression call = Expression.Call(
@@ -116,12 +116,12 @@ namespace LandmarkEmulator.Shared.Network.Message
             log.Info($"Initialised {protocolMessageHandlers.Count} protocol message handler(s).");
         }
 
-        public static bool GetOpcodeData(IWritable message, out (ProtocolMessageOpcode, bool) opcode)
+        public static bool GetOpcodeData(IProtocol message, out (ProtocolMessageOpcode, bool) opcode)
         {
             return protocolMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }
 
-        public static IReadable GetProtocolMessage(ProtocolMessageOpcode opcode)
+        public static IProtocol GetProtocolMessage(ProtocolMessageOpcode opcode)
         {
             return protocolMessagefactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
                 ? factory.Invoke() : null;

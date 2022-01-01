@@ -26,6 +26,11 @@ namespace LandmarkEmulator.Shared.Network
             arc4Provider = new Arc4Provider(RC4Key);
         }
 
+        public void ProcessDataFragment(DataWhole dataWhole)
+        {
+            ReadyDataForProcessing(dataWhole.Sequence, dataWhole.Data, false);
+        }
+
         public void ProcessDataFragment(DataFragment dataFragment)
         {
             ReadyDataForProcessing(dataFragment.Sequence, dataFragment.Data, true);
@@ -64,7 +69,7 @@ namespace LandmarkEmulator.Shared.Network
                 _session.EnqueueProtocolMessage(new Ack
                 {
                     Sequence = ack
-                });
+                }, new Message.PacketOptions());
             }
 
             DataPackets[sequence] = new DataPacket(data, isFragment);
@@ -137,10 +142,27 @@ namespace LandmarkEmulator.Shared.Network
 
         private List<byte[]> ParseChannelData(List<byte> data)
         {
+            var newData = new List<byte[]>();
             if (data[0] == 0x00 && data[1] == 0x19)
-                throw new NotImplementedException();
+            {
+                var reader = new GamePacketReader(data.ToArray().AsSpan().Slice(2).ToArray());
+                while (reader.BytesRemaining != 0)
+                {
+                    log.Trace($"Attemping to read Multi Packet's SubPacket");
+                    newData.Add(ReadPacket(reader));
+                }
+            }
+            else
+                newData.Add(data.ToArray());
 
-            return new List<byte[]>() { data.ToArray() };
+            return newData;
+        }
+
+        private byte[] ReadPacket(GamePacketReader reader)
+        {
+            byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
+            log.Trace($"{nextLength} bytes to read");
+            return reader.ReadBytes(nextLength);
         }
 
         private void DecryptData(List<byte[]> data)

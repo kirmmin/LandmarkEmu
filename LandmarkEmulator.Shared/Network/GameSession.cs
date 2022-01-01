@@ -43,6 +43,10 @@ namespace LandmarkEmulator.Shared.Network
                     {
                         Sequence = sequence,
                         Data = gamePacket.Data
+                    }, new PacketOptions
+                    {
+                        IsSubpacket = false,
+                        Compression = serverCompression != 0
                     });
             };
         }
@@ -69,7 +73,11 @@ namespace LandmarkEmulator.Shared.Network
         {
             Heartbeat.OnHeartbeat();
 
-            var packet = new ProtocolPacket(data);
+            var packet = new ProtocolPacket(data, new PacketOptions
+            {
+                IsSubpacket = false,
+                Compression = serverCompression != 0
+            });
             incomingPackets.Enqueue(packet);
 
             base.OnData(data);
@@ -88,7 +96,7 @@ namespace LandmarkEmulator.Shared.Network
 
             OnProcessPackets(lastTick);
 
-            if (outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
+            while (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
                 SendPacket(outPacket);
 
             base.Update(lastTick);
@@ -96,7 +104,7 @@ namespace LandmarkEmulator.Shared.Network
 
         private void HandleProtocolPacket(ProtocolPacket packet)
         {
-            IReadable message = MessageManager.GetProtocolMessage(packet.Opcode);
+            IProtocol message = MessageManager.GetProtocolMessage(packet.Opcode);
             if (message == null)
             {
                 log.Warn($"Received unknown packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
@@ -114,7 +122,7 @@ namespace LandmarkEmulator.Shared.Network
 
             var reader = new GamePacketReader(packet.Data);
 
-            message.Read(reader);
+            message.Read(reader, packet.PacketOptions);
             if (reader.BytesRemaining > 0)
                 log.Warn($"Failed to read entire contents of packet {packet.Opcode} ({reader.BytesRemaining} bytes remaining)");
 
@@ -133,7 +141,7 @@ namespace LandmarkEmulator.Shared.Network
             }
         }
 
-        public void EnqueueProtocolMessage(IWritable message)
+        public void EnqueueProtocolMessage(IProtocol message, PacketOptions options)
         {
             if (!MessageManager.GetOpcodeData(message, out (ProtocolMessageOpcode, bool) opcodeData))
             {
@@ -141,7 +149,7 @@ namespace LandmarkEmulator.Shared.Network
                 return;
             }
 
-            outgoingPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2));
+            outgoingPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
         }
 
         protected void SendPacket(ProtocolPacket packet)
@@ -193,6 +201,10 @@ namespace LandmarkEmulator.Shared.Network
                 CRCLength   = serverCrcLength,
                 Compression = serverCompression,
                 UdpLength   = serverUdpLength
+            }, new PacketOptions
+            {
+                IsSubpacket = false,
+                Compression = serverCompression != 0
             });
         }
 
@@ -202,6 +214,27 @@ namespace LandmarkEmulator.Shared.Network
             log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}");
 
             inputStream.ProcessDataFragment(dataFragment);
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.Data)]
+        public void HandleDataFragment(DataWhole dataWhole)
+        {
+            log.Info($"{dataWhole.Sequence}, {dataWhole.CRC}");
+
+            inputStream.ProcessDataFragment(dataWhole);
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.MutliPacket)]
+        public void HandleMultiPacket(MultiPacket multiPacket)
+        {
+            foreach (ProtocolPacket packet in multiPacket.Packets)
+                incomingPackets.Enqueue(packet);
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.Ping)]
+        public void HandlePing(Ping ping)
+        {
+            EnqueueProtocolMessage(new Ping(), new PacketOptions());
         }
     }
 }
