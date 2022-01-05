@@ -18,7 +18,7 @@ namespace LandmarkEmulator.AuthServer.Network
         {
             base.OnAccept(ep);
 
-            log.Trace($"New session received on {ep.ToString()}");
+            log.Debug($"New session received on {ep}");
         }
 
         protected override void OnGamePacket(byte[] data)
@@ -54,7 +54,7 @@ namespace LandmarkEmulator.AuthServer.Network
                 return;
             }
 
-            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
+            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
 
             var reader = new GamePacketReader(packet.Data);
 

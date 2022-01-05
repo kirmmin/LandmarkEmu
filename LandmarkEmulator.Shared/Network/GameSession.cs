@@ -128,7 +128,7 @@ namespace LandmarkEmulator.Shared.Network
                 return;
             }
 
-            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
+            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
 
             var reader = new GamePacketReader(packet.Data);
 
@@ -174,7 +174,7 @@ namespace LandmarkEmulator.Shared.Network
             if (packet.UseEncryption)
                 newData = CrcProvider.AppendCRC(newData, 0);
 
-            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
+            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
 
             SendRaw(newData);
         }
