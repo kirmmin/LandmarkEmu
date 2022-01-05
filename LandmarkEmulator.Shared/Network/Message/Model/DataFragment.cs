@@ -11,17 +11,27 @@
 
         public void Read(GamePacketReader reader, PacketOptions options)
         {
-            PacketOptions = options;
+            int dataEnd = options.IsSubpacket ? 0 : 2;
 
-            reader.ReadByte();
+            if (options.Compression && !options.IsSubpacket)
+                reader.ReadByte();
+
             Sequence = reader.ReadUShortBE();
-            Data     = reader.ReadBytes(reader.BytesRemaining - 2);
-            CRC      = reader.ReadUShortBE();
+            Data     = reader.ReadBytes((uint)(reader.BytesRemaining - dataEnd));
+
+            if (!options.IsSubpacket)
+                CRC = reader.ReadUShortBE();
+
+            PacketOptions = options;
         }
 
         public void Write(GamePacketWriter writer, PacketOptions options)
         {
-            throw new System.NotImplementedException();
+            if (options.Compression && !options.IsSubpacket)
+                writer.Write(0);
+
+            writer.WriteBE(Sequence);
+            writer.WriteBytes(Data);
         }
     }
 }

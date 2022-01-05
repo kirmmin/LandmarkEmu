@@ -48,6 +48,16 @@ namespace LandmarkEmulator.Shared.Network
                         IsSubpacket = false,
                         Compression = serverCompression != 0
                     });
+                else
+                    EnqueueProtocolMessage(new DataFragment
+                    {
+                        Sequence = sequence,
+                        Data = gamePacket.Data
+                    }, new PacketOptions
+                    {
+                        IsSubpacket = false,
+                        Compression = serverCompression != 0
+                    });
             };
         }
 
@@ -96,7 +106,7 @@ namespace LandmarkEmulator.Shared.Network
 
             OnProcessPackets(lastTick);
 
-            while (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
+            if (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
                 SendPacket(outPacket);
 
             base.Update(lastTick);
@@ -172,10 +182,8 @@ namespace LandmarkEmulator.Shared.Network
         protected void PackAndSend(byte[] data)
         {
             // Send to Output Stream for Packing
-            log.Info($"Packing Data for Send! {BitConverter.ToString(data)}");
-            outputStream.PackData(data);
-
             // Output Stream will emit the packed data to be added to outgoingPackets Queue to be sent.
+            outputStream.PackData(data);
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.SessionRequest)]
@@ -193,7 +201,8 @@ namespace LandmarkEmulator.Shared.Network
             if (request.Protocol != "LoginUdp_10")
                 throw new InvalidOperationException();
 
-            outputStream.SetFragmentSize(clientUdpLength);
+            // Leave room for Oopcode, Compression Byte, and CRC
+            outputStream.SetFragmentSize(clientUdpLength - 7);
             EnqueueProtocolMessage(new SessionReply
             {
                 SessionId   = SessionId,
@@ -211,16 +220,12 @@ namespace LandmarkEmulator.Shared.Network
         [ProtocolMessageHandler(ProtocolMessageOpcode.DataFragment)]
         public void HandleDataFragment(DataFragment dataFragment)
         {
-            log.Info($"{dataFragment.Sequence}, {dataFragment.CRC}");
-
             inputStream.ProcessDataFragment(dataFragment);
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.Data)]
         public void HandleDataFragment(DataWhole dataWhole)
         {
-            log.Info($"{dataWhole.Sequence}, {dataWhole.CRC}");
-
             inputStream.ProcessDataFragment(dataWhole);
         }
 

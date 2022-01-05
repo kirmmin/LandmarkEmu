@@ -128,7 +128,6 @@ namespace LandmarkEmulator.Shared.Network
                         _lastProcessedFragment = j;
                         dataReady = true;
                         finishedData = ParseChannelData(data);
-                        log.Info($"Packet with length {totalSize} is ready for parsing!");
                         break;
                     }
                 }
@@ -148,7 +147,6 @@ namespace LandmarkEmulator.Shared.Network
                 var reader = new GamePacketReader(data.ToArray().AsSpan().Slice(2).ToArray());
                 while (reader.BytesRemaining != 0)
                 {
-                    log.Trace($"Attemping to read Multi Packet's SubPacket");
                     newData.Add(ReadPacket(reader));
                 }
             }
@@ -161,7 +159,6 @@ namespace LandmarkEmulator.Shared.Network
         private byte[] ReadPacket(GamePacketReader reader)
         {
             byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
-            log.Trace($"{nextLength} bytes to read");
             return reader.ReadBytes(nextLength);
         }
 

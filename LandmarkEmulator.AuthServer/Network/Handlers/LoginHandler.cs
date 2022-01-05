@@ -39,6 +39,17 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
                         PopulationLevel = 3, // Ignored by Server
                         PopulationData = "<Population ServerPlayerCapacity=\"75\" ServerClaimCapacity=\"50\" Claims=\"0\" IsRecommended=\"0\" FriendsOnline=\"3\"></Population>"
+                    },
+                    new ServerListReply.Server
+                    {
+                        ServerId    = 0x101,
+                        AllowedAccess = true,
+                        IsLocked    = false,
+                        Name        = "MegaServer",
+                        Description = "So wow, very mega, much amaze",
+                        ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
+                        PopulationLevel = 3, // Ignored by Server
+                        PopulationData = "<Population ServerPlayerCapacity=\"75\" ServerClaimCapacity=\"50\" Claims=\"0\" IsRecommended=\"0\" FriendsOnline=\"3\"></Population>"
                     }
                 }
             });
