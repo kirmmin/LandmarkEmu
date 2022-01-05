@@ -1,5 +1,6 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
+using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
 using NLog;
 
 namespace LandmarkEmulator.AuthServer.Network.Handlers
@@ -39,17 +40,6 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
                         PopulationLevel = 3, // Ignored by Server
                         PopulationData = "<Population ServerPlayerCapacity=\"75\" ServerClaimCapacity=\"50\" Claims=\"0\" IsRecommended=\"0\" FriendsOnline=\"3\"></Population>"
-                    },
-                    new ServerListReply.Server
-                    {
-                        ServerId    = 0x101,
-                        AllowedAccess = true,
-                        IsLocked    = false,
-                        Name        = "MegaServer",
-                        Description = "So wow, very mega, much amaze",
-                        ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
-                        PopulationLevel = 3, // Ignored by Server
-                        PopulationData = "<Population ServerPlayerCapacity=\"75\" ServerClaimCapacity=\"50\" Claims=\"0\" IsRecommended=\"0\" FriendsOnline=\"3\"></Population>"
                     }
                 }
             });
@@ -63,6 +53,43 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                 Status = 1,
                 CanBypassServerLock = true
             });
+        }
+
+        [AuthMessageHandler(AuthMessageOpcode.TunnelPacketClientToServer)]
+        public static void HandleTunnelPacketClientToServer(AuthSession session, TunnelPacketClientToServer packet)
+        {
+            log.Info($"{packet.Type}");
+
+            switch (packet.Data)
+            {
+                case LoginInit unknown6:
+                    log.Trace($"{unknown6}");
+                    session.EnqueueMessage(new TunnelPacketServerToClient
+                    {
+                        ServerId = 0,
+                        Type = Message.Static.TunnelDataType.Unknown7,
+                        Data = new Unknown7
+                        {
+                            String = "Welcome to Landmark RE:Build! We're happy to have you!"
+                        }
+                    });
+                    session.EnqueueMessage(new TunnelPacketServerToClient
+                    {
+                        ServerId = 0,
+                        Type = Message.Static.TunnelDataType.ClaimData,
+                        Data = new ClaimData()
+                    });
+                    session.EnqueueMessage(new TunnelPacketServerToClient
+                    {
+                        ServerId = 0,
+                        Type = Message.Static.TunnelDataType.ArtData,
+                        Data = new ArtData()
+                    });
+                    break;
+                default:
+                    log.Warn($"Unknown Tunnel Data");
+                    break;
+            }
         }
     }
 }

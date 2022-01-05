@@ -28,12 +28,28 @@ namespace LandmarkEmulator.Shared.Network
             currentBytePosition = 0;
         }
 
+        public bool ReadBool(uint bits = 8u)
+        {
+            if (bits > sizeof(byte) * 8)
+                throw new ArgumentException();
+
+            return Convert.ToBoolean(GetDataBits(bits)[0]);
+        }
+
         public byte ReadByte(uint bits = 8u)
         {
             if (bits > sizeof(byte) * 8)
                 throw new ArgumentException();
 
             return GetDataBits(bits)[0];
+        }
+
+        public ushort ReadUShortLE(uint bits = 16u)
+        {
+            if (bits > sizeof(ushort) * 8)
+                throw new ArgumentException();
+
+            return BinaryPrimitives.ReadUInt16LittleEndian(GetDataBits(bits));
         }
 
         public ushort ReadUShortBE(uint bits = 16u)
@@ -84,6 +100,14 @@ namespace LandmarkEmulator.Shared.Network
             return BinaryPrimitives.ReadSingleBigEndian(GetDataBits(bits));
         }
 
+        public ulong ReadULongLE(uint bits = 64u)
+        {
+            if (bits > sizeof(ulong) * 8)
+                throw new ArgumentException();
+
+            return BinaryPrimitives.ReadUInt64LittleEndian(GetDataBits(bits));
+        }
+
         public ulong ReadULongBE(uint bits = 64u)
         {
             if (bits > sizeof(ulong) * 8)
@@ -98,6 +122,14 @@ namespace LandmarkEmulator.Shared.Network
                 throw new ArgumentException();
 
             return BinaryPrimitives.ReadInt64BigEndian(GetDataBits(bits));
+        }
+
+        public unsafe double ReadDoubleLE(uint bits = 64u)
+        {
+            if (bits > sizeof(double) * 8)
+                throw new ArgumentException();
+
+            return BinaryPrimitives.ReadDoubleLittleEndian(GetDataBits(bits));
         }
 
         public unsafe double ReadDoubleBE(uint bits = 64u)
@@ -123,6 +155,14 @@ namespace LandmarkEmulator.Shared.Network
                 data[i] = ReadByte();
 
             return data;
+        }
+
+        public string ReadShortLengthString()
+        {
+            var length = ReadUShortLE();
+            var value = ReadBytes(length);
+
+            return Encoding.UTF8.GetString(value);
         }
 
         public string ReadStringLE()

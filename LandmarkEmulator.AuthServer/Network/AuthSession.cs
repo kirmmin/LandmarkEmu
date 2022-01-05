@@ -85,6 +85,8 @@ namespace LandmarkEmulator.AuthServer.Network
             writer.Write((byte)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
+            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(data.ToArray())}");
+
             PackAndSend(data.ToArray());
         }
 

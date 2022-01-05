@@ -109,10 +109,28 @@ namespace LandmarkEmulator.Shared.Network
                 stream.Add(i);
         }
 
+        public void WriteLE(long value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[8]);
+            BinaryPrimitives.WriteInt64LittleEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
         public void WriteBE(long value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[8]);
             BinaryPrimitives.WriteInt64BigEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
+        public void WriteLE(double value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[8]);
+            BinaryPrimitives.WriteDoubleLittleEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -127,10 +145,34 @@ namespace LandmarkEmulator.Shared.Network
                 stream.Add(i);
         }
 
-        public void Write(string value)
+        public void WriteShortLengthString(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            Write((ushort)value.Length);
+            foreach (byte c in bytes)
+                stream.Add(c);
+        }
+
+        public void WriteBE(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            WriteBE((uint)bytes.Length);
+            foreach (byte c in bytes)
+                stream.Add(c);
+        }
+
+        public void WriteLE(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
             WriteLE((uint)bytes.Length);
+            foreach (byte c in bytes)
+                stream.Add(c);
+        }
+
+        public void WriteLongStringLE(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            WriteLE((ulong)bytes.Length);
             foreach (byte c in bytes)
                 stream.Add(c);
         }

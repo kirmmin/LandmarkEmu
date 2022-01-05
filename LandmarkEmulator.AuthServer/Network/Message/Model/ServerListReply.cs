@@ -26,15 +26,15 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             {
                 writer.WriteLE(ServerId);
                 writer.Write(IsLocked);
-                writer.Write(Name);
+                writer.WriteLE(Name);
                 writer.WriteLE(NameId);
-                writer.Write(Description);
+                writer.WriteLE(Description);
                 writer.WriteLE(DescriptionId);
                 writer.WriteLE(ReqFeatureId);
-                writer.Write(ServerInfo);
+                writer.WriteLE(ServerInfo);
                 writer.WriteLE(PopulationLevel);
-                writer.Write(PopulationData);
-                writer.Write(AccessExpression);
+                writer.WriteLE(PopulationData);
+                writer.WriteLE(AccessExpression);
                 writer.Write(AllowedAccess);
             }
         }

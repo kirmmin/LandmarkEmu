@@ -29,6 +29,8 @@ namespace LandmarkEmulator.AuthServer
 
             MessageManager.Initialise();
             AuthMessageManager.Initialise();
+            TunnelDataManager.Initialise();
+
             NetworkManager<AuthSession>.Initialise("0.0.0.0", 20042);
 
             ServerManager.Initialise(lastTick =>

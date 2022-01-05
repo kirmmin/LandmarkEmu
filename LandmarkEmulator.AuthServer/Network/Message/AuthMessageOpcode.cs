@@ -7,6 +7,8 @@
         CharacterSelectInfoRequest = 0x0B,
         CharacterSelectInfoReply   = 0x0C,
         ServerListRequest          = 0x0D,
-        ServerListReply            = 0x0E
+        ServerListReply            = 0x0E,
+        TunnelPacketClientToServer = 0x10,
+        TunnelPacketServerToClient = 0x11
     }
 }
