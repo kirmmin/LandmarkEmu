@@ -83,7 +83,93 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     {
                         ServerId = 0,
                         Type = Message.Static.TunnelDataType.ArtData,
-                        Data = new ArtData()
+                        Data = new ArtData
+                        {
+                            ArtTintGroups = new System.Collections.Generic.List<ArtData.TintSemanticGroupEntry>
+                            {
+                                new ArtData.TintSemanticGroupEntry
+                                {
+                                    Id            = 1121,
+                                    AliasName     = "Human_Skin_000",
+                                    SemanticGroup = "BaseTint",
+                                    ArtTints      = new System.Collections.Generic.List<ArtData.TintSemanticGroupEntry.TintSemanticEntry>
+                                    {
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintSmoothnessA",
+                                            EditType     = "RGB",
+                                            R            = 1f,
+                                            G            = 0.96862745098f,
+                                            B            = 0.882352941176f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintDielectricA",
+                                            EditType     = "RGB",
+                                            R            = 0.666666666667f,
+                                            G            = 0.686274509804f,
+                                            B            = 0.792156862745f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintMetallicA",
+                                            EditType     = "RGB",
+                                            R            = 0.117647058824f,
+                                            G            = 0.109803921569f,
+                                            B            = 0.0549019607843f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintSmoothnessA",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintDielectricA",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintMetallicA",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintSmoothnessB",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintDielectricB",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        },
+                                        new ArtData.TintSemanticGroupEntry.TintSemanticEntry
+                                        {
+                                            SemanticName = "BaseTintMetallicB",
+                                            EditType     = "SCALAR",
+                                            R            = 0.5f,
+                                            G            = 0f,
+                                            B            = 0f
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     });
                     break;
                 default:

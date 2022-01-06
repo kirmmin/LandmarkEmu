@@ -73,6 +73,15 @@ namespace LandmarkEmulator.Shared.Network
                 stream.Add(i);
         }
 
+        public void WriteLE(int value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[4]);
+            BinaryPrimitives.WriteInt32LittleEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
         public void WriteBE(int value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[4]);
@@ -82,7 +91,16 @@ namespace LandmarkEmulator.Shared.Network
                 stream.Add(i);
         }
 
-        public void Write(float value)
+        public void WriteLE(float value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[4]);
+            BinaryPrimitives.WriteSingleLittleEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
+        public void WriteBE(float value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[4]);
             BinaryPrimitives.WriteSingleBigEndian(spanValue, value);
@@ -148,7 +166,7 @@ namespace LandmarkEmulator.Shared.Network
         public void WriteShortLengthString(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
-            Write((ushort)value.Length);
+            WriteBE((float)(ushort)value.Length);
             foreach (byte c in bytes)
                 stream.Add(c);
         }

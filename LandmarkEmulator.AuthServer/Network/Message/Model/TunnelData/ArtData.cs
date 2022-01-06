@@ -52,9 +52,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             }
         }
 
-        public class UnknownStruct_142C355A0 : ITunnelData
+        public class ArtTintOverrideGroupEntry : ITunnelData
         {
-            public class UnknownStruct_142C38770 : ITunnelData
+            public class ArtTineOverrideEntry : ITunnelData
             {
                 public uint Unknown0 { get; set; }
                 public long Unknown1 { get; set; }
@@ -79,13 +79,13 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             public int Unknown0 { get; set; }
             public uint Unknown1 { get; set; }
             public uint Unknown2 { get; set; }
-            public List<UnknownStruct_142C38770> Unknown3 { get; set; } = new();
+            public List<ArtTineOverrideEntry> Unknown3 { get; set; } = new();
 
             public uint GetSize()
             {
-                uint totalSize = 0;
+                uint totalSize = 4u;
                 Unknown3.ForEach(x => totalSize += x.GetSize());
-                return 4u + 4u + 4u + 4u + totalSize;
+                return 4u + 4u + 4u + totalSize;
             }
 
             public void Read(GamePacketReader reader)
@@ -152,17 +152,58 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             }
         }
 
-        public class UnknownStruct_142C37F00 : ITunnelData
+        public class TintSemanticGroupEntry : ITunnelData
         {
-            public int Unknown0 { get; set; }
-            public string Unknown1 { get; set; }
-            public string Unknown2 { get; set; }
+            public class TintSemanticEntry : ITunnelData
+            {
+                public string SemanticName { get; set; }
+                public uint Unknown1 { get; set; }
+                public uint Unknown2 { get; set; }
+                public uint Unknown3 { get; set; }
+                public string EditType { get; set; }
+                public uint Unknown4 { get; set; }
+                public float R { get; set; }
+                public float G { get; set; }
+                public float B { get; set; }
+                public float A { get; set; }
+
+                public uint GetSize()
+                {
+                    return (uint)(4u + SemanticName.Length + 4u + 4u + 4u + 4u + EditType.Length + 4u + 4u + 4u + 4u + 4u);
+                }
+
+                public void Read(GamePacketReader reader)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    writer.WriteLE(SemanticName);
+                    writer.WriteLE(Unknown1);
+                    writer.WriteLE(Unknown2);
+                    writer.WriteLE(Unknown3);
+                    writer.WriteLE(EditType);
+                    writer.WriteLE(Unknown4);
+                    writer.WriteLE(R);
+                    writer.WriteLE(G);
+                    writer.WriteLE(B);
+                    writer.WriteLE(A);
+                }
+            }
+
+            public int Id { get; set; }
+            public string AliasName { get; set; }
+            public string SemanticGroup { get; set; }
+            public List<TintSemanticEntry> ArtTints { get; set; } = new();
             public uint Unknown3 { get; set; }
             public uint Unknown4 { get; set; }
 
             public uint GetSize()
             {
-                return (uint)(4u + 4u + Unknown1.Length + 4u + Unknown2.Length + 4u + 4u);
+                uint artTintSize = 4u;
+                ArtTints.ForEach(x => artTintSize += x.GetSize());
+                return (uint)(4u + 4u + AliasName.Length + 4u + SemanticGroup.Length + 4u + 4u + artTintSize);
             }
 
             public void Read(GamePacketReader reader)
@@ -172,9 +213,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
-                writer.WriteLE(Unknown2);
+                writer.WriteLE(Id);
+                writer.WriteLE(AliasName);
+                writer.WriteLE(SemanticGroup);
+                writer.WriteLE((uint)ArtTints.Count);
+                ArtTints.ForEach(x => x.Write(writer));
                 writer.WriteLE(Unknown3);
                 writer.WriteLE(Unknown4);
             }
@@ -182,11 +225,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public List<UnknownStruct_142C36820> Unknown0 { get; set; } = new();
         public List<UnknownStruct_142C351D0> Unknown1 { get; set; } = new();
-        public List<UnknownStruct_142C355A0> Unknown2 { get; set; } = new();
+        public List<ArtTintOverrideGroupEntry> Unknown2 { get; set; } = new();
         public List<UnknownStruct_142C3FE00> Unknown3 { get; set; } = new();
         public List<UnknownStruct_142C3BAC0> Unknown4 { get; set; } = new();
         public List<UnknownStruct_142C3BAC0> Unknown5 { get; set; } = new();
-        public List<UnknownStruct_142C37F00> Unknown6 { get; set; } = new();
+        public List<TintSemanticGroupEntry> ArtTintGroups { get; set; } = new();
         public List<UnknownStruct_142C351D0> Unknown7 { get; set; } = new();
 
         public uint GetSize()
@@ -212,7 +255,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             Unknown5.ForEach(x => totalSize += x.GetSize());
 
             totalSize += 4u; /*unknown5 arrayCount*/
-            Unknown6.ForEach(x => totalSize += x.GetSize());
+            ArtTintGroups.ForEach(x => totalSize += x.GetSize());
 
             totalSize += 4u; /*unknown7 arrayCount*/
             Unknown7.ForEach(x => totalSize += x.GetSize());
@@ -227,28 +270,28 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Write(GamePacketWriter writer)
         {
-            writer.Write((uint)Unknown0.Count);
+            writer.WriteLE((uint)Unknown0.Count);
             Unknown0.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown1.Count);
+            writer.WriteLE((uint)Unknown1.Count);
             Unknown1.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown2.Count);
+            writer.WriteLE((uint)Unknown2.Count);
             Unknown2.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown3.Count);
+            writer.WriteLE((uint)Unknown3.Count);
             Unknown3.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown4.Count);
+            writer.WriteLE((uint)Unknown4.Count);
             Unknown4.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown5.Count);
+            writer.WriteLE((uint)Unknown5.Count);
             Unknown5.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown6.Count);
-            Unknown6.ForEach(x => x.Write(writer));
+            writer.WriteLE((uint)ArtTintGroups.Count);
+            ArtTintGroups.ForEach(x => x.Write(writer));
 
-            writer.Write((uint)Unknown7.Count);
+            writer.WriteLE((uint)Unknown7.Count);
             Unknown7.ForEach(x => x.Write(writer));
         }
     }
