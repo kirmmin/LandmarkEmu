@@ -51,19 +51,40 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             session.EnqueueMessage(new CharacterSelectInfoReply
             {
                 Status = 1,
-                CanBypassServerLock = true
+                CanBypassServerLock = true,
+                Characters = new System.Collections.Generic.List<CharacterSelectInfoReply.Character>
+                {
+                    new CharacterSelectInfoReply.Character
+                    {
+                        CharacterId = 1ul,
+                        LastServerId = 0x100,
+                        LastLogin = 1d,
+                        Status = 1u
+                    }
+                }
             });
         }
 
         [AuthMessageHandler(AuthMessageOpcode.TunnelPacketClientToServer)]
         public static void HandleTunnelPacketClientToServer(AuthSession session, TunnelPacketClientToServer packet)
         {
-            log.Info($"{packet.Type}");
-
             switch (packet.Data)
             {
-                case LoginInit unknown6:
-                    log.Trace($"{unknown6}");
+                case NameValidationRequest nameValidationRequest:
+                    log.Trace($"{nameValidationRequest.FirstName}, {nameValidationRequest.LastName}");
+
+                    // TODO: Actually confirm name is available.
+                    session.EnqueueMessage(new TunnelPacketServerToClient
+                    {
+                        Type     = Message.Static.TunnelDataType.NameValidationReply,
+                        Data     = new NameValidationReply
+                        {
+                            Result    = Message.Static.NameValidationResult.Success,
+                            FirstName = nameValidationRequest.FirstName
+                        }
+                    });
+                    break;
+                case LoginInit loginInit:
                     session.EnqueueMessage(new TunnelPacketServerToClient
                     {
                         ServerId = 0,
@@ -79,25 +100,94 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         Type = Message.Static.TunnelDataType.ClaimData,
                         Data = new ClaimData()
                     });
+
+                    // TODO: Figure out the ArtData packet for Tints
                     session.EnqueueMessage(new TunnelPacketServerToClient
                     {
                         ServerId = 0,
                         Type = Message.Static.TunnelDataType.ArtData,
                         Data = new ArtData
                         {
+                            Unknown0 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C36820>
+                            {
+                                new ArtData.UnknownStruct_142C36820
+                                {
+                                    Unknown0 = 1121,
+                                    Unknown1 = "Human_Skin_000"
+                                }
+                            },
+                            Unknown1 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C351D0>
+                            {
+                                new ArtData.UnknownStruct_142C351D0
+                                {
+                                    Unknown0 = 1,
+                                    Unknown1 = 2
+                                }
+                            },
+                            ArtTintOverrideGroups = new System.Collections.Generic.List<ArtData.ArtTintOverrideGroupEntry>
+                            {
+                                new ArtData.ArtTintOverrideGroupEntry
+                                {
+                                    Unknown0 = 3,
+                                    Unknown1 = 4,
+                                    Unknown2 = 5,
+                                    Unknown3 = new System.Collections.Generic.List<ArtData.ArtTintOverrideGroupEntry.ArtTintOverrideEntry>
+                                    {
+                                        new ArtData.ArtTintOverrideGroupEntry.ArtTintOverrideEntry
+                                        {
+                                            Unknown0 = 6,
+                                            Unknown1 = 7
+                                        }
+                                    }
+                                }
+                            },
+                            Unknown3 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C3FE00>
+                            {
+                                new ArtData.UnknownStruct_142C3FE00
+                                {
+                                    Unknown0 = 8,
+                                    Unknown1 = 9,
+                                    Unknown2 = 10,
+                                    Unknown3 = 11,
+                                    Unknown4 = 12
+                                },
+                                new ArtData.UnknownStruct_142C3FE00
+                                {
+                                    Unknown0 = 13,
+                                    Unknown1 = 14,
+                                    Unknown2 = 15,
+                                    Unknown3 = 16,
+                                    Unknown4 = 17
+                                }
+                            },
+                            Unknown4 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C3BAC0>
+                            {
+                                new ArtData.UnknownStruct_142C3BAC0
+                                {
+                                    Unknown0 = "Human_Skin_000"
+                                }
+                            },
+                            Unknown5 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C3BAC0>
+                            {
+                                new ArtData.UnknownStruct_142C3BAC0
+                                {
+                                    Unknown0 = "Human_Skin_000"
+                                }
+                            },
                             ArtTintGroups = new System.Collections.Generic.List<ArtData.TintSemanticGroupEntry>
                             {
                                 new ArtData.TintSemanticGroupEntry
                                 {
-                                    Id            = 1121,
-                                    AliasName     = "Human_Skin_000",
-                                    SemanticGroup = "BaseTint",
+                                    Id            = 0,
+                                    AliasName     = "BaseTint",
+                                    SemanticGroup = "ANY",
                                     ArtTints      = new System.Collections.Generic.List<ArtData.TintSemanticGroupEntry.TintSemanticEntry>
                                     {
                                         new ArtData.TintSemanticGroupEntry.TintSemanticEntry
                                         {
                                             SemanticName = "BaseTintSmoothnessA",
                                             EditType     = "RGB",
+                                            Unknown1     = 607,
                                             R            = 1f,
                                             G            = 0.96862745098f,
                                             B            = 0.882352941176f
@@ -106,6 +196,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintDielectricA",
                                             EditType     = "RGB",
+                                            Unknown1     = 607,
                                             R            = 0.666666666667f,
                                             G            = 0.686274509804f,
                                             B            = 0.792156862745f
@@ -114,6 +205,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintMetallicA",
                                             EditType     = "RGB",
+                                            Unknown1     = 607,
                                             R            = 0.117647058824f,
                                             G            = 0.109803921569f,
                                             B            = 0.0549019607843f
@@ -122,6 +214,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintSmoothnessA",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
@@ -130,6 +223,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintDielectricA",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
@@ -138,6 +232,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintMetallicA",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
@@ -146,6 +241,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintSmoothnessB",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
@@ -154,6 +250,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintDielectricB",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
@@ -162,11 +259,20 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                         {
                                             SemanticName = "BaseTintMetallicB",
                                             EditType     = "SCALAR",
+                                            Unknown1     = 607,
                                             R            = 0.5f,
                                             G            = 0f,
                                             B            = 0f
                                         }
                                     }
+                                }
+                            },
+                            Unknown7 = new System.Collections.Generic.List<ArtData.UnknownStruct_142C351D0>
+                            {
+                                new ArtData.UnknownStruct_142C351D0
+                                {
+                                    Unknown0 = 1121,
+                                    Unknown1 = 1121
                                 }
                             }
                         }
@@ -176,6 +282,17 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     log.Warn($"Unknown Tunnel Data");
                     break;
             }
+        }
+
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest)]
+        public static void HandleCharacterCreateRequest(AuthSession session, CharacterCreateRequest request)
+        {
+            session.EnqueueMessage(new CharacterCreateReply
+            {
+                Result      = Message.Static.CharacterCreateResult.Success,
+                CharacterId = 1
+            });
         }
     }
 }

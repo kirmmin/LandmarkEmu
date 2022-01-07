@@ -37,6 +37,15 @@ namespace LandmarkEmulator.Shared.Network
             Write(Convert.ToByte(value));
         }
 
+        public void WriteLE(ushort value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[2]);
+            BinaryPrimitives.WriteUInt16LittleEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
         public void WriteBE(ushort value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[2]);
