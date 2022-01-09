@@ -314,5 +314,23 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                 CharacterId = 1
             });
         }
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterDeleteRequest)]
+        public static void HandleCharacterDeleteRequest(AuthSession session, CharacterDeleteRequest request)
+        {
+            session.EnqueueMessage(new CharacterSelectInfoReply
+            {
+                Status = 1,
+                CanBypassServerLock = true,
+                Characters = new System.Collections.Generic.List<CharacterSelectInfoReply.Character>
+                {
+                }
+            });
+            session.EnqueueMessage(new CharacterDeleteReply
+            {
+                CharacterId = request.CharacterId,
+                Status      = 1
+            });
+        }
     }
 }

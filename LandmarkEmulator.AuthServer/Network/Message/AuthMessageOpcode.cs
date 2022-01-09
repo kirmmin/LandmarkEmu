@@ -6,6 +6,8 @@
         LoginReply                 = 0x02,
         CharacterCreateRequest     = 0x05,
         CharacterCreateReply       = 0x06,
+        CharacterDeleteRequest     = 0x09,
+        CharacterDeleteReply       = 0x0A,
         CharacterSelectInfoRequest = 0x0B,
         CharacterSelectInfoReply   = 0x0C,
         ServerListRequest          = 0x0D,
