@@ -1,4 +1,5 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message.Static;
+using LandmarkEmulator.Shared;
 using System;
 using System.Collections.Immutable;
 using System.Linq.Expressions;
@@ -6,13 +7,13 @@ using System.Reflection;
 
 namespace LandmarkEmulator.AuthServer.Network.Message
 {
-    public static class TunnelDataManager
+    public class TunnelDataManager : Singleton<TunnelDataManager>
     {
         private delegate ITunnelData TunnelDataFactoryDelegate();
         private static ImmutableDictionary<TunnelDataType, TunnelDataFactoryDelegate> tunnelDataFactories;
         private static ImmutableDictionary<Type, TunnelDataType> tunnelDataTypes;
 
-        public static void Initialise()
+        public void Initialise()
         {
             var factoryBuilder = ImmutableDictionary.CreateBuilder<TunnelDataType, TunnelDataFactoryDelegate>();
             var commandBuilder = ImmutableDictionary.CreateBuilder<Type, TunnelDataType>();
@@ -35,7 +36,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message
         /// <summary>
         /// Return a new <see cref="IEntityCommandModel"/> of supplied <see cref="EntityCommand"/>.
         /// </summary>
-        public static ITunnelData NewEntityCommand(TunnelDataType type)
+        public ITunnelData NewEntityCommand(TunnelDataType type)
         {
             return tunnelDataFactories.TryGetValue(type, out TunnelDataFactoryDelegate factory) ? factory.Invoke() : null;
         }
@@ -43,7 +44,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message
         /// <summary>
         /// Returns the <see cref="EntityCommand"/> for supplied <see cref="Type"/>.
         /// </summary>
-        public static TunnelDataType? GetType(Type type)
+        public TunnelDataType? GetType(Type type)
         {
             if (tunnelDataTypes.TryGetValue(type, out TunnelDataType tunnelDataType))
                 return tunnelDataType;

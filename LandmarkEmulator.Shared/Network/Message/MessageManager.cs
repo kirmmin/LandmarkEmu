@@ -11,23 +11,23 @@ namespace LandmarkEmulator.Shared.Network.Message
 {
     public delegate void MessageHandlerDelegate(NetworkSession session, IProtocol message);
 
-    public static class MessageManager
+    public class MessageManager : Singleton<MessageManager>
     {
-        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+        private readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         private delegate IProtocol MessageFactoryDelegate();
 
-        private static ImmutableDictionary<ProtocolMessageOpcode, MessageFactoryDelegate> protocolMessagefactories;
-        private static ImmutableDictionary<ProtocolMessageOpcode, MessageHandlerDelegate> protocolMessageHandlers;
-        private static ImmutableDictionary<Type, (ProtocolMessageOpcode, bool)> protocolMessageOpcodes;
+        private ImmutableDictionary<ProtocolMessageOpcode, MessageFactoryDelegate> protocolMessagefactories;
+        private ImmutableDictionary<ProtocolMessageOpcode, MessageHandlerDelegate> protocolMessageHandlers;
+        private ImmutableDictionary<Type, (ProtocolMessageOpcode, bool)> protocolMessageOpcodes;
 
-        public static void Initialise()
+        public void Initialise()
         {
             InitialiseProtocolMessages();
             InitialiseProtocolMessageHandlers();
         }
 
-        private static void InitialiseProtocolMessages()
+        private void InitialiseProtocolMessages()
         {
             var messageFactories = new Dictionary<ProtocolMessageOpcode, MessageFactoryDelegate>();
             var messageOpcodes   = new Dictionary<Type, (ProtocolMessageOpcode, bool)>();
@@ -53,7 +53,7 @@ namespace LandmarkEmulator.Shared.Network.Message
             log.Info($"Initialised {protocolMessageOpcodes.Count} protocol message(s).");
         }
 
-        private static void InitialiseProtocolMessageHandlers()
+        private void InitialiseProtocolMessageHandlers()
         {
             var messageHandlers = new Dictionary<ProtocolMessageOpcode, MessageHandlerDelegate>();
 
@@ -116,18 +116,18 @@ namespace LandmarkEmulator.Shared.Network.Message
             log.Info($"Initialised {protocolMessageHandlers.Count} protocol message handler(s).");
         }
 
-        public static bool GetOpcodeData(IProtocol message, out (ProtocolMessageOpcode, bool) opcode)
+        public bool GetOpcodeData(IProtocol message, out (ProtocolMessageOpcode, bool) opcode)
         {
             return protocolMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }
 
-        public static IProtocol GetProtocolMessage(ProtocolMessageOpcode opcode)
+        public IProtocol GetProtocolMessage(ProtocolMessageOpcode opcode)
         {
             return protocolMessagefactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
                 ? factory.Invoke() : null;
         }
 
-        public static MessageHandlerDelegate GetProtocolMessageHandler(ProtocolMessageOpcode opcode)
+        public MessageHandlerDelegate GetProtocolMessageHandler(ProtocolMessageOpcode opcode)
         {
             return protocolMessageHandlers.TryGetValue(opcode, out MessageHandlerDelegate handler)
                 ? handler : null;

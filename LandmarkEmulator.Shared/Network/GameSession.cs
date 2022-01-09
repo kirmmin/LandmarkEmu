@@ -114,14 +114,14 @@ namespace LandmarkEmulator.Shared.Network
 
         private void HandleProtocolPacket(ProtocolPacket packet)
         {
-            IProtocol message = MessageManager.GetProtocolMessage(packet.Opcode);
+            IProtocol message = MessageManager.Instance.GetProtocolMessage(packet.Opcode);
             if (message == null)
             {
                 log.Warn($"Received unknown packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
                 return;
             }
 
-            MessageHandlerDelegate handlerInfo = MessageManager.GetProtocolMessageHandler(packet.Opcode);
+            MessageHandlerDelegate handlerInfo = MessageManager.Instance.GetProtocolMessageHandler(packet.Opcode);
             if (handlerInfo == null)
             {
                 log.Warn($"Received unhandled packet {packet.Opcode}(0x{packet.Opcode:X}).");
@@ -153,7 +153,7 @@ namespace LandmarkEmulator.Shared.Network
 
         public void EnqueueProtocolMessage(IProtocol message, PacketOptions options)
         {
-            if (!MessageManager.GetOpcodeData(message, out (ProtocolMessageOpcode, bool) opcodeData))
+            if (!MessageManager.Instance.GetOpcodeData(message, out (ProtocolMessageOpcode, bool) opcodeData))
             {
                 log.Warn("Failed to send message with no attribute!");
                 return;

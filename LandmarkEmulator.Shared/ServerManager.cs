@@ -4,11 +4,11 @@ using System.Threading;
 
 namespace LandmarkEmulator.Shared
 {
-    public static class ServerManager
+    public class ServerManager : Singleton<ServerManager>
     {
-        private static volatile bool shutdownRequested;
+        private volatile bool shutdownRequested;
 
-        public static void Initialise(Action<double> updateAction)
+        public void Initialise(Action<double> updateAction)
         {
             var worldThread = new Thread(() =>
             {
@@ -29,7 +29,7 @@ namespace LandmarkEmulator.Shared
             worldThread.Start();
         }
 
-        public static void Shutdown()
+        public void Shutdown()
         {
             shutdownRequested = true;
         }

@@ -16,7 +16,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.Shared
             reader.ReadUIntLE(); // Size of TunnelData, but we don't need to use it. Just read, don't store.
             Type = (TunnelDataType)reader.ReadByte();
 
-            Data = TunnelDataManager.NewEntityCommand(Type);
+            Data = TunnelDataManager.Instance.NewEntityCommand(Type);
             if (Data == null)
                 return;
 

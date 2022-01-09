@@ -40,14 +40,14 @@ namespace LandmarkEmulator.AuthServer.Network
 
         private void HandleAuthPacket(AuthPacket packet)
         {
-            IReadable message = AuthMessageManager.GetAuthMessage(packet.Opcode);
+            IReadable message = AuthMessageManager.Instance.GetAuthMessage(packet.Opcode);
             if (message == null)
             {
                 log.Warn($"Received unknown Auth packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
                 return;
             }
 
-            AuthMessageHandlerDelegate handlerInfo = AuthMessageManager.GetGameMessageHandler(packet.Opcode);
+            AuthMessageHandlerDelegate handlerInfo = AuthMessageManager.Instance.GetGameMessageHandler(packet.Opcode);
             if (handlerInfo == null)
             {
                 log.Warn($"Received unhandled Auth packet {packet.Opcode}(0x{packet.Opcode:X}).");
@@ -92,7 +92,7 @@ namespace LandmarkEmulator.AuthServer.Network
 
         public void EnqueueMessage(IWritable message)
         {
-            if (!AuthMessageManager.GetOpcode(message, out AuthMessageOpcode opcode))
+            if (!AuthMessageManager.Instance.GetOpcode(message, out AuthMessageOpcode opcode))
             {
                 log.Warn("Failed to send message with no attribute!");
                 return;

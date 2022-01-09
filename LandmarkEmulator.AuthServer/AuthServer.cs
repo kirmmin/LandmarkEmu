@@ -28,17 +28,17 @@ namespace LandmarkEmulator.AuthServer
             Console.Title = Title;
             log.Info("Initialising...");
 
-            TextManager.Initialise();
+            TextManager.Instance.Initialise();
 
-            MessageManager.Initialise();
-            AuthMessageManager.Initialise();
-            TunnelDataManager.Initialise();
+            MessageManager.Instance.Initialise();
+            AuthMessageManager.Instance.Initialise();
+            TunnelDataManager.Instance.Initialise();
 
-            NetworkManager<AuthSession>.Initialise("0.0.0.0", 20042);
+            NetworkManager<AuthSession>.Instance.Initialise("0.0.0.0", 20042);
 
-            ServerManager.Initialise(lastTick =>
+            ServerManager.Instance.Initialise(lastTick =>
             {
-                NetworkManager<AuthSession>.Update(lastTick);
+                NetworkManager<AuthSession>.Instance.Update(lastTick);
             });
         }
     }

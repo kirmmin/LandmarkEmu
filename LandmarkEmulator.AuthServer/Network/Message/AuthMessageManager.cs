@@ -1,11 +1,11 @@
-﻿using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared;
+using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -13,24 +13,24 @@ namespace LandmarkEmulator.AuthServer.Network.Message
 {
     public delegate void AuthMessageHandlerDelegate(NetworkSession session, IReadable message);
 
-    public static class AuthMessageManager
+    public class AuthMessageManager : Singleton<AuthMessageManager>
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         private delegate IReadable MessageFactoryDelegate();
 
-        private static ImmutableDictionary<AuthMessageOpcode, MessageFactoryDelegate> clientMessageFactories;
-        private static ImmutableDictionary<Type, AuthMessageOpcode> serverMessageOpcodes;
+        private ImmutableDictionary<AuthMessageOpcode, MessageFactoryDelegate> clientMessageFactories;
+        private ImmutableDictionary<Type, AuthMessageOpcode> serverMessageOpcodes;
 
-        private static ImmutableDictionary<AuthMessageOpcode, AuthMessageHandlerDelegate> clientMessageHandlers;
+        private ImmutableDictionary<AuthMessageOpcode, AuthMessageHandlerDelegate> clientMessageHandlers;
 
-        public static void Initialise()
+        public void Initialise()
         {
             InitialiseGameMessages();
             InitialiseGameMessageHandlers();
         }
 
-        private static void InitialiseGameMessages()
+        private void InitialiseGameMessages()
         {
             var messageFactories = new Dictionary<AuthMessageOpcode, MessageFactoryDelegate>();
             var messageOpcodes = new Dictionary<Type, AuthMessageOpcode>();
@@ -55,7 +55,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message
             log.Info($"Initialised {serverMessageOpcodes.Count} Auth message(s).");
         }
 
-        private static void InitialiseGameMessageHandlers()
+        private void InitialiseGameMessageHandlers()
         {
             var messageHandlers = new Dictionary<AuthMessageOpcode, AuthMessageHandlerDelegate>();
 
@@ -117,18 +117,18 @@ namespace LandmarkEmulator.AuthServer.Network.Message
             log.Info($"Initialised {clientMessageHandlers.Count} Auth message handler(s).");
         }
 
-        public static bool GetOpcode(IWritable message, out AuthMessageOpcode opcode)
+        public bool GetOpcode(IWritable message, out AuthMessageOpcode opcode)
         {
             return serverMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }
 
-        public static IReadable GetAuthMessage(AuthMessageOpcode opcode)
+        public IReadable GetAuthMessage(AuthMessageOpcode opcode)
         {
             return clientMessageFactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
                 ? factory.Invoke() : null;
         }
 
-        public static AuthMessageHandlerDelegate GetGameMessageHandler(AuthMessageOpcode opcode)
+        public AuthMessageHandlerDelegate GetGameMessageHandler(AuthMessageOpcode opcode)
         {
             return clientMessageHandlers.TryGetValue(opcode, out AuthMessageHandlerDelegate handler)
                 ? handler : null;

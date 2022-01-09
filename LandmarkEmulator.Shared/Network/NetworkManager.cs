@@ -6,16 +6,16 @@ using System.Net;
 
 namespace LandmarkEmulator.Shared.Network
 {
-    public static class NetworkManager<T> where T : NetworkSession, new()
+    public class NetworkManager<T> : Singleton<NetworkManager<T>> where T : NetworkSession, new()
     {
-        private static Connection connection;
+        private Connection connection;
 
-        private static readonly ConcurrentQueue<T> pendingAdd = new();
-        private static readonly ConcurrentQueue<T> pendingRemove = new();
+        private readonly ConcurrentQueue<T> pendingAdd = new();
+        private readonly ConcurrentQueue<T> pendingRemove = new();
 
-        private static readonly Dictionary<EndPoint, T> sessions = new();
+        private readonly Dictionary<EndPoint, T> sessions = new();
 
-        public static void Initialise(string host, uint port)
+        public void Initialise(string host, uint port)
         {
             connection = new Connection(IPAddress.Parse(host), port);
             connection.OnMessage += (remoteEP, message) =>
@@ -32,17 +32,17 @@ namespace LandmarkEmulator.Shared.Network
             };
         }
 
-        public static T GetSession(Func<T, bool> func)
+        public T GetSession(Func<T, bool> func)
         {
             return sessions.Values.SingleOrDefault(func);
         }
 
-        public static void Shutdown()
+        public void Shutdown()
         {
             //connection?.Shutdown();
         }
 
-        public static void Update(double lastTick)
+        public void Update(double lastTick)
         {
             //
             while (pendingAdd.TryDequeue(out T session))
@@ -68,7 +68,7 @@ namespace LandmarkEmulator.Shared.Network
                 sessions.Remove(session.Endpoint);
         }
 
-        public static void SendData(IPEndPoint ep, byte[] data)
+        public void SendData(IPEndPoint ep, byte[] data)
         {
             connection.SendBytes(ep, data);
         }

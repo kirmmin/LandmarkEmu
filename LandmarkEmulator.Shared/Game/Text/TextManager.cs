@@ -7,14 +7,14 @@ using System.Text.RegularExpressions;
 
 namespace LandmarkEmulator.Shared.Game.Text
 {
-    public static class TextManager
+    public class TextManager : Singleton<TextManager>
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-        private static Dictionary<uint, string> hashToString = new();
-        private static Dictionary<uint, uint> keyToHash = new();
+        private Dictionary<uint, string> hashToString = new();
+        private Dictionary<uint, uint> keyToHash = new();
 
-        public static void Initialise()
+        public void Initialise()
         {
             log.Info("Loading TextTables...");
             Stopwatch sw = Stopwatch.StartNew();
@@ -43,7 +43,7 @@ namespace LandmarkEmulator.Shared.Game.Text
             log.Info($"Built {keyToHash.Count} reverse lookups in {sw.ElapsedMilliseconds}ms.");
         }
 
-        private static void LoadDataFile(string filePath)
+        private void LoadDataFile(string filePath)
         {
             using (StreamReader reader = File.OpenText(filePath))
             {
@@ -63,7 +63,7 @@ namespace LandmarkEmulator.Shared.Game.Text
         /// <summary>
         /// Get Text Hash for a given NAME_ID.
         /// </summary>
-        public static uint GetHash(uint id)
+        public uint GetHash(uint id)
         {
             return GetHash($"Global.Text.{id}");
         }
@@ -71,7 +71,7 @@ namespace LandmarkEmulator.Shared.Game.Text
         /// <summary>
         /// Get Text Hash for a given global string identifier.
         /// </summary>
-        public static uint GetHash(string id)
+        public uint GetHash(string id)
         {
             if (!id.StartsWith("Global.Text"))
                 id = "Global.Text." + id;
@@ -82,7 +82,7 @@ namespace LandmarkEmulator.Shared.Game.Text
         /// <summary>
         /// Get a Key that matches a given Text Hash.
         /// </summary>
-        public static uint? GetIdForHash(uint hash)
+        public uint? GetIdForHash(uint hash)
         {
             if (hashToString.ContainsKey(hash))
             {
