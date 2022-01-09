@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LandmarkEmulator.Shared.Configuration;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,9 @@ namespace LandmarkEmulator.Shared.Network
 
         private readonly Dictionary<EndPoint, T> sessions = new();
 
-        public void Initialise(string host, uint port)
+        public void Initialise(NetworkConfig config)
         {
-            connection = new Connection(IPAddress.Parse(host), port);
+            connection = new Connection(IPAddress.Parse(config.Host), config.Port);
             connection.OnMessage += (remoteEP, message) =>
             {
                 if (sessions.TryGetValue(remoteEP, out T session))

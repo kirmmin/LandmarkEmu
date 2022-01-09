@@ -13,4 +13,10 @@
     <ProjectReference Include="..\LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="AuthServer.example.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

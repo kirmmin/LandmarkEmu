@@ -1,6 +1,7 @@
 ﻿using LandmarkEmulator.AuthServer.Network;
 using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.Shared;
+using LandmarkEmulator.Shared.Configuration;
 using LandmarkEmulator.Shared.Game.Text;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
@@ -27,6 +28,7 @@ namespace LandmarkEmulator.AuthServer
 
             Console.Title = Title;
             log.Info("Initialising...");
+            ConfigurationManager<AuthServerConfiguration>.Instance.Initialise("AuthServer.json");
 
             TextManager.Instance.Initialise();
 
@@ -34,7 +36,7 @@ namespace LandmarkEmulator.AuthServer
             AuthMessageManager.Instance.Initialise();
             TunnelDataManager.Instance.Initialise();
 
-            NetworkManager<AuthSession>.Instance.Initialise("0.0.0.0", 20042);
+            NetworkManager<AuthSession>.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Network);
 
             ServerManager.Instance.Initialise(lastTick =>
             {
