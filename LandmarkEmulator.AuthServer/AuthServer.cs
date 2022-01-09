@@ -1,6 +1,7 @@
 ﻿using LandmarkEmulator.AuthServer.Network;
 using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.Shared;
+using LandmarkEmulator.Shared.Game.Text;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using NLog;
@@ -26,6 +27,8 @@ namespace LandmarkEmulator.AuthServer
 
             Console.Title = Title;
             log.Info("Initialising...");
+
+            TextManager.Initialise();
 
             MessageManager.Initialise();
             AuthMessageManager.Initialise();

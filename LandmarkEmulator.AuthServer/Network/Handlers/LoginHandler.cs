@@ -35,7 +35,8 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         ServerId    = 0x100,
                         AllowedAccess = true,
                         IsLocked    = false,
-                        Name        = "SoloServer",
+                        NameId      = 62147, // Dev Server
+                        Name        = "Dev Server",
                         Description = "yeah",
                         ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
                         PopulationLevel = 3, // Ignored by Server
