@@ -1,6 +1,7 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
+using LandmarkEmulator.Shared.Game.Entity.Static;
 using NLog;
 
 namespace LandmarkEmulator.AuthServer.Network.Handlers
@@ -60,7 +61,25 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         CharacterId = 1ul,
                         LastServerId = 0x100,
                         LastLogin = 1d,
-                        Status = 1u
+                        Status = 1u,
+                        CharacterData = new CharacterSelectInfoReply.Character.CharacterPayload
+                        {
+                            CharacterAttachments = new System.Collections.Generic.List<CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment>
+                            {
+                                // TODO: Figure out Animation/BaseModel field. Female models seem contorted to Male stance.
+                                new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment
+                                {
+                                    ModelName = "Char_Biped_HumanFemale_Entities_Townsperson_000_Chest.adr",
+                                    Slot = AttachmentSlot.ChestModel
+                                },
+                                new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment
+                                {
+                                    ModelName = "Char_Biped_DarkElfMale_Entities_PCNPC_DarkElf_Light_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanFemale_Entities_Gunslinger_Medium_001_Chest.adr",
+                                    Slot = AttachmentSlot.ChestVisual
+                                }
+                            }
+                        }
                     }
                 }
             });

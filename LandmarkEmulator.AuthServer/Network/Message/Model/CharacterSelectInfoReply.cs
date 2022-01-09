@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared.Game.Entity.Static;
+using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 public class UnknownStruct_142C18710 : IWritable, ISize
                 {
                     public List<Vector3> Vector3s { get; set; } = new();
-                    public uint Unknown0 { get; set; } = 1u;
-                    public string Unknown1 { get; set; } = "Char_Biped_HumanMale_Entities_PCNPC_Adventurer_000_Chest.adr";
-                    public uint Unknown2 { get; set; } = 1u;
-                    public uint Unknown3 { get; set; } = 1u;
+                    public uint Unknown0 { get; set; } = 2;
+                    public string Unknown1 { get; set; } = "2.adr";
+                    public uint Unknown2 { get; set; } = 2;
+                    public uint Unknown3 { get; set; } = 2;
 
                     public uint GetSize()
                     {
@@ -47,20 +48,38 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     }
                 }
 
-                public class UnknownStruct_1430AE5D0 : IWritable, ISize
+                public class CharacterAttachment : IWritable, ISize
                 {
+                    public string ModelName { get; set; } = "";
+                    public string TextureAlias { get; set; } = "";
+                    public string Unknown2 { get; set; } = "";
+                    public string Unknown3 { get; set; } = "";
+                    public uint Unknown4 { get; set; }
+                    public uint Unknown5 { get; set; }
+                    public AttachmentSlot Slot { get; set; }
+                    public uint Unknown7 { get; set; }
+                    public bool Unknown8 { get; set; }
+
                     public uint GetSize()
                     {
-                        throw new NotImplementedException();
+                        return (uint)(4u + ModelName.Length + 4u + TextureAlias.Length + 4u + Unknown2.Length + 4u + Unknown3.Length + 4u + 4u + 4u + 4u + 1u);
                     }
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.WriteLE(ModelName);
+                        writer.WriteLE(TextureAlias);
+                        writer.WriteLE(Unknown2);
+                        writer.WriteLE(Unknown3);
+                        writer.WriteLE(Unknown4);
+                        writer.WriteLE(Unknown5);
+                        writer.WriteLE((uint)Slot);
+                        writer.WriteLE(Unknown7);
+                        writer.Write(Unknown8);
                     }
                 }
 
-                public class UnknownStruct_1430AE3A0 : IWritable, ISize
+                public class Friend : IWritable, ISize
                 {
                     public uint GetSize()
                     {
@@ -74,19 +93,19 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 }
 
                 public string Name { get; set; } = "Kirmmin";
-                public byte Unknown0 { get; set; } = 1;
-                public uint Unknown1 { get; set; } = 1u;
-                public uint Unknown2 { get; set; } = 1u;
-                public uint Unknown3 { get; set; } = 1150u;
-                public uint Unknown4 { get; set; } = 1u;
-                public uint Unknown5 { get; set; } = 386u;
-                public uint Unknown6 { get; set; } = 1u;
-                public uint Unknown7 { get; set; } = 1u;
+                public byte Unknown0 { get; set; } = 2;
+                public uint Unknown1 { get; set; } = 392u;
+                public uint Unknown2 { get; set; } = 392u;
+                public uint Unknown3 { get; set; } = 392u;
+                public uint Unknown4 { get; set; } = 392u;
+                public uint Unknown5 { get; set; } = 392u;
+                public uint Unknown6 { get; set; } = 392u;
+                public uint Unknown7 { get; set; } = 392u;
                 public ulong Unknown8 { get; set; }
                 public List<uint> Array142C34C30 { get; set; } = new();
                 public UnknownStruct_142C18710 Unknown9 { get; set; } = new();
-                public List<UnknownStruct_1430AE5D0> Array1430AE5D0s { get; set; } = new();
-                public List<UnknownStruct_1430AE3A0> Array1430AE3A0s { get; set; } = new();
+                public List<CharacterAttachment> CharacterAttachments { get; set; } = new();
+                public List<Friend> Friends { get; set; } = new();
                 public ulong UnknownQ { get; set; }
 
                 public void Write(GamePacketWriter writer)
@@ -108,11 +127,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                     Unknown9.Write(writer);
 
-                    writer.WriteLE((uint)Array1430AE5D0s.Count);
-                    Array1430AE5D0s.ForEach(x => x.Write(writer));
+                    writer.WriteLE((uint)CharacterAttachments.Count);
+                    CharacterAttachments.ForEach(x => x.Write(writer));
 
-                    writer.WriteLE((uint)Array1430AE3A0s.Count);
-                    Array1430AE3A0s.ForEach(x => x.Write(writer));
+                    writer.WriteLE((uint)Friends.Count);
+                    Friends.ForEach(x => x.Write(writer));
 
                     writer.WriteLE(UnknownQ);
                 }
@@ -127,10 +146,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     totalSize += Unknown9.GetSize();
 
                     totalSize += 4u; // Array1430AE5D0s Count
-                    Array1430AE5D0s.ForEach(x => totalSize += x.GetSize());
+                    CharacterAttachments.ForEach(x => totalSize += x.GetSize());
 
                     totalSize += 4u; // Array1430AE3A0s Count
-                    Array1430AE3A0s.ForEach(x => totalSize += x.GetSize());
+                    Friends.ForEach(x => totalSize += x.GetSize());
 
                     return (uint)(
                         totalSize +
