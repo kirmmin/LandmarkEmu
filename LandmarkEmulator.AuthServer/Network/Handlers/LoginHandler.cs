@@ -1,8 +1,10 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
+using LandmarkEmulator.AuthServer.Zone;
 using LandmarkEmulator.Shared.Game.Entity.Static;
 using NLog;
+using System.Collections.Generic;
 
 namespace LandmarkEmulator.AuthServer.Network.Handlers
 {
@@ -27,24 +29,12 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         [AuthMessageHandler(AuthMessageOpcode.ServerListRequest)]
         public static void HandleServerListRequest(AuthSession session, ServerListRequest request)
         {
-            session.EnqueueMessage(new ServerListReply
-            {
-                Servers = new System.Collections.Generic.List<ServerListReply.Server>
-                {
-                    new ServerListReply.Server
-                    {
-                        ServerId    = 0x100,
-                        AllowedAccess = true,
-                        IsLocked    = false,
-                        NameId      = 62147, // Dev Server
-                        Name        = "Dev Server",
-                        Description = "yeah",
-                        ServerInfo  = "<ServerInfo Region=\"CharacterCreate.RegionUs\" Subregion=\"UI.SubregionUSEast\" IsRecommended=\"1\"></ServerInfo>",
-                        PopulationLevel = 3, // Ignored by Server
-                        PopulationData = "<Population ServerPlayerCapacity=\"75\" ServerClaimCapacity=\"50\" Claims=\"0\" IsRecommended=\"0\" FriendsOnline=\"3\"></Population>"
-                    }
-                }
-            });
+            var serverListReply = new ServerListReply();
+            
+            foreach (var zoneServer in ZoneServerManager.Instance.ZoneServers)
+                serverListReply.Servers.Add(zoneServer.Build());
+
+            session.EnqueueMessage(serverListReply);
         }
 
         [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest)]
@@ -54,7 +44,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             {
                 Status = 1,
                 CanBypassServerLock = true,
-                Characters = new System.Collections.Generic.List<CharacterSelectInfoReply.Character>
+                Characters = new List<CharacterSelectInfoReply.Character>
                 {
                     new CharacterSelectInfoReply.Character
                     {
@@ -64,7 +54,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         Status = 1u,
                         CharacterData = new CharacterSelectInfoReply.Character.CharacterPayload
                         {
-                            CharacterAttachments = new System.Collections.Generic.List<CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment>
+                            CharacterAttachments = new List<CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment>
                             {
                                 // TODO: Figure out Animation/BaseModel field. Female models seem contorted to Male stance.
                                 new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment

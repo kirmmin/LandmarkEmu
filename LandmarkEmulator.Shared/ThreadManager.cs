@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace LandmarkEmulator.Shared
 {
-    public class ServerManager : Singleton<ServerManager>
+    public class ThreadManager : Singleton<ThreadManager>
     {
         private volatile bool shutdownRequested;
 

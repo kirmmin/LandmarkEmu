@@ -98,5 +98,16 @@ namespace LandmarkEmulator.Shared.Game.Text
 
             return null;
         }
+
+        /// <summary>
+        /// Get the string that would match the given NAME_ID.
+        /// </summary>
+        public string GetTextForId(uint id)
+        {
+            if (keyToHash.TryGetValue(id, out uint hash))
+                return hashToString.TryGetValue(hash, out string text) ? text : "";
+
+            return "";
+        }
     }
 }

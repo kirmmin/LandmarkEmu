@@ -2,5 +2,11 @@
   "Network": {
     "Host": "0.0.0.0",
     "Port": 20042
+  },
+  "Database": {
+    "Auth": {
+      "ConnectionString": "server=127.0.0.1;port=3306;user=landmarkemu;password=landmarkemu;database=lmemu_auth",
+      "Provider": "MySql"
+    }
   }
 }
