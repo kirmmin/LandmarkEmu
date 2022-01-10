@@ -19,20 +19,23 @@ namespace LandmarkEmulator.AuthServer.Network.Message
 
         private delegate IReadable MessageFactoryDelegate();
 
-        private ImmutableDictionary<AuthMessageOpcode, MessageFactoryDelegate> clientMessageFactories;
+        private ImmutableDictionary<AuthMessageOpcode, MessageFactoryDelegate> clientMessageFactoriesLogin9;
+        private ImmutableDictionary<AuthMessageOpcode, MessageFactoryDelegate> clientMessageFactoriesLogin10;
         private ImmutableDictionary<Type, AuthMessageOpcode> serverMessageOpcodes;
 
-        private ImmutableDictionary<AuthMessageOpcode, AuthMessageHandlerDelegate> clientMessageHandlers;
+        private Dictionary<ProtocolVersion, ImmutableDictionary<AuthMessageOpcode, AuthMessageHandlerDelegate>> clientMessageHandlers = new();
 
         public void Initialise()
         {
             InitialiseGameMessages();
-            InitialiseGameMessageHandlers();
+            InitialiseGameMessageHandlers(ProtocolVersion.LoginUdp_9);
+            InitialiseGameMessageHandlers(ProtocolVersion.LoginUdp_10);
         }
 
         private void InitialiseGameMessages()
         {
-            var messageFactories = new Dictionary<AuthMessageOpcode, MessageFactoryDelegate>();
+            var messageFactories9 = new Dictionary<AuthMessageOpcode, MessageFactoryDelegate>();
+            var messageFactories10 = new Dictionary<AuthMessageOpcode, MessageFactoryDelegate>();
             var messageOpcodes = new Dictionary<Type, AuthMessageOpcode>();
 
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
@@ -44,18 +47,22 @@ namespace LandmarkEmulator.AuthServer.Network.Message
                 if (typeof(IReadable).IsAssignableFrom(type))
                 {
                     NewExpression @new = Expression.New(type.GetConstructor(Type.EmptyTypes));
-                    messageFactories.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
+                    if (attribute.Version.HasFlag(ProtocolVersion.LoginUdp_9))
+                        messageFactories9.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
+                    if (attribute.Version.HasFlag(ProtocolVersion.LoginUdp_10))
+                        messageFactories10.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
                 }
                 messageOpcodes.Add(type, attribute.Opcode);
             }
 
-            clientMessageFactories = messageFactories.ToImmutableDictionary();
+            clientMessageFactoriesLogin9 = messageFactories9.ToImmutableDictionary();
+            clientMessageFactoriesLogin10 = messageFactories10.ToImmutableDictionary();
             serverMessageOpcodes = messageOpcodes.ToImmutableDictionary();
-            log.Info($"Initialised {clientMessageFactories.Count} Auth message {(clientMessageFactories.Count == 1 ? "factory" : "factories")}.");
+            //log.Info($"Initialised {clientMessageFactories.Count} Auth message {(clientMessageFactories.Count == 1 ? "factory" : "factories")}.");
             log.Info($"Initialised {serverMessageOpcodes.Count} Auth message(s).");
         }
 
-        private void InitialiseGameMessageHandlers()
+        private void InitialiseGameMessageHandlers(ProtocolVersion version)
         {
             var messageHandlers = new Dictionary<AuthMessageOpcode, AuthMessageHandlerDelegate>();
 
@@ -68,6 +75,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message
 
                     AuthMessageHandlerAttribute attribute = method.GetCustomAttribute<AuthMessageHandlerAttribute>();
                     if (attribute == null)
+                        continue;
+
+                    if (!attribute.ProtocolVersion.HasFlag(version))
                         continue;
 
                     ParameterExpression sessionParameter = Expression.Parameter(typeof(NetworkSession));
@@ -113,7 +123,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message
                 }
             }
 
-            clientMessageHandlers = messageHandlers.ToImmutableDictionary();
+            clientMessageHandlers.Add(version, messageHandlers.ToImmutableDictionary());
             log.Info($"Initialised {clientMessageHandlers.Count} Auth message handler(s).");
         }
 
@@ -122,16 +132,23 @@ namespace LandmarkEmulator.AuthServer.Network.Message
             return serverMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }
 
-        public IReadable GetAuthMessage(AuthMessageOpcode opcode)
+        public IReadable GetAuthMessage(AuthMessageOpcode opcode, ProtocolVersion version)
         {
-            return clientMessageFactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
+            if (version.HasFlag(ProtocolVersion.LoginUdp_10))
+                return clientMessageFactoriesLogin10.TryGetValue(opcode, out MessageFactoryDelegate factory11)
+                ? factory11.Invoke() : null;
+
+            return clientMessageFactoriesLogin9.TryGetValue(opcode, out MessageFactoryDelegate factory)
                 ? factory.Invoke() : null;
         }
 
-        public AuthMessageHandlerDelegate GetGameMessageHandler(AuthMessageOpcode opcode)
+        public AuthMessageHandlerDelegate GetGameMessageHandler(AuthMessageOpcode opcode, ProtocolVersion version)
         {
-            return clientMessageHandlers.TryGetValue(opcode, out AuthMessageHandlerDelegate handler)
+            if (clientMessageHandlers.TryGetValue(version, out var dict))
+                return dict.TryGetValue(opcode, out AuthMessageHandlerDelegate handler)
                 ? handler : null;
+
+            return null;
         }
     }
 }

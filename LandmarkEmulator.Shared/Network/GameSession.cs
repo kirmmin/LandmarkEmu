@@ -14,6 +14,7 @@ namespace LandmarkEmulator.Shared.Network
         /// Determines if queued incoming packets can be processed during a world update.
         /// </summary>
         public bool CanProcessPackets { get; set; } = true;
+        public ProtocolVersion ProtocolVersion { get; private set; }
 
         private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
         private readonly Queue<ProtocolPacket> outgoingPackets = new();
@@ -27,6 +28,7 @@ namespace LandmarkEmulator.Shared.Network
         private uint clientUdpLength { get; set; }
         private uint serverUdpLength { get; set; } = 512u;
         private ushort serverCompression { get; set; } = 0x100;
+
 
         public GameSession()
         {
@@ -198,8 +200,10 @@ namespace LandmarkEmulator.Shared.Network
             if (clientUdpLength != 512)
                 throw new InvalidOperationException();
 
-            if (request.Protocol != "LoginUdp_10")
-                throw new InvalidOperationException();
+            if (request.Protocol == "LoginUdp_10")
+                ProtocolVersion = ProtocolVersion.LoginUdp_10;
+            if (request.Protocol == "LoginUdp_9")
+                ProtocolVersion = ProtocolVersion.LoginUdp_9;
 
             // Leave room for Oopcode, Compression Byte, and CRC
             outputStream.SetFragmentSize(clientUdpLength - 7);

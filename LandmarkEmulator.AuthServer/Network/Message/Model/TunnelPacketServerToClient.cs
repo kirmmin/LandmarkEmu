@@ -3,7 +3,7 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.TunnelPacketServerToClient, MessageDirection.Client)]
+    [AuthMessage(AuthMessageOpcode.TunnelPacketServerToClient, ProtocolVersion.LOGIN_ALL)]
     public class TunnelPacketServerToClient : TunnelPacket
     {
     }

@@ -1,9 +1,10 @@
 ﻿using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
+using System.Collections.Generic;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterCreateRequest, LandmarkEmulator.Shared.Network.Message.MessageDirection.Client)]
+    [AuthMessage(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_10)]
     public class CharacterCreateRequest : IReadable
     {
         public ulong ServerId { get; set; }
@@ -51,6 +52,38 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             Unknown14 = reader.ReadByte();
             Unknown15 = reader.ReadUIntLE();
             StartingOutfit = reader.ReadUIntLE();
+        }
+    }
+
+    [AuthMessage(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_9)]
+    public class CharacterCreateRequest9 : IReadable
+    {
+        public ulong ServerId { get; set; }
+        public uint Unknown0 { get; set; }
+        public byte Unknown1 { get; set; }
+        public uint BodyType { get; set; }
+        public uint Gender { get; set; }
+        public string Name { get; set; }
+        public Dictionary<uint, uint> CustomisationOptions { get; set; } = new();
+
+        public void Read(GamePacketReader reader)
+        {
+            ServerId = reader.ReadULongLE();
+            Unknown0 = reader.ReadUIntLE();
+            Unknown1 = reader.ReadByte();
+            BodyType = reader.ReadUIntLE();
+            Gender   = reader.ReadUIntLE();
+            Name     = reader.ReadStringLE();
+
+            uint customisationCount = reader.ReadUIntLE();
+            for (uint i = 0; i < customisationCount; i++)
+            {
+                var index = reader.ReadUIntLE();
+                var slotId = reader.ReadUIntLE();
+                var slotValue = reader.ReadUIntLE();
+
+                CustomisationOptions.TryAdd(slotId, slotValue);
+            }
         }
     }
 }

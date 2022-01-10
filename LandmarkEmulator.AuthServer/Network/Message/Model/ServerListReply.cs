@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.ServerListReply, MessageDirection.Server)]
+    [AuthMessage(AuthMessageOpcode.ServerListReply, ProtocolVersion.LOGIN_ALL)]
     public class ServerListReply : IWritable
     {
         public List<Server> Servers { get; set; } = new();

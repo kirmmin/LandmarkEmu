@@ -3,7 +3,7 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterDeleteReply, MessageDirection.Client)]
+    [AuthMessage(AuthMessageOpcode.CharacterDeleteReply, ProtocolVersion.LOGIN_ALL)]
     public class CharacterDeleteReply : IWritable
     {
         public ulong CharacterId { get; set; }

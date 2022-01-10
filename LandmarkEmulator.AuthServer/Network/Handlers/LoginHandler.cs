@@ -3,6 +3,7 @@ using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
 using LandmarkEmulator.AuthServer.Zone;
 using LandmarkEmulator.Shared.Game.Entity.Static;
+using LandmarkEmulator.Shared.Network.Message;
 using NLog;
 using System.Collections.Generic;
 
@@ -20,9 +21,10 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
 
             session.EnqueueMessage(new LoginReply
             {
-                LoggedIn = true,
-                Status   = 1,
-                Result   = 1
+                LoggedIn   = true,
+                Status     = 1,
+                IsMember   = false, // Must be false if ProtocolVersion 9
+                IsInternal = false  // Must be false if ProtocolVersion 9
             });
         }
 
@@ -294,13 +296,22 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             }
         }
 
-
-        [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest)]
+        [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_10)]
         public static void HandleCharacterCreateRequest(AuthSession session, CharacterCreateRequest request)
         {
             session.EnqueueMessage(new CharacterCreateReply
             {
                 Result      = Message.Static.CharacterCreateResult.Success,
+                CharacterId = 1
+            });
+        }
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_9)]
+        public static void HandleCharacterCreateRequest9(AuthSession session, CharacterCreateRequest9 request)
+        {
+            session.EnqueueMessage(new CharacterCreateReply
+            {
+                Result = Message.Static.CharacterCreateResult.UnableToCreate,
                 CharacterId = 1
             });
         }

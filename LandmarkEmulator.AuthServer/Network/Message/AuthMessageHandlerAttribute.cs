@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LandmarkEmulator.Shared.Network.Message;
+using System;
 
 namespace LandmarkEmulator.AuthServer.Network.Message
 {
@@ -6,10 +7,12 @@ namespace LandmarkEmulator.AuthServer.Network.Message
     public class AuthMessageHandlerAttribute : Attribute
     {
         public AuthMessageOpcode Opcode { get; }
+        public ProtocolVersion ProtocolVersion { get; }
 
-        public AuthMessageHandlerAttribute(AuthMessageOpcode opcode)
+        public AuthMessageHandlerAttribute(AuthMessageOpcode opcode, ProtocolVersion version = ProtocolVersion.LOGIN_ALL)
         {
-            Opcode = opcode;
+            Opcode          = opcode;
+            ProtocolVersion = version;
         }
     }
 }

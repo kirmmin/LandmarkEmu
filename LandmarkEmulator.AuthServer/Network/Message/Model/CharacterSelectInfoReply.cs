@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterSelectInfoReply, MessageDirection.Server)]
+    [AuthMessage(AuthMessageOpcode.CharacterSelectInfoReply, ProtocolVersion.LOGIN_ALL)]
     public class CharacterSelectInfoReply : IWritable
     {
         public class Character : IWritable
@@ -52,11 +52,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 {
                     public string ModelName { get; set; } = "";
                     public string TextureAlias { get; set; } = "";
-                    public string Unknown2 { get; set; } = "";
-                    public string Unknown3 { get; set; } = "";
-                    public uint Unknown4 { get; set; }
-                    public uint Unknown5 { get; set; }
-                    public AttachmentSlot Slot { get; set; }
+                    public string Unknown2 { get; set; } = "";  // TintAlias?
+                    public string Unknown3 { get; set; } = "";  // DecalAlias?
+                    public uint Unknown4 { get; set; }          // TintId?
+                    public uint Unknown5 { get; set; }          // CompositeId?
+                    public AttachmentSlot Slot { get; set; }    // "ActorUsage"
                     public uint Unknown7 { get; set; }
                     public bool Unknown8 { get; set; }
 
@@ -93,14 +93,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 }
 
                 public string Name { get; set; } = "Kirmmin";
-                public byte Unknown0 { get; set; } = 2;
-                public uint Unknown1 { get; set; } = 392u;
-                public uint Unknown2 { get; set; } = 392u;
-                public uint Unknown3 { get; set; } = 392u;
-                public uint Unknown4 { get; set; } = 392u;
-                public uint Unknown5 { get; set; } = 392u;
-                public uint Unknown6 { get; set; } = 392u;
-                public uint Unknown7 { get; set; } = 392u;
+                public byte Unknown0 { get; set; } = 1;
+                public uint Unknown1 { get; set; } = 100u;
+                public uint Unknown2 { get; set; } = 1u;
+                public uint Unknown3 { get; set; } = 393u;
+                public uint Unknown4 { get; set; } = 2u;
+                public uint Unknown5 { get; set; } = 35u;
+                public uint Unknown6 { get; set; }
+                public uint Unknown7 { get; set; }
                 public ulong Unknown8 { get; set; }
                 public List<uint> Array142C34C30 { get; set; } = new();
                 public UnknownStruct_142C18710 Unknown9 { get; set; } = new();

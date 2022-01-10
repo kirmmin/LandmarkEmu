@@ -7,12 +7,12 @@ namespace LandmarkEmulator.AuthServer.Network.Message
     public class AuthMessageAttribute : Attribute
     {
         public AuthMessageOpcode Opcode { get; }
-        public MessageDirection Direction { get; }
+        public ProtocolVersion Version{ get; }
 
-        public AuthMessageAttribute(AuthMessageOpcode opcode, MessageDirection direction)
+        public AuthMessageAttribute(AuthMessageOpcode opcode, ProtocolVersion version)
         {
-            Opcode = opcode;
-            Direction = direction;
+            Opcode  = opcode;
+            Version = version;
         }
     }
 }

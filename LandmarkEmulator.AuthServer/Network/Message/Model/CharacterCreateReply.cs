@@ -4,7 +4,7 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterCreateReply, MessageDirection.Server)]
+    [AuthMessage(AuthMessageOpcode.CharacterCreateReply, ProtocolVersion.LOGIN_ALL)]
     public class CharacterCreateReply : IWritable
     {
         public CharacterCreateResult Result { get; set; }

@@ -22,6 +22,9 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
         private void ReadPacket(GamePacketReader reader, PacketOptions options)
         {
             byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
+            if (nextLength > reader.BytesRemaining - 2)
+                nextLength = (byte)(reader.BytesRemaining - 2);
+
             Packets.Add(new ProtocolPacket(reader.ReadBytes(nextLength), 
                 new PacketOptions 
                 { 

@@ -3,7 +3,7 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.LoginRequest, MessageDirection.Client)]
+    [AuthMessage(AuthMessageOpcode.LoginRequest, ProtocolVersion.LOGIN_ALL)]
     public class LoginRequest : IReadable
     {
         public string SessionId { get; private set; }
