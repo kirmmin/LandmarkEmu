@@ -1,14 +1,10 @@
-﻿using LandmarkEmulator.AuthServer.Network;
-using LandmarkEmulator.AuthServer.Network.Message;
-using LandmarkEmulator.AuthServer.Zone;
-using LandmarkEmulator.Database.Configuration;
-using LandmarkEmulator.Shared;
-using LandmarkEmulator.Shared.Configuration;
-using LandmarkEmulator.Shared.Database;
-using LandmarkEmulator.Shared.Game.Text;
-using LandmarkEmulator.Shared.Network;
-using LandmarkEmulator.Shared.Network.Message;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Systemd;
+using Microsoft.Extensions.Hosting.WindowsServices;
+using Microsoft.Extensions.Logging;
 using NLog;
+using NLog.Extensions.Logging;
 using System;
 using System.IO;
 using System.Reflection;
@@ -23,32 +19,40 @@ namespace LandmarkEmulator.AuthServer
         private const string Title = "LandmarkEmulator: World Server (RELEASE)";
         #endif
 
-        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+        private static readonly NLog.ILogger log = LogManager.GetCurrentClassLogger();
 
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
 
-            Console.Title = Title;
-            log.Info("Initialising...");
-            ConfigurationManager<AuthServerConfiguration>.Instance.Initialise("AuthServer.json");
+            IHostBuilder builder = new HostBuilder()
+                .ConfigureLogging(lb =>
+                {
+                    // only applicable to logging done through host
+                    // other logging is still done directly though NLog
+                    lb.ClearProviders()
+                        .SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace)
+                        .AddNLog();
+                })
+                .ConfigureServices(sc =>
+                {
+                    sc.AddHostedService<HostedService>();
+                })
+                .UseWindowsService()
+                .UseSystemd();
 
-            DatabaseManager.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Database);
-            DatabaseManager.Instance.Migrate(DatabaseType.Auth);
+            if (!WindowsServiceHelpers.IsWindowsService() && !SystemdHelpers.IsSystemdService())
+                Console.Title = Title;
 
-            TextManager.Instance.Initialise();
-
-            MessageManager.Instance.Initialise();
-            AuthMessageManager.Instance.Initialise();
-            TunnelDataManager.Instance.Initialise();
-
-            ZoneServerManager.Instance.Initialise();
-            NetworkManager<AuthSession>.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Network);
-
-            ThreadManager.Instance.Initialise(lastTick =>
+            try
             {
-                NetworkManager<AuthSession>.Instance.Update(lastTick);
-            });
+                IHost host = builder.Build();
+                host.Run();
+            }
+            catch (Exception e)
+            {
+                log.Fatal(e);
+            }
         }
     }
 }

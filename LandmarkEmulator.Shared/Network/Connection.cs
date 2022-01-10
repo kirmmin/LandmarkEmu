@@ -19,7 +19,9 @@ namespace LandmarkEmulator.Shared.Network
 
         private IPAddress _host;
         private uint _port;
-        private Thread sampleUdpThread;
+        private Thread udpThread;
+
+        private bool connectionOpen = true;
 
         /// <summary>
         /// Creates a new <see cref="Connection"/> for the provided details that will listen to data receives and emit <see cref="MessageEvent"/>.
@@ -34,13 +36,13 @@ namespace LandmarkEmulator.Shared.Network
             try
             {
                 //Starting the UDP Server thread.
-                sampleUdpThread = new Thread(new ThreadStart(StartReceiving));
-                sampleUdpThread.Start();
+                udpThread = new Thread(new ThreadStart(StartReceiving));
+                udpThread.Start();
             }
             catch (Exception e)
             {
                 log.Error(e.ToString());
-                sampleUdpThread.Abort();
+                udpThread.Abort();
             }
         }
 
@@ -57,7 +59,7 @@ namespace LandmarkEmulator.Shared.Network
                 soUdp.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                 soUdp.Bind(localIpEndPoint);
-                while (true)
+                while (connectionOpen)
                 {
                     // TODO: Make the UdpBufferSize something that is passed in.
                     byte[] buffer = new byte[512];
@@ -70,6 +72,9 @@ namespace LandmarkEmulator.Shared.Network
                         OnMessage(remoteEP, data.ToArray()); // Emit a MessageEvent to subscribers.
                     }
                 }
+
+                // Close Socket when connection has closed
+                soUdp.Close();
             }
             catch (SocketException se)
             {
@@ -91,6 +96,14 @@ namespace LandmarkEmulator.Shared.Network
             sender.Bind(localIpEndPoint);
             sender.SendTo(data, endPoint);
             sender.Close(); // Close the Socket so another may be opened.
+        }
+
+        /// <summary>
+        /// Releases the <see cref="Socket"/> and closes the <see cref="Connection"/>.
+        /// </summary>
+        public void Shutdown()
+        {
+            connectionOpen = false;
         }
     }
 }

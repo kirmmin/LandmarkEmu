@@ -16,6 +16,9 @@ namespace LandmarkEmulator.Shared.Network
 
         private readonly Dictionary<EndPoint, T> sessions = new();
 
+        /// <summary>
+        /// Initialises a new <see cref="NetworkManager{T}"/>.
+        /// </summary>
         public void Initialise(NetworkConfig config)
         {
             connection = new Connection(IPAddress.Parse(config.Host), config.Port);
@@ -34,19 +37,31 @@ namespace LandmarkEmulator.Shared.Network
             };
         }
 
+        /// <summary>
+        /// Returns <see cref="{T}"/> that matches the predicate. Must be a Single match, or error.
+        /// </summary>
         public T GetSession(Func<T, bool> func)
         {
             return sessions.Values.SingleOrDefault(func);
         }
 
+        /// <summary>
+        /// Shutdown this <see cref="NetworkManager"/>, releasing any connections and ending all sessions.
+        /// </summary>
         public void Shutdown()
         {
-            //connection?.Shutdown();
+            foreach (T session in sessions.Values)
+                session.OnDisconnect();
+
+            connection?.Shutdown();
         }
 
+        /// <summary>
+        /// Invoked each server tick with the delta since the previous tick occurred.
+        /// </summary>
         public void Update(double lastTick)
         {
-            //
+            // Add new sessions to be operated on.
             while (pendingAdd.TryDequeue(out T session))
             {
                 sessions.Add(session.Endpoint, session);
@@ -56,7 +71,7 @@ namespace LandmarkEmulator.Shared.Network
                 };
             }
 
-            //
+            // Operate on existing sessions.
             foreach (T session in sessions.Values)
             {
                 if (session.Disconnected || session.Heartbeat.Flatline)
@@ -65,11 +80,14 @@ namespace LandmarkEmulator.Shared.Network
                     session.Update(lastTick);
             }
 
-            //
+            // Remove any sessions that are pending removal.
             while (pendingRemove.TryDequeue(out T session))
                 sessions.Remove(session.Endpoint);
         }
 
+        /// <summary>
+        /// Using the <see cref="Connection"/> for this <see cref="NetworkManager{T}"/>, send data to the given <see cref="IPEndPoint"/>.
+        /// </summary>
         public void SendData(IPEndPoint ep, byte[] data)
         {
             connection.SendBytes(ep, data);
