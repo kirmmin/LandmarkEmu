@@ -29,6 +29,7 @@ namespace LandmarkEmulator.Shared.Network
                     newSession.OnAccept(remoteEP);
 
                     pendingAdd.Enqueue(newSession);
+                    newSession.OnData(message);
                 }
             };
         }

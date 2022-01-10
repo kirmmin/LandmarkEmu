@@ -29,6 +29,7 @@ namespace LandmarkEmulator.Shared.Network
         private uint serverUdpLength { get; set; } = 512u;
         private ushort serverCompression { get; set; } = 0x100;
 
+        private bool hasAuthed = false;
 
         public GameSession()
         {
@@ -97,6 +98,7 @@ namespace LandmarkEmulator.Shared.Network
 
         public override void OnDisconnect()
         {
+            SendPacket(new ProtocolPacket(ProtocolMessageOpcode.Disconnect, new Disconnect(), true, new PacketOptions()));
             base.OnDisconnect();
         }
 
@@ -120,6 +122,12 @@ namespace LandmarkEmulator.Shared.Network
             if (message == null)
             {
                 log.Warn($"Received unknown packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
+                return;
+            }
+
+            if (!hasAuthed && message is not SessionRequest)
+            {
+                OnDisconnect();
                 return;
             }
 
@@ -193,6 +201,8 @@ namespace LandmarkEmulator.Shared.Network
         {
             log.Info($"{request.SessionId}, {request.CRCLength}, {request.UdpLength}, {request.Protocol}");
 
+            hasAuthed = true;
+
             SessionId       = request.SessionId;
             clientCrcLength = request.CRCLength;
             clientUdpLength = request.UdpLength;
@@ -244,6 +254,12 @@ namespace LandmarkEmulator.Shared.Network
         public void HandlePing(Ping ping)
         {
             EnqueueProtocolMessage(new Ping(), new PacketOptions());
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.Disconnect)]
+        public void HandleDisconnect(Disconnect disconnect)
+        {
+            OnDisconnect();
         }
     }
 }

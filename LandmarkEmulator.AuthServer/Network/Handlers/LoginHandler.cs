@@ -323,7 +323,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             {
                 Status = 1,
                 CanBypassServerLock = true,
-                Characters = new System.Collections.Generic.List<CharacterSelectInfoReply.Character>
+                Characters = new List<CharacterSelectInfoReply.Character>
                 {
                 }
             });
