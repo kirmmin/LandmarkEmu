@@ -2,9 +2,13 @@
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
 using LandmarkEmulator.AuthServer.Zone;
+using LandmarkEmulator.Database.Auth.Model;
+using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.Game.Entity.Static;
+using LandmarkEmulator.Shared.Game.Events;
 using LandmarkEmulator.Shared.Network.Message;
 using NLog;
+using System;
 using System.Collections.Generic;
 
 namespace LandmarkEmulator.AuthServer.Network.Handlers
@@ -19,13 +23,22 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             log.Info($"{request.SessionId}, {request.Locale}, {request.ThirdPartyAuthTicket}");
             log.Info($"{request.SystemFingerPrint}");
 
-            session.EnqueueMessage(new LoginReply
+            session.Events.Enqueue(new TaskGenericEvent<AccountModel>(DatabaseManager.Instance.AuthDatabase.GetAccountBySessionKeyAsync(request.SessionId),
+                account =>
             {
-                LoggedIn   = true,
-                Status     = 1,
-                IsMember   = false, // Must be false if ProtocolVersion 9
-                IsInternal = false  // Must be false if ProtocolVersion 9
-            });
+                bool loggedIn = false;
+                if (account != null)
+                    loggedIn = true;
+
+                session.EnqueueMessage(new LoginReply
+                {
+                    LoggedIn   = loggedIn,
+                    Status     = Convert.ToByte(loggedIn),
+                    IsMember   = false, // Must be false if ProtocolVersion 9
+                    IsInternal = false  // Must be false if ProtocolVersion 9
+                });
+            }));
+
         }
 
         [AuthMessageHandler(AuthMessageOpcode.ServerListRequest)]
@@ -311,7 +324,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         {
             session.EnqueueMessage(new CharacterCreateReply
             {
-                Result = Message.Static.CharacterCreateResult.UnableToCreate,
+                Result = Message.Static.CharacterCreateResult.Success,
                 CharacterId = 1
             });
         }

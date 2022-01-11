@@ -10,7 +10,6 @@ using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using Microsoft.Extensions.Hosting;
 using NLog;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 

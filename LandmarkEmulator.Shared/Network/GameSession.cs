@@ -102,6 +102,9 @@ namespace LandmarkEmulator.Shared.Network
             base.OnDisconnect();
         }
 
+        /// <summary>
+        /// Invoked each server tick with the delta since the previous tick occurred.
+        /// </summary>
         public sealed override void Update(double lastTick)
         {
             // process pending packet queue

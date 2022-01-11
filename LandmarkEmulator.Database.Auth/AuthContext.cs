@@ -6,6 +6,7 @@ namespace LandmarkEmulator.Database.Auth
 {
     public class AuthContext : DbContext
     {
+        public DbSet<AccountModel> Account { get; set; }
         public DbSet<ZoneServerModel> ZoneServer { get; set; }
 
         private readonly IDatabaseConfig config;
@@ -25,6 +26,65 @@ namespace LandmarkEmulator.Database.Auth
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AccountModel>(entity =>
+            {
+                entity.ToTable("account");
+
+                entity.HasIndex(e => e.Username)
+                    .HasDatabaseName("username");
+
+                entity.HasIndex(e => e.Salt)
+                    .HasDatabaseName("salt");
+
+                entity.HasIndex(e => e.Verifier)
+                    .HasDatabaseName("verifier");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("bigint(20) unsigned")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Username)
+                    .IsRequired()
+                    .HasColumnName("username")
+                    .HasColumnType("varchar(128")
+                    .HasDefaultValue("");
+
+                entity.Property(e => e.Salt)
+                    .IsRequired()
+                    .HasColumnName("s")
+                    .HasColumnType("varchar(32)")
+                    .HasDefaultValue("");
+
+                entity.Property(e => e.Verifier)
+                    .IsRequired()
+                    .HasColumnName("v")
+                    .HasColumnType("varchar(512)")
+                    .HasDefaultValue("");
+
+                entity.Property(e => e.SessionKey)
+                    .IsRequired()
+                    .HasColumnName("sessionKey")
+                    .HasColumnType("varchar(32)")
+                    .HasDefaultValue("");
+
+                entity.Property(e => e.SessionKeyExpiration)
+                    .HasColumnName("sessionKeyExpiration")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("current_timestamp()");
+
+                entity.Property(e => e.ServerTicket)
+                    .IsRequired()
+                    .HasColumnName("serverTicket")
+                    .HasColumnType("varchar(32)")
+                    .HasDefaultValue("");
+
+                entity.Property(e => e.CreateTime)
+                    .HasColumnName("createTime")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("current_timestamp()");
+            });
+
             modelBuilder.Entity<ZoneServerModel>(entity =>
             {
                 entity.ToTable("zone_server");
