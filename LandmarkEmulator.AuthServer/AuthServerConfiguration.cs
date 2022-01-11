@@ -1,5 +1,6 @@
 ﻿using LandmarkEmulator.Database.Configuration;
 using LandmarkEmulator.Shared.Configuration;
+using LandmarkEmulator.WebAPI.Configuration;
 
 namespace LandmarkEmulator.AuthServer
 {
@@ -7,5 +8,6 @@ namespace LandmarkEmulator.AuthServer
     {
         public NetworkConfig Network { get; set; }
         public DatabaseConfig Database { get; set; }
+        public WebApiConfig WebApi { get; set; }
     }
 }

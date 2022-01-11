@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using LandmarkEmulator.Shared.Configuration;
+using LandmarkEmulator.WebAPI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Systemd;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -24,6 +26,7 @@ namespace LandmarkEmulator.AuthServer
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+            ConfigurationManager<AuthServerConfiguration>.Instance.Initialise("AuthServer.json");
 
             IHostBuilder builder = new HostBuilder()
                 .ConfigureLogging(lb =>
@@ -37,6 +40,11 @@ namespace LandmarkEmulator.AuthServer
                 .ConfigureServices(sc =>
                 {
                     sc.AddHostedService<HostedService>();
+                    sc.AddHostedService(service => 
+                        new AuthWebAPI(
+                            ConfigurationManager<AuthServerConfiguration>.Instance.Config.WebApi, 
+                            ConfigurationManager<AuthServerConfiguration>.Instance.Config.Database)
+                        );
                 })
                 .UseWindowsService()
                 .UseSystemd();

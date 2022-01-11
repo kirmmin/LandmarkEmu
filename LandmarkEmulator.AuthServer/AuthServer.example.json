@@ -8,5 +8,10 @@
       "ConnectionString": "server=127.0.0.1;port=3306;user=landmarkemu;password=landmarkemu;database=lmemu_auth",
       "Provider": "MySql"
     }
+  },
+  "WebApi": {
+    "Enabled": true,
+    "Host": "0.0.0.0",
+    "Port": 5000
   }
 }

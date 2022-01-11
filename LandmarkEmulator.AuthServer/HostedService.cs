@@ -23,8 +23,6 @@ namespace LandmarkEmulator.AuthServer
         {
             log.Info("Initialising...");
 
-            ConfigurationManager<AuthServerConfiguration>.Instance.Initialise("AuthServer.json");
-
             DatabaseManager.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Database);
             DatabaseManager.Instance.Migrate(DatabaseType.Auth);
 

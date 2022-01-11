@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LandmarkEmulator.Database\LandmarkEmulator.Database.csproj" />
+    <ProjectReference Include="..\LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

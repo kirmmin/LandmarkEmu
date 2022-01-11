@@ -116,12 +116,12 @@ namespace LandmarkEmulator.Database.Auth
         /// <summary>
         /// Selects an <see cref="AccountModel"/> asynchronously that matches the supplied session key.
         /// </summary>
-        public AccountModel GetAccountByUsername(string username)
+        public async Task<AccountModel> GetAccountByUsername(string username)
         {
             using var context = new AuthContext(config);
-            return context.Account
+            return await context.Account
                 .AsSplitQuery()
-                .SingleOrDefault(a => a.Username == username);
+                .SingleOrDefaultAsync(a => a.Username == username);
         }
 
         /// <summary>
