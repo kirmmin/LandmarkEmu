@@ -16,17 +16,25 @@ namespace LandmarkEmulator.WebAPI
 {
     public class AuthWebAPI : IHostedService
     {
+        bool enabled;
         WebApplication? app;
         string hostname;
 
         public AuthWebAPI(WebApiConfig config, DatabaseConfig databaseConfig)
         {
-            hostname = $"https://{config.Host}:{config.Port}";
+            enabled = config.Enabled;
+            if (!enabled)
+                return;
+
+            hostname = config.BaseURI ?? "https://0.0.0.0:5000";
             DatabaseManager.Instance.Initialise(databaseConfig);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            if (!enabled)
+                return Task.CompletedTask;
+
             var builder = WebApplication.CreateBuilder();
             app = builder.Build();
 
