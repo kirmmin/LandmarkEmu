@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterSelectInfoReply, ProtocolVersion.LOGIN_ALL)]
+    [AuthMessage(AuthMessageOpcode.CharacterSelectInfoReply, ProtocolVersion.LoginUdp_10)]
     public class CharacterSelectInfoReply : IWritable
     {
         public class Character : IWritable
@@ -183,6 +183,168 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             }
         }
         
+        public uint Status { get; set; }
+        public bool CanBypassServerLock { get; set; }
+        public List<Character> Characters { get; set; } = new();
+
+        public void Write(GamePacketWriter writer)
+        {
+            writer.WriteLE(Status);
+            writer.Write(CanBypassServerLock);
+
+            writer.WriteLE((uint)Characters.Count);
+            Characters.ForEach(x => x.Write(writer));
+        }
+    }
+
+    [AuthMessage(AuthMessageOpcode.CharacterSelectInfoReply, ProtocolVersion.LoginUdp_9)]
+    public class CharacterSelectInfoReply9 : IWritable
+    {
+        public class Character : IWritable
+        {
+            public class CharacterPayload : IWritable, ISize
+            {
+                public class CharacterAttachment : IWritable, ISize
+                {
+                    public string ModelName { get; set; } = "";
+                    public string TextureAlias { get; set; } = "";
+                    public string Unknown2 { get; set; } = "";  // TintAlias?
+                    public string Unknown3 { get; set; } = "";  // DecalAlias?
+                    public uint Unknown4 { get; set; }          // TintId?
+                    public uint Unknown5 { get; set; }          // CompositeId?
+                    public AttachmentSlot Slot { get; set; }    // "ActorUsage"
+                    public uint Unknown7 { get; set; }
+
+                    public uint GetSize()
+                    {
+                        return (uint)(4u + ModelName.Length + 4u + TextureAlias.Length + 4u + Unknown2.Length + 4u + Unknown3.Length + 4u + 4u + 4u + 4u);
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        writer.WriteLE(ModelName);
+                        writer.WriteLE(TextureAlias);
+                        writer.WriteLE(Unknown2);
+                        writer.WriteLE(Unknown3);
+                        writer.WriteLE(Unknown4);
+                        writer.WriteLE(Unknown5);
+                        writer.WriteLE((uint)Slot);
+                        writer.WriteLE(Unknown7);
+                    }
+                }
+
+                public class Friend : IWritable, ISize
+                {
+                    public uint GetSize()
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public string Name { get; set; } = "Kirmmin";
+                public byte Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public uint HeadId { get; set; }
+                public uint ModelId { get; set; }
+                public uint Gender { get; set; }
+                public uint Unknown5 { get; set; }
+                public uint Unknown6 { get; set; }
+                public ulong Unknown7 { get; set; }
+                public List<uint> Array142C34C30 { get; set; } = new();
+                public List<(uint, uint, uint)> Customizations { get; set; } = new();
+                public uint Unknown8 { get; set; }
+                public List<CharacterAttachment> CharacterAttachments { get; set; } = new();
+                public List<Friend> Friends { get; set; } = new();
+                public ulong Unknown9 { get; set; }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    writer.WriteLE(GetSize());
+                    writer.WriteLE(Name);
+                    writer.Write(Unknown0);
+                    writer.WriteLE(Unknown1);
+                    writer.WriteLE(HeadId);
+                    writer.WriteLE(ModelId);
+                    writer.WriteLE(Gender);
+                    writer.WriteLE(Unknown5);
+                    writer.WriteLE(Unknown6);
+                    writer.WriteLE(Unknown7);
+
+                    writer.WriteLE((uint)Array142C34C30.Count);
+                    Array142C34C30.ForEach(x => writer.WriteLE(x));
+
+                    writer.WriteLE((uint)Customizations.Count);
+                    foreach (var v in Customizations)
+                    {
+                        writer.WriteLE(v.Item1);
+                        writer.WriteLE(v.Item2);
+                        writer.WriteLE(v.Item3);
+                    }
+
+                    writer.WriteLE(Unknown8);
+
+                    writer.WriteLE((uint)CharacterAttachments.Count);
+                    CharacterAttachments.ForEach(x => x.Write(writer));
+
+                    writer.WriteLE((uint)Friends.Count);
+                    Friends.ForEach(x => x.Write(writer));
+
+                    writer.WriteLE(Unknown9);
+                }
+
+                public uint GetSize()
+                {
+                    uint totalSize = 0u;
+
+                    totalSize += 4u; // Array142C34C30 Count
+                    Array142C34C30.ForEach(x => totalSize += 4);
+
+                    totalSize += 4u; // Vector3s Count
+                    Customizations.ForEach(x => totalSize += 12u); // 3x Float
+
+                    totalSize += 4u; // CharacterAttachments Count
+                    CharacterAttachments.ForEach(x => totalSize += x.GetSize());
+
+                    totalSize += 4u; // Friends Count
+                    Friends.ForEach(x => totalSize += x.GetSize());
+
+                    return (uint)(
+                        totalSize +
+                        4u + Name.Length +
+                        1u +
+                        4u +
+                        4u +
+                        4u +
+                        4u +
+                        4u +
+                        4u +
+                        8u +
+                        4u +
+                        8u);
+                }
+            }
+
+            public ulong CharacterId { get; set; }
+            public ulong LastServerId { get; set; }
+            public double LastLogin { get; set; }
+            public uint Status { get; set; }
+            public CharacterPayload CharacterData { get; set; } = new();
+
+            public void Write(GamePacketWriter writer)
+            {
+                writer.WriteLE(CharacterId);
+                writer.WriteLE(LastServerId);
+                writer.WriteLE(LastLogin);
+                writer.WriteLE(Status);
+                CharacterData.Write(writer);
+            }
+        }
+
         public uint Status { get; set; }
         public bool CanBypassServerLock { get; set; }
         public List<Character> Characters { get; set; } = new();

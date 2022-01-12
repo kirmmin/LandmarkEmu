@@ -52,7 +52,61 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             session.EnqueueMessage(serverListReply);
         }
 
-        [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest)]
+        [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_9)]
+        public static void HandleCharacterSelectInfoRequest9(AuthSession session, CharacterSelectInfoRequest request)
+        {
+            session.EnqueueMessage(new CharacterSelectInfoReply9
+            {
+                Status = 1,
+                CanBypassServerLock = true,
+                Characters = new List<CharacterSelectInfoReply9.Character>
+                {
+                    new CharacterSelectInfoReply9.Character
+                    {
+                        CharacterId = 1ul,
+                        LastServerId = 0x100,
+                        LastLogin = 1d,
+                        Status = 1u,
+                        CharacterData = new CharacterSelectInfoReply9.Character.CharacterPayload
+                        {
+                            HeadId   = 1u,
+                            ModelId  = 21u, // 12 for Male, and 21 for Female seems to work. 15 for Female breaks.
+                            Gender   = 2u,
+                            Customizations = new List<(uint, uint, uint)>
+                            {
+                                //{ new(1u, 5u, 0x05AEEB92) },
+                                { new(2u, 0x17, 0x1ACA10AB ) },
+                                { new(3u, 0x42, 0xDC55034C ) },
+                                { new(4u, 0x22, 0xDC55034C ) },
+                                { new(5u, 0x2A, 0x3631EFD0 ) }
+                            },
+                            CharacterAttachments = new List<CharacterSelectInfoReply9.Character.CharacterPayload.CharacterAttachment>
+                            {
+                                new CharacterSelectInfoReply9.Character.CharacterPayload.CharacterAttachment
+                                {
+                                    //ModelName = "Char_Biped_DarkElfMale_Entities_PCNPC_DarkElf_Light_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanFemale_Entities_Gunslinger_Medium_001_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanFemale_Entities_TrailBlazer_001_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanFemale_Entities_Wanderer_000_Chest.adr",
+                                    //ModelName = "Char_Biped_HumanFemale_Entities_Qeynos_000_Heavy_Chest.adr",
+                                    ModelName = "Char_Biped_HumanFemale_Entities_Townsperson_000_Chest.adr",
+                                    Slot = AttachmentSlot.ChestModel
+                                    //TextureAlias = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
+                                    //Unknown2 = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
+                                    //Unknown3 = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
+                                    //Unknown4 = 10,
+                                    //Unknown5 = 11,
+                                    //Unknown7 = 12,
+                                },
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_10)]
         public static void HandleCharacterSelectInfoRequest(AuthSession session, CharacterSelectInfoRequest request)
         {
             session.EnqueueMessage(new CharacterSelectInfoReply
@@ -127,6 +181,9 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     });
 
                     // TODO: Figure out the ArtData packet for Tints
+                    if (session.ProtocolVersion.HasFlag(ProtocolVersion.LoginUdp_9))
+                        return;
+
                     session.EnqueueMessage(new TunnelPacketServerToClient
                     {
                         ServerId = 0,
