@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LandmarkEmulator.Database.Auth\LandmarkEmulator.Database.Auth.csproj" />
+    <ProjectReference Include="..\LandmarkEmulator.Database.Character\LandmarkEmulator.Database.Character.csproj" />
     <ProjectReference Include="..\LandmarkEmulator.Database\LandmarkEmulator.Database.csproj" />
   </ItemGroup>
 

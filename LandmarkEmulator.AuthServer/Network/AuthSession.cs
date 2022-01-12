@@ -1,5 +1,6 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Packets;
+using LandmarkEmulator.Database.Auth.Model;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
@@ -11,8 +12,21 @@ namespace LandmarkEmulator.AuthServer.Network
 {
     public class AuthSession : GameSession
     {
+        public AccountModel Account { get; private set; }
+
         private readonly ConcurrentQueue<AuthPacket> incomingPackets = new();
         private readonly Queue<AuthPacket> outgoingPackets = new();
+
+        /// <summary>
+        /// Initialise an <see cref="AuthSession"/> from an existing <see cref="AccountModel"/>.
+        /// </summary>
+        public void Initialise(AccountModel model)
+        {
+            if (Account != null)
+                throw new InvalidOperationException();
+
+            Account = model;
+        }
 
         public override void OnAccept(EndPoint ep)
         {

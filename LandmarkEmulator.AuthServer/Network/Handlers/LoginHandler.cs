@@ -23,6 +23,9 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             log.Info($"{request.SessionId}, {request.Locale}, {request.ThirdPartyAuthTicket}");
             log.Info($"{request.SystemFingerPrint}");
 
+            // prevent packets from being processed until asynchronous account select task is complete
+            session.CanProcessPackets = false;
+
             session.Events.Enqueue(new TaskGenericEvent<AccountModel>(DatabaseManager.Instance.AuthDatabase.GetAccountBySessionKeyAsync(request.SessionId),
                 account =>
             {
@@ -37,8 +40,10 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     IsMember   = false, // Must be false if ProtocolVersion 9
                     IsInternal = false  // Must be false if ProtocolVersion 9
                 });
-            }));
 
+                session.Initialise(account);
+                session.CanProcessPackets = true;
+            }));
         }
 
         [AuthMessageHandler(AuthMessageOpcode.ServerListRequest)]
@@ -98,7 +103,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                                     //Unknown4 = 10,
                                     //Unknown5 = 11,
                                     //Unknown7 = 12,
-                                },
+                                }
                             }
                         }
                     }

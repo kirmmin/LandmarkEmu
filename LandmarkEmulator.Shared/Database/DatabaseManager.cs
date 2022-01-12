@@ -1,4 +1,5 @@
 ﻿using LandmarkEmulator.Database.Auth;
+using LandmarkEmulator.Database.Character;
 using LandmarkEmulator.Database.Configuration;
 using NLog;
 using System;
@@ -10,7 +11,7 @@ namespace LandmarkEmulator.Shared.Database
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         public AuthDatabase AuthDatabase { get; private set; }
-        //public CharacterDatabase CharacterDatabase { get; private set; }
+        public CharacterDatabase CharacterDatabase { get; private set; }
         //public WorldDatabase WorldDatabase { get; private set; }
 
         private DatabaseManager()
@@ -22,8 +23,8 @@ namespace LandmarkEmulator.Shared.Database
             if (config.Auth != null)
                 AuthDatabase = new AuthDatabase(config);
 
-            //if (config.Character != null)
-            //    CharacterDatabase = new CharacterDatabase(config);
+            if (config.Character != null)
+                CharacterDatabase = new CharacterDatabase(config);
 
             //if (config.World != null)
             //    WorldDatabase = new WorldDatabase(config);
@@ -31,7 +32,7 @@ namespace LandmarkEmulator.Shared.Database
 
         public void Migrate(DatabaseType type)
         {
-            log.Info("Applying database migrations...");
+            log.Info($"Applying {type} database migrations...");
 
             try
             {
@@ -40,8 +41,10 @@ namespace LandmarkEmulator.Shared.Database
                     case DatabaseType.Auth:
                         AuthDatabase.Migrate();
                         break;
+                    case DatabaseType.Character:
+                        CharacterDatabase.Migrate();
+                        break;
                 }
-                //CharacterDatabase.Migrate();
                 //WorldDatabase.Migrate();
             }
             catch (Exception exception)

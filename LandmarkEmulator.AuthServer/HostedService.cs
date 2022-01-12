@@ -25,6 +25,7 @@ namespace LandmarkEmulator.AuthServer
 
             DatabaseManager.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Database);
             DatabaseManager.Instance.Migrate(DatabaseType.Auth);
+            DatabaseManager.Instance.Migrate(DatabaseType.Character);
 
             TextManager.Instance.Initialise();
 
