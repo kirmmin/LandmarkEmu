@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace LandmarkEmulator.Shared.Network
+namespace LandmarkEmulator.Shared.Game
 {
     public static class Extensions
     {
@@ -22,6 +22,14 @@ namespace LandmarkEmulator.Shared.Network
         public static string ToHexString(this byte[] value)
         {
             return BitConverter.ToString(value).Replace("-", "");
+        }
+
+        /// <summary>
+        /// Checks a string to see if contains another string.
+        /// </summary>
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source.IndexOf(toCheck, comp) >= 0;
         }
     }
 }

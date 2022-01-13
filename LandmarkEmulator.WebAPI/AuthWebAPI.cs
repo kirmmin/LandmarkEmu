@@ -1,7 +1,7 @@
 using LandmarkEmulator.Database.Auth.Model;
 using LandmarkEmulator.Database.Configuration;
 using LandmarkEmulator.Shared.Database;
-using LandmarkEmulator.Shared.Network;
+using LandmarkEmulator.Shared.Game;
 using LandmarkEmulator.Shared.Network.Cryptography;
 using LandmarkEmulator.WebAPI.Configuration;
 using LandmarkEmulator.WebAPI.Models.Auth;

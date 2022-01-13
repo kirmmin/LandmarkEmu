@@ -1,11 +1,14 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
+using LandmarkEmulator.AuthServer.Network.Message.Static;
 using LandmarkEmulator.AuthServer.Zone;
 using LandmarkEmulator.Database.Auth.Model;
 using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Game.Events;
+using LandmarkEmulator.Shared.GameTable;
+using LandmarkEmulator.Shared.GameTable.Model;
 using LandmarkEmulator.Shared.Network.Message;
 using NLog;
 using System;
@@ -155,15 +158,13 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             switch (packet.Data)
             {
                 case NameValidationRequest nameValidationRequest:
-                    log.Trace($"{nameValidationRequest.FirstName}, {nameValidationRequest.LastName}");
-
-                    // TODO: Actually confirm name is available.
+                    // We can just respond with the NameValidationResult because nothing is created at this point.
                     session.EnqueueMessage(new TunnelPacketServerToClient
                     {
-                        Type     = Message.Static.TunnelDataType.NameValidationReply,
-                        Data     = new NameValidationReply
+                        Type = TunnelDataType.NameValidationReply,
+                        Data = new NameValidationReply
                         {
-                            Result    = Message.Static.NameValidationResult.Success,
+                            Result = AuthUtilities.ValidateName(nameValidationRequest.FirstName),
                             FirstName = nameValidationRequest.FirstName
                         }
                     });

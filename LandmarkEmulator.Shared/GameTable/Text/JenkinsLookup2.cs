@@ -1,4 +1,4 @@
-﻿namespace LandmarkEmulator.Shared.Game.Text
+﻿namespace LandmarkEmulator.Shared.GameTable.Text
 {
     public static class JenkinsLookup2
     {

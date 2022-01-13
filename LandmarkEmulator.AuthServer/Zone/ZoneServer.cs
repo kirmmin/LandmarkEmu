@@ -1,7 +1,7 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message.Model.Shared;
 using LandmarkEmulator.AuthServer.Zone.Static;
 using LandmarkEmulator.Database.Auth.Model;
-using LandmarkEmulator.Shared.Game.Text;
+using LandmarkEmulator.Shared.GameTable.Text;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
 

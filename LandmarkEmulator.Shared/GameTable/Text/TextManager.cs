@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace LandmarkEmulator.Shared.Game.Text
+namespace LandmarkEmulator.Shared.GameTable.Text
 {
     public class TextManager : Singleton<TextManager>
     {

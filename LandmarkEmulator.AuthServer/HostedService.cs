@@ -5,7 +5,7 @@ using LandmarkEmulator.Database.Configuration;
 using LandmarkEmulator.Shared;
 using LandmarkEmulator.Shared.Configuration;
 using LandmarkEmulator.Shared.Database;
-using LandmarkEmulator.Shared.Game.Text;
+using LandmarkEmulator.Shared.GameTable;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using Microsoft.Extensions.Hosting;
@@ -27,7 +27,7 @@ namespace LandmarkEmulator.AuthServer
             DatabaseManager.Instance.Migrate(DatabaseType.Auth);
             DatabaseManager.Instance.Migrate(DatabaseType.Character);
 
-            TextManager.Instance.Initialise();
+            GameTableManager.Instance.Initialise();
 
             MessageManager.Instance.Initialise();
             AuthMessageManager.Instance.Initialise();

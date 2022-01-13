@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using LandmarkEmulator.Shared.Game;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LandmarkEmulator.Shared.Network.Cryptography
 {

@@ -16,5 +16,10 @@
   "WebApi": {
     "Enabled": true,
     "BaseURI": "https://0.0.0.0:5000"
-  }
+  },
+  "CreationRules": {
+    "__StrictName_Comment__": "This forces names to be RPG-style. First letter capitalized, no numbers, no spaces.",
+    "StrictName": false
+  },
+  "GameDataPath": "gameData"
 }
