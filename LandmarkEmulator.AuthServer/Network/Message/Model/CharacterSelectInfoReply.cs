@@ -208,7 +208,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 {
                     public string ModelName { get; set; } = "";
                     public string TextureAlias { get; set; } = "";
-                    public string Unknown2 { get; set; } = "";  // TintAlias?
+                    public string SemanticTint { get; set; } = "";  // TintAlias?
                     public string Unknown3 { get; set; } = "";  // DecalAlias?
                     public uint Unknown4 { get; set; }          // TintId?
                     public uint Unknown5 { get; set; }          // CompositeId?
@@ -217,14 +217,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                     public uint GetSize()
                     {
-                        return (uint)(4u + ModelName.Length + 4u + TextureAlias.Length + 4u + Unknown2.Length + 4u + Unknown3.Length + 4u + 4u + 4u + 4u);
+                        return (uint)(4u + ModelName.Length + 4u + TextureAlias.Length + 4u + SemanticTint.Length + 4u + Unknown3.Length + 4u + 4u + 4u + 4u);
                     }
 
                     public void Write(GamePacketWriter writer)
                     {
                         writer.WriteLE(ModelName);
                         writer.WriteLE(TextureAlias);
-                        writer.WriteLE(Unknown2);
+                        writer.WriteLE(SemanticTint);
                         writer.WriteLE(Unknown3);
                         writer.WriteLE(Unknown4);
                         writer.WriteLE(Unknown5);
@@ -251,13 +251,13 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 public uint Unknown1 { get; set; }
                 public uint HeadId { get; set; }
                 public uint ModelId { get; set; }
-                public uint Gender { get; set; }
+                public Gender Gender { get; set; }
                 public uint Unknown5 { get; set; }
                 public uint Unknown6 { get; set; }
                 public ulong Unknown7 { get; set; }
                 public List<uint> Array142C34C30 { get; set; } = new();
                 public List<(uint, uint, uint)> Customizations { get; set; } = new();
-                public uint Unknown8 { get; set; }
+                public uint SkinTint { get; set; }
                 public List<CharacterAttachment> CharacterAttachments { get; set; } = new();
                 public List<Friend> Friends { get; set; } = new();
                 public ulong Unknown9 { get; set; }
@@ -270,7 +270,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     writer.WriteLE(Unknown1);
                     writer.WriteLE(HeadId);
                     writer.WriteLE(ModelId);
-                    writer.WriteLE(Gender);
+                    writer.WriteLE((uint)Gender);
                     writer.WriteLE(Unknown5);
                     writer.WriteLE(Unknown6);
                     writer.WriteLE(Unknown7);
@@ -286,7 +286,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                         writer.WriteLE(v.Item3);
                     }
 
-                    writer.WriteLE(Unknown8);
+                    writer.WriteLE(SkinTint);
 
                     writer.WriteLE((uint)CharacterAttachments.Count);
                     CharacterAttachments.ForEach(x => x.Write(writer));

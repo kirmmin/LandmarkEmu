@@ -10,7 +10,8 @@ namespace LandmarkEmulator.Database.Character.Model
         public string Name { get; set; }
         public byte Gender { get; set; }
         public byte Race { get; set; }
-        public uint BodyType { get; set; }
+        public uint SkinTint { get; set; }
+        public uint ProfileTypeId { get; set; }
         public ulong LastServerId { get; set; }
         public DateTime? LastOnline { get; set; }
         public DateTime CreateTime { get; set; }

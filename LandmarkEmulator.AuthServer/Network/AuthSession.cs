@@ -1,6 +1,7 @@
 ﻿using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Packets;
 using LandmarkEmulator.Database.Auth.Model;
+using LandmarkEmulator.Database.Character.Model;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
@@ -13,6 +14,7 @@ namespace LandmarkEmulator.AuthServer.Network
     public class AuthSession : GameSession
     {
         public AccountModel Account { get; private set; }
+        public List<CharacterModel> Characters { get; } = new();
 
         private readonly ConcurrentQueue<AuthPacket> incomingPackets = new();
         private readonly Queue<AuthPacket> outgoingPackets = new();

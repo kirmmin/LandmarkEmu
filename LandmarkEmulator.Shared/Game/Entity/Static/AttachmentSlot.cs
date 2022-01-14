@@ -2,11 +2,10 @@
 {
     public enum AttachmentSlot
     {
-        ChestVisual = 8,
-        ChestModel  = 13,
-        Head        = 14,
-        Hair        = 15,
-        FacialHair  = 16,
-        Eyes        = 17,
+        Chest       = 7,
+        Head        = 8,
+        Hair        = 9,
+        FacialHair  = 10,
+        Eyes        = 11
     }
 }

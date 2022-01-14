@@ -60,30 +60,33 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
     {
         public ulong ServerId { get; set; }
         public uint Unknown0 { get; set; }
-        public byte Unknown1 { get; set; }
-        public uint BodyType { get; set; }
+        public byte EmpireId { get; set; }
+        public uint ProfileTypeId { get; set; }
         public uint Gender { get; set; }
         public string Name { get; set; }
-        public Dictionary<uint, uint> CustomisationOptions { get; set; } = new();
+        public List<(uint, uint, uint)> CustomisationOptions { get; set; } = new();
+        public uint SkinTint { get; set; }
 
         public void Read(GamePacketReader reader)
         {
             ServerId = reader.ReadULongLE();
             Unknown0 = reader.ReadUIntLE();
-            Unknown1 = reader.ReadByte();
-            BodyType = reader.ReadUIntLE();
+            EmpireId = reader.ReadByte();
+            ProfileTypeId = reader.ReadUIntLE();
             Gender   = reader.ReadUIntLE();
             Name     = reader.ReadStringLE();
 
             uint customisationCount = reader.ReadUIntLE();
             for (uint i = 0; i < customisationCount; i++)
             {
-                var index = reader.ReadUIntLE();
                 var slotId = reader.ReadUIntLE();
-                var slotValue = reader.ReadUIntLE();
+                var optionId = reader.ReadUIntLE();
+                var tintId = reader.ReadUIntLE();
 
-                CustomisationOptions.TryAdd(slotId, slotValue);
+                CustomisationOptions.Add(new (slotId, optionId, tintId));
             }
+            
+            SkinTint = reader.ReadUIntLE();
         }
     }
 }

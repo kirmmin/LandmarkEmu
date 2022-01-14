@@ -33,6 +33,8 @@ namespace LandmarkEmulator.AuthServer
             AuthMessageManager.Instance.Initialise();
             TunnelDataManager.Instance.Initialise();
 
+            AuthAssetManager.Instance.Initialise();
+
             ZoneServerManager.Instance.Initialise();
             NetworkManager<AuthSession>.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Network);
 

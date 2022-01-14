@@ -84,7 +84,7 @@ namespace LandmarkEmulator.Database.Character
             return await context.Character.FirstOrDefaultAsync(e => e.Name == name);
         }
 
-        public async Task<List<CharacterModel>> GetCharacters(uint accountId)
+        public async Task<List<CharacterModel>> GetCharacters(ulong accountId)
         {
             using var context = new CharacterContext(config);
             return await context.Character.Where(c => c.AccountId == accountId)

@@ -41,11 +41,6 @@ namespace LandmarkEmulator.Database.Character
                     .HasColumnType("bigint(20) unsigned")
                     .HasDefaultValue(0);
 
-                entity.Property(e => e.BodyType)
-                    .HasColumnName("bodyType")
-                    .HasColumnType("int(10) unsigned")
-                    .HasDefaultValue(0);
-
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("createTime")
                     .HasColumnType("datetime")
@@ -80,9 +75,19 @@ namespace LandmarkEmulator.Database.Character
                     .HasColumnType("varchar(50)")
                     .HasDefaultValue(null);
 
+                entity.Property(e => e.ProfileTypeId)
+                    .HasColumnName("profileTypeId")
+                    .HasColumnType("int(10) unsigned")
+                    .HasDefaultValue(0);
+
                 entity.Property(e => e.Race)
                     .HasColumnName("race")
                     .HasColumnType("tinyint(3) unsigned")
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.SkinTint)
+                    .HasColumnName("skinTint")
+                    .HasColumnType("int(10) unsigned")
                     .HasDefaultValue(0);
             });
 

@@ -4,15 +4,19 @@ using LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData;
 using LandmarkEmulator.AuthServer.Network.Message.Static;
 using LandmarkEmulator.AuthServer.Zone;
 using LandmarkEmulator.Database.Auth.Model;
+using LandmarkEmulator.Database.Character;
+using LandmarkEmulator.Database.Character.Model;
 using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Game.Events;
 using LandmarkEmulator.Shared.GameTable;
 using LandmarkEmulator.Shared.GameTable.Model;
 using LandmarkEmulator.Shared.Network.Message;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LandmarkEmulator.AuthServer.Network.Handlers
 {
@@ -23,9 +27,6 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         [AuthMessageHandler(AuthMessageOpcode.LoginRequest)]
         public static void HandleLoginRequest(AuthSession session, LoginRequest request)
         {
-            log.Info($"{request.SessionId}, {request.Locale}, {request.ThirdPartyAuthTicket}");
-            log.Info($"{request.SystemFingerPrint}");
-
             // prevent packets from being processed until asynchronous account select task is complete
             session.CanProcessPackets = false;
 
@@ -38,9 +39,9 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
 
                 session.EnqueueMessage(new LoginReply
                 {
-                    LoggedIn   = loggedIn,
-                    Status     = Convert.ToByte(loggedIn),
-                    IsMember   = false, // Must be false if ProtocolVersion 9
+                    LoggedIn = loggedIn,
+                    Status = Convert.ToByte(loggedIn),
+                    IsMember = false, // Must be false if ProtocolVersion 9
                     IsInternal = false  // Must be false if ProtocolVersion 9
                 });
 
@@ -53,103 +54,93 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         public static void HandleServerListRequest(AuthSession session, ServerListRequest request)
         {
             var serverListReply = new ServerListReply();
-            
+
             foreach (var zoneServer in ZoneServerManager.Instance.ZoneServers)
                 serverListReply.Servers.Add(zoneServer.Build());
 
             session.EnqueueMessage(serverListReply);
         }
 
-        [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_9)]
-        public static void HandleCharacterSelectInfoRequest9(AuthSession session, CharacterSelectInfoRequest request)
-        {
-            session.EnqueueMessage(new CharacterSelectInfoReply9
-            {
-                Status = 1,
-                CanBypassServerLock = true,
-                Characters = new List<CharacterSelectInfoReply9.Character>
-                {
-                    new CharacterSelectInfoReply9.Character
-                    {
-                        CharacterId = 1ul,
-                        LastServerId = 0x100,
-                        LastLogin = 1d,
-                        Status = 1u,
-                        CharacterData = new CharacterSelectInfoReply9.Character.CharacterPayload
-                        {
-                            HeadId   = 1u,
-                            ModelId  = 21u, // 12 for Male, and 21 for Female seems to work. 15 for Female breaks.
-                            Gender   = 2u,
-                            Customizations = new List<(uint, uint, uint)>
-                            {
-                                //{ new(1u, 5u, 0x05AEEB92) },
-                                { new(2u, 0x17, 0x1ACA10AB ) },
-                                { new(3u, 0x42, 0xDC55034C ) },
-                                { new(4u, 0x22, 0xDC55034C ) },
-                                { new(5u, 0x2A, 0x3631EFD0 ) }
-                            },
-                            CharacterAttachments = new List<CharacterSelectInfoReply9.Character.CharacterPayload.CharacterAttachment>
-                            {
-                                new CharacterSelectInfoReply9.Character.CharacterPayload.CharacterAttachment
-                                {
-                                    //ModelName = "Char_Biped_DarkElfMale_Entities_PCNPC_DarkElf_Light_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanFemale_Entities_Gunslinger_Medium_001_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanFemale_Entities_TrailBlazer_001_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanFemale_Entities_Wanderer_000_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanFemale_Entities_Qeynos_000_Heavy_Chest.adr",
-                                    ModelName = "Char_Biped_HumanFemale_Entities_Townsperson_000_Chest.adr",
-                                    Slot = AttachmentSlot.ChestModel
-                                    //TextureAlias = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
-                                    //Unknown2 = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
-                                    //Unknown3 = "Char_Biped_HumanMale_Entities_Founder_001_Chest.adr",
-                                    //Unknown4 = 10,
-                                    //Unknown5 = 11,
-                                    //Unknown7 = 12,
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
         [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_10)]
         public static void HandleCharacterSelectInfoRequest(AuthSession session, CharacterSelectInfoRequest request)
         {
-            session.EnqueueMessage(new CharacterSelectInfoReply
+            throw new NotImplementedException();
+        }
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_9)]
+        public static void HandleCharacterSelectInfoRequest9(AuthSession session, CharacterSelectInfoRequest request)
+        {
+            uint GetModelId(Gender gender)
             {
-                Status = 1,
-                CanBypassServerLock = true,
-                Characters = new List<CharacterSelectInfoReply.Character>
+                if (gender == Gender.Male)
+                    return 23u;
+
+                // Female
+                return 21u;
+            }
+
+            session.Events.Enqueue(new TaskGenericEvent<List<CharacterModel>>(DatabaseManager.Instance.CharacterDatabase.GetCharacters(session.Account.Id),
+                characters =>
+            {
+                session.Characters.Clear();
+                session.Characters.AddRange(characters);
+
+                CharacterSelectInfoReply9 characterSelect = new CharacterSelectInfoReply9
                 {
-                    new CharacterSelectInfoReply.Character
+                    Status = 1
+                };
+
+                foreach (CharacterModel model in characters.Where(c => c.DeleteTime == null))
+                {
+                    // Build base payload
+                    var characterPayload = new CharacterSelectInfoReply9.Character.CharacterPayload
                     {
-                        CharacterId = 1ul,
-                        LastServerId = 0x100,
-                        LastLogin = 1d,
-                        Status = 1u,
-                        CharacterData = new CharacterSelectInfoReply.Character.CharacterPayload
-                        {
-                            CharacterAttachments = new List<CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment>
-                            {
-                                // TODO: Figure out Animation/BaseModel field. Female models seem contorted to Male stance.
-                                new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment
-                                {
-                                    ModelName = "Char_Biped_HumanFemale_Entities_Townsperson_000_Chest.adr",
-                                    Slot = AttachmentSlot.ChestModel
-                                },
-                                new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment
-                                {
-                                    ModelName = "Char_Biped_DarkElfMale_Entities_PCNPC_DarkElf_Light_Chest.adr",
-                                    //ModelName = "Char_Biped_HumanFemale_Entities_Gunslinger_Medium_001_Chest.adr",
-                                    Slot = AttachmentSlot.ChestVisual
-                                }
-                            }
-                        }
-                    }
+                        Name     = model.Name,
+                        Gender   = (Gender)model.Gender,
+                        HeadId   = 1,
+                        ModelId  = GetModelId((Gender)model.Gender),
+                        SkinTint = model.SkinTint
+                    };
+
+                    // Add customisations
+                    foreach (var customisation in model.Customisation)
+                        characterPayload.Customizations.Add(new(customisation.Slot, customisation.Option, customisation.Tint));
+
+                    // TODO: Remove the random chest piece. This is just to keep character select slightly more interesting :P
+                    List<string> randomName = new List<string>
+                    {
+                        "Colony_000",
+                        "Trailblazer_000",
+                        "Founder_000",
+                        "Townsperson_000",
+                        "Dapper_000",
+                        "Adventurer_000",
+                        "Victorian_000",
+                        "Wanderer_000",
+                        "Qeynos_000_Heavy",
+                        "Colony_000_Heavy"
+                    };
+
+                    // Add Attachments; Should only ever be a chest item in character select.
+                    characterPayload.CharacterAttachments.Add(new CharacterSelectInfoReply9.Character.CharacterPayload.CharacterAttachment
+                    {
+                        ModelName = $"Char_Biped_{(Race)model.Race}{(Gender)model.Gender}_Entities_{randomName[new Random().Next(randomName.Count)]}_Chest.adr",
+                        Slot = AttachmentSlot.Chest,
+                    });
+
+                    // Add character to payload
+                    characterSelect.Characters.Add(new CharacterSelectInfoReply9.Character
+                    {
+                        Status        = 1,
+                        CharacterId   = model.Id,
+                        LastLogin     = DateTime.Now.Subtract(model.LastOnline ?? DateTime.Now).TotalDays * -1d,
+                        LastServerId  = model.LastServerId,
+                        CharacterData = characterPayload
+                    });
                 }
-            });
+
+                session.EnqueueMessage(characterSelect);
+            }));
         }
 
         [AuthMessageHandler(AuthMessageOpcode.TunnelPacketClientToServer)]
@@ -375,39 +366,122 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_10)]
         public static void HandleCharacterCreateRequest(AuthSession session, CharacterCreateRequest request)
         {
+            // TODO: Implement LoginUdp_10 Create
             session.EnqueueMessage(new CharacterCreateReply
             {
-                Result      = Message.Static.CharacterCreateResult.Success,
-                CharacterId = 1
+                Result      = CharacterCreateResult.UnableToCreate
             });
         }
 
         [AuthMessageHandler(AuthMessageOpcode.CharacterCreateRequest, ProtocolVersion.LoginUdp_9)]
         public static void HandleCharacterCreateRequest9(AuthSession session, CharacterCreateRequest9 request)
         {
-            session.EnqueueMessage(new CharacterCreateReply
+            CharacterCreateResult GetResult()
             {
-                Result = Message.Static.CharacterCreateResult.Success,
-                CharacterId = 1
-            });
+                if (AuthUtilities.ValidateName(request.Name) != NameValidationResult.Success)
+                    return CharacterCreateResult.UnableToCreate;
+
+                return CharacterCreateResult.Success;
+            }
+
+            CharacterCreateResult result = GetResult();
+            if (result != CharacterCreateResult.Success)
+            {
+                session.EnqueueMessage(new CharacterCreateReply
+                {
+                    Result = result
+                });
+                return;
+            }
+
+            // Create CharacterModel for the DB
+            CharacterModel character = new CharacterModel
+            {
+                Id            = AuthAssetManager.Instance.NextCharacterId,
+                AccountId     = session.Account.Id,
+                Name          = request.Name,
+                Gender        = (byte)request.Gender,
+                Race          = (byte)Race.Human,
+                ProfileTypeId = request.ProfileTypeId,
+                SkinTint      = request.SkinTint
+            };
+
+            // Add customisations
+            foreach (var customisation in request.CustomisationOptions)
+                character.Customisation.Add(new CharacterCustomisationModel
+                {
+                    Slot = customisation.Item1,
+                    Option = customisation.Item2,
+                    Tint = customisation.Item3
+                });
+
+            // Save new Character to DB (asynchronously) and inform the client that it's created and ready to use
+            session.Events.Enqueue(new TaskEvent(DatabaseManager.Instance.CharacterDatabase.Save(c =>
+                {
+                    c.Character.Add(character);
+                }),
+                    () =>
+                {
+                    session.Characters.Add(character);
+                    session.EnqueueMessage(new CharacterCreateReply
+                    {
+                        Result = CharacterCreateResult.Success,
+                        CharacterId = character.Id
+                    });
+                }));
         }
 
         [AuthMessageHandler(AuthMessageOpcode.CharacterDeleteRequest)]
         public static void HandleCharacterDeleteRequest(AuthSession session, CharacterDeleteRequest request)
         {
-            session.EnqueueMessage(new CharacterSelectInfoReply
+            CharacterModel characterToDelete = session.Characters.FirstOrDefault(c => c.Id == request.CharacterId);
+            if (characterToDelete == null)
             {
-                Status = 1,
-                CanBypassServerLock = true,
-                Characters = new List<CharacterSelectInfoReply.Character>
+                session.EnqueueMessage(new CharacterDeleteReply
                 {
-                }
-            });
-            session.EnqueueMessage(new CharacterDeleteReply
+                    CharacterId = request.CharacterId,
+                    Status = 0
+                });
+                return;
+            }
+
+            session.CanProcessPackets = false;
+
+            void Save(CharacterContext context)
             {
-                CharacterId = request.CharacterId,
-                Status      = 1
-            });
+                var model = new CharacterModel
+                {
+                    Id = characterToDelete.Id
+                };
+
+                EntityEntry<CharacterModel> entity = context.Attach(model);
+
+                model.DeleteTime = DateTime.UtcNow;
+                entity.Property(e => e.DeleteTime).IsModified = true;
+
+                model.OriginalName = characterToDelete.Name;
+                entity.Property(e => e.OriginalName).IsModified = true;
+
+                model.Name = null;
+                entity.Property(e => e.Name).IsModified = true;
+            }
+
+            session.Events.Enqueue(new TaskEvent(DatabaseManager.Instance.CharacterDatabase.Save(Save),
+                () =>
+            {
+                session.CanProcessPackets = true;
+
+                // Send CharacterSelectInfoReply, first, with no characters, otherwise it bugs up.
+                session.EnqueueMessage(new CharacterSelectInfoReply
+                {
+                    Status = 1
+                });
+                session.EnqueueMessage(new CharacterDeleteReply
+                {
+                    CharacterId = request.CharacterId,
+                    Status = 1
+                });
+            }));
         }
     }
 }
