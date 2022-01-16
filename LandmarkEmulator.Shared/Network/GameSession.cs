@@ -38,6 +38,17 @@ namespace LandmarkEmulator.Shared.Network
             {
                 OnGamePacket(gamePacket);
             };
+            inputStream.OnOutOfOrder += (sequence) =>
+            {
+                EnqueueProtocolMessage(new OutOfOrder
+                {
+                    Sequence = sequence
+                },
+                new PacketOptions
+                {
+                    Compression = serverCompression != 0
+                });
+            };
             outputStream = new DataStreamOutput(this);
             outputStream.OnData += (sequence, gamePacket) =>
             {
@@ -141,12 +152,12 @@ namespace LandmarkEmulator.Shared.Network
                 return;
             }
 
-            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
+            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})");
 
             var reader = new GamePacketReader(packet.Data);
 
             message.Read(reader, packet.PacketOptions);
-            if (reader.BytesRemaining > 0)
+            if (reader.BytesRemaining > 2)
                 log.Warn($"Failed to read entire contents of packet {packet.Opcode} ({reader.BytesRemaining} bytes remaining)");
 
             try
@@ -263,6 +274,18 @@ namespace LandmarkEmulator.Shared.Network
         public void HandleDisconnect(Disconnect disconnect)
         {
             OnDisconnect();
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.Ack)]
+        public void HandleAck(Ack ack)
+        {
+            outputStream.HandleAck(ack.Sequence);
+        }
+
+        [ProtocolMessageHandler(ProtocolMessageOpcode.OutOfOrder)]
+        public void HandleOutOfOrder(OutOfOrder outOfOrder)
+        {
+            outputStream.ResendData(outOfOrder.Sequence);
         }
     }
 }

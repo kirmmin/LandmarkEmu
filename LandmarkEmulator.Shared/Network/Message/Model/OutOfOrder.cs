@@ -1,7 +1,7 @@
 ﻿namespace LandmarkEmulator.Shared.Network.Message.Model
 {
-    [ProtocolMessage(ProtocolMessageOpcode.Ack, useEncryption: true)]
-    public class Ack : IProtocol
+    [ProtocolMessage(ProtocolMessageOpcode.OutOfOrder, useEncryption: true)]
+    public class OutOfOrder : IProtocol
     {
         public byte CompressionFlag { get; set; } = 0;
         public ushort Sequence { get; set; }

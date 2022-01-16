@@ -17,6 +17,12 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public event DataEvent OnData;
 
+        public delegate void OutOfOrderEvent(ushort sequence);
+        /// <summary>
+        /// Raised on data processing complete, and packet available.
+        /// </summary>
+        public event OutOfOrderEvent OnOutOfOrder;
+
         private int _lastProcessedFragment = -1;
         private Arc4Provider arc4Provider;
 
@@ -44,12 +50,8 @@ namespace LandmarkEmulator.Shared.Network
             if (sequence > NextSequence)
             {
                 log.Warn($"Sequence out of order, expected {NextSequence} but received {sequence}");
-                _session.OnDisconnect();
-
-                // TODO: Handle out of order packets
-                // this.emit("outoforder", null, this._nextSequence, sequence);
-
-                throw new InvalidOperationException();
+                OnOutOfOrder(sequence);
+                return;
             }
 
             int lastAck = LastAck ?? -1;

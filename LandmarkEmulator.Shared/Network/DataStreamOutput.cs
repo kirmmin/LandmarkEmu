@@ -75,5 +75,33 @@ namespace LandmarkEmulator.Shared.Network
         {
             _fragmentSize = fragmentSize;
         }
+
+        /// <summary>
+        /// Used to handle <see cref="Ack"/> packet from Client.
+        /// </summary>
+        public void HandleAck(ushort sequence)
+        {
+            while (LastAck <= sequence)
+            {
+                LastAck++;
+                if (DataPackets[(int)LastAck] != null)
+                    DataPackets[(int)LastAck] = null;
+            }
+        }
+
+        /// <summary>
+        /// Used to handle resending of data to the client when it sends an out of order packet
+        /// </summary>
+        public void ResendData(ushort sequence)
+        {
+            var start = (int)(LastAck + 1);
+            for (var i = start; i < sequence; i++)
+            {
+                if (DataPackets[i] != null)
+                    OnData((ushort)NextSequence, DataPackets[i]);
+                else
+                    throw new InvalidOperationException("Cache error, could not resend data!");
+            }
+        }
     }
 }
