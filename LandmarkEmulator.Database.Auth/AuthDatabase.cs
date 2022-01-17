@@ -125,6 +125,30 @@ namespace LandmarkEmulator.Database.Auth
         }
 
         /// <summary>
+        /// Update <see cref="AccountModel"/> with supplied server ticket asynchronously.
+        /// </summary>
+        public async Task UpdateServerTicket(AccountModel account, string serverTicket)
+        {
+            account.ServerTicket = serverTicket;
+
+            await using var context = new AuthContext(config);
+            EntityEntry<AccountModel> entity = context.Attach(account);
+            entity.Property(p => p.ServerTicket).IsModified = true;
+            await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Selects an <see cref="AccountModel"/> asynchronously that matches the supplied server ticket.
+        /// </summary>
+        public async Task<AccountModel> GetAccountByServerTicketAsync(string serverTicket)
+        {
+            using var context = new AuthContext(config);
+            return await context.Account
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(a => a.ServerTicket == serverTicket);
+        }
+
+        /// <summary>
         /// Selects all Zone Servers and returns a list containing all <see cref="ZoneServerModel"/>.
         /// </summary>
         public ImmutableList<ZoneServerModel> GetZoneServers()

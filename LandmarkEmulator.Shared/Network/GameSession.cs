@@ -15,6 +15,7 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public bool CanProcessPackets { get; set; } = true;
         public ProtocolVersion ProtocolVersion { get; private set; }
+        public string EncryptionKey { get; protected set; }
 
         private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
         private readonly Queue<ProtocolPacket> outgoingPackets = new();
@@ -31,8 +32,10 @@ namespace LandmarkEmulator.Shared.Network
 
         private bool hasAuthed = false;
 
-        public GameSession()
+        public GameSession(string cryptoKey)
         {
+            EncryptionKey = cryptoKey;
+
             inputStream = new DataStreamInput(this);
             inputStream.OnData += (gamePacket) =>
             {

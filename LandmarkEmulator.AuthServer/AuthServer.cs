@@ -23,6 +23,8 @@ namespace LandmarkEmulator.AuthServer
 
         private static readonly NLog.ILogger log = LogManager.GetCurrentClassLogger();
 
+        public const string EncryptionKey = "F70IaxuU8C/w7FPXY1ibXw==";
+
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));

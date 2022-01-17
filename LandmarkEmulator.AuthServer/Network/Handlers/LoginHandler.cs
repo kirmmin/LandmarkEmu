@@ -7,10 +7,10 @@ using LandmarkEmulator.Database.Auth.Model;
 using LandmarkEmulator.Database.Character;
 using LandmarkEmulator.Database.Character.Model;
 using LandmarkEmulator.Shared.Database;
+using LandmarkEmulator.Shared.Game;
 using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Game.Events;
-using LandmarkEmulator.Shared.GameTable;
-using LandmarkEmulator.Shared.GameTable.Model;
+using LandmarkEmulator.Shared.Network.Cryptography;
 using LandmarkEmulator.Shared.Network.Message;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using NLog;
@@ -482,6 +482,54 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     Status = 1
                 });
             }));
+        }
+
+        [AuthMessageHandler(AuthMessageOpcode.CharacterLoginRequest)]
+        public static void HandleCharacterLoginRequest(AuthSession session, CharacterLoginRequest request)
+        {
+            CharacterLoginResult result = CharacterLoginResult.Success;
+            ZoneServer server = ZoneServerManager.Instance.ZoneServers.SingleOrDefault(x => x.Id == request.ServerId);
+            if (server == null)
+                result = CharacterLoginResult.ServerNotFound;
+
+            // TODO: Confirm server is online and accepting players
+
+            CharacterModel character = session.Characters.SingleOrDefault(x => x.Id == request.CharacterId);
+            if (character == null)
+                result = CharacterLoginResult.NotAllowed;
+
+            if (result == CharacterLoginResult.Success)
+            {
+                string serverTicket = RandomProvider.GetBytes(16u).ToHexString();
+                session.Events.Enqueue(new TaskEvent(DatabaseManager.Instance.AuthDatabase.UpdateServerTicket(session.Account, serverTicket),
+                    () =>
+                {
+                    CharacterLoginReply.ServerInfo serverInfo = new CharacterLoginReply.ServerInfo
+                    {
+                        ServerAddress = $"{server.Host}:{server.Port}",
+                        AccountName   = session.Account.Username,
+                        EncryptionKey = Convert.FromBase64String(session.EncryptionKey),
+                        CharacterId   = character.Id,
+                        CharacterName = character.Name,
+                        Guid          = 1, // TODO: Create central service or allow ZoneServers, to provide a GUID for this call
+                        ServerTicket  = serverTicket
+                    };
+                    session.EnqueueMessage(new CharacterLoginReply
+                    {
+                        CharacterId = request.CharacterId,
+                        ServerId    = request.ServerId,
+                        Result      = result,
+                        Server      = serverInfo
+                    });
+                }));
+            }
+            else
+                session.EnqueueMessage(new CharacterLoginReply
+                {
+                    CharacterId = request.CharacterId,
+                    ServerId    = request.ServerId,
+                    Result      = result
+                });
         }
     }
 }

@@ -19,6 +19,10 @@ namespace LandmarkEmulator.AuthServer.Network
         private readonly ConcurrentQueue<AuthPacket> incomingPackets = new();
         private readonly Queue<AuthPacket> outgoingPackets = new();
 
+        public AuthSession() : base(AuthServer.EncryptionKey)
+        {
+        }
+
         /// <summary>
         /// Initialise an <see cref="AuthSession"/> from an existing <see cref="AccountModel"/>.
         /// </summary>
