@@ -4,6 +4,8 @@
     {
         LoginRequest               = 0x01,
         LoginReply                 = 0x02,
+        Logout                     = 0x03,
+        ForceDisconnect            = 0x04,
         CharacterCreateRequest     = 0x05,
         CharacterCreateReply       = 0x06,
         CharacterLoginRequest      = 0x07,
@@ -14,6 +16,7 @@
         CharacterSelectInfoReply   = 0x0C,
         ServerListRequest          = 0x0D,
         ServerListReply            = 0x0E,
+        ServerUpdate               = 0x0F,
         TunnelPacketClientToServer = 0x10,
         TunnelPacketServerToClient = 0x11
     }
