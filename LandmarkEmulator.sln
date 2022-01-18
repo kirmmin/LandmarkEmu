@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.Launcher",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.Database.Character", "LandmarkEmulator.Database.Character\LandmarkEmulator.Database.Character.csproj", "{707008D4-E447-423C-90F9-72FC46801BD1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.ZoneServer", "LandmarkEmulator.ZoneServer\LandmarkEmulator.ZoneServer.csproj", "{D6A7C697-9007-4037-8C08-F3F7BC7E1B7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LandmarkEmulator.WorldServer", "LandmarkEmulator.ZoneServer\LandmarkEmulator.WorldServer.csproj", "{D6A7C697-9007-4037-8C08-F3F7BC7E1B7B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{84488BCB-B68E-4DCE-8153-990DF4B6C560} = {84488BCB-B68E-4DCE-8153-990DF4B6C560}
 	EndProjectSection

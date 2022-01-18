@@ -155,7 +155,7 @@ namespace LandmarkEmulator.Shared.Network
                 return;
             }
 
-            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X})");
+            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
 
             var reader = new ProtocolPacketReader(packet.Data);
 
@@ -213,6 +213,12 @@ namespace LandmarkEmulator.Shared.Network
             outputStream.PackData(data);
         }
 
+        protected void ToggleEncryption(bool usingEncryption)
+        {
+            inputStream.SetEncryption(usingEncryption);
+            outputStream.SetEncryption(usingEncryption);
+        }
+
         [ProtocolMessageHandler(ProtocolMessageOpcode.SessionRequest)]
         public void HandleSessionRequest(SessionRequest request)
         {
@@ -231,6 +237,11 @@ namespace LandmarkEmulator.Shared.Network
                 ProtocolVersion = ProtocolVersion.LoginUdp_10;
             if (request.Protocol == "LoginUdp_9")
                 ProtocolVersion = ProtocolVersion.LoginUdp_9;
+            if (request.Protocol == "ExternalGatewayApi_3")
+            {
+                ProtocolVersion = ProtocolVersion.ExternalGatewayApi_3;
+                serverCompression = 0x0;
+            }
 
             // Leave room for Oopcode, Compression Byte, and CRC
             outputStream.SetFragmentSize(clientUdpLength - 7);

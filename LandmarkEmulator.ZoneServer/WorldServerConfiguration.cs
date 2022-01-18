@@ -1,9 +1,9 @@
 ﻿using LandmarkEmulator.Database.Configuration;
 using LandmarkEmulator.Shared.Configuration;
 
-namespace LandmarkEmulator.ZoneServer
+namespace LandmarkEmulator.WorldServer
 {
-    public class ZoneServerConfiguration
+    public class WorldServerConfiguration
     {
         public NetworkConfig Network { get; set; }
         public DatabaseConfig Database { get; set; }

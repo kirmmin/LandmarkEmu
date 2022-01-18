@@ -5,13 +5,14 @@ using LandmarkEmulator.Shared.Configuration;
 using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.GameTable;
 using LandmarkEmulator.Shared.Network;
-using LandmarkEmulator.ZoneServer.Network;
+using LandmarkEmulator.Shared.Network.Message;
+using LandmarkEmulator.WorldServer.Network;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LandmarkEmulator.ZoneServer
+namespace LandmarkEmulator.WorldServer
 {
     public class HostedService : IHostedService
     {
@@ -21,13 +22,13 @@ namespace LandmarkEmulator.ZoneServer
         {
             log.Info("Initialising...");
 
-            DatabaseManager.Instance.Initialise(ConfigurationManager<ZoneServerConfiguration>.Instance.Config.Database);
+            DatabaseManager.Instance.Initialise(ConfigurationManager<WorldServerConfiguration>.Instance.Config.Database);
             DatabaseManager.Instance.Migrate(DatabaseType.Auth);
             DatabaseManager.Instance.Migrate(DatabaseType.Character);
 
             GameTableManager.Instance.Initialise();
 
-            //MessageManager.Instance.Initialise();
+            MessageManager.Instance.Initialise();
             GatewayProvider.Instance.Initialise();
             //TunnelDataManager.Instance.Initialise();
 
@@ -35,10 +36,10 @@ namespace LandmarkEmulator.ZoneServer
 
             ThreadManager.Instance.Initialise(lastTick =>
             {
-                NetworkManager<ZoneSession>.Instance.Update(lastTick);
+                NetworkManager<WorldSession>.Instance.Update(lastTick);
             });
 
-            NetworkManager<ZoneSession>.Instance.Initialise(ConfigurationManager<ZoneServerConfiguration>.Instance.Config.Network);
+            NetworkManager<WorldSession>.Instance.Initialise(ConfigurationManager<WorldServerConfiguration>.Instance.Config.Network);
 
             //CommandManager.Instance.Initialise(new AuthCommandHandler());
 
@@ -50,7 +51,7 @@ namespace LandmarkEmulator.ZoneServer
         {
             log.Info($"Ending Service...");
 
-            NetworkManager<ZoneSession>.Instance.Shutdown();
+            NetworkManager<WorldSession>.Instance.Shutdown();
 
             ThreadManager.Instance.Shutdown();
 

@@ -10,9 +10,9 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace LandmarkEmulator.ZoneServer
+namespace LandmarkEmulator.WorldServer
 {
-    internal class ZoneServer
+    internal class WorldServer
     {
         #if DEBUG
         private const string Title = "LandmarkEmulator: Zone Server (DEBUG)";
@@ -27,7 +27,7 @@ namespace LandmarkEmulator.ZoneServer
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
-            ConfigurationManager<ZoneServerConfiguration>.Instance.Initialise("ZoneServer.json");
+            ConfigurationManager<WorldServerConfiguration>.Instance.Initialise("WorldServer.json");
 
             IHostBuilder builder = new HostBuilder()
                 .ConfigureLogging(lb =>

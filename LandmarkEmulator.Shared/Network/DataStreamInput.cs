@@ -169,11 +169,12 @@ namespace LandmarkEmulator.Shared.Network
             for (int i = 0; i < data.Count; i++)
             {
                 byte[] piece = data[i];
-                if (true) // Do we turn off encryption, ever?
+                
+                var reader = new ProtocolPacketReader(piece);
+                byte[] parsedData = piece;
+                if (UsingEncryption) // Do we turn off encryption, ever?
                 {
                     // sometimes there's an extra 0x00 byte in the beginning that trips up the RC4
-                    var reader = new ProtocolPacketReader(piece);
-                    byte[] parsedData = piece;
                     if (piece.Length > 1 && reader.ReadUShort() == 0)
                     {
                         parsedData = new Span<byte>(piece, 1, piece.Length - 1).ToArray();
@@ -181,8 +182,8 @@ namespace LandmarkEmulator.Shared.Network
                     }
                     else
                         arc4Provider.Decrypt(parsedData);
-                    OnData(parsedData); // Emit the parsed data packet to subscribers
                 }
+                OnData(parsedData); // Emit the parsed data packet to subscribers
             }
         }
     }

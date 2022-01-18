@@ -26,7 +26,9 @@ namespace LandmarkEmulator.Shared.Network
 
         public void PackData(byte[] data)
         {
-            arc4Provider.Encrypt(data);
+            if (UsingEncryption)
+                arc4Provider.Encrypt(data);
+
             if (data[0] == 0)
             {
                 List<byte> tmp = new List<byte> { 0 };

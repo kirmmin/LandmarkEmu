@@ -18,6 +18,11 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public ushort? NextSequence { get; protected set; } = null;
 
+        /// <summary>
+        /// Used to determine whether the Arc4 Encryption is active.
+        /// </summary>
+        public bool UsingEncryption { get; private set; } = true;
+
         public byte[] RC4Key { get; private set; }
 
         protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
@@ -26,6 +31,14 @@ namespace LandmarkEmulator.Shared.Network
         {
             _session = session;
             RC4Key = Convert.FromBase64String(session.EncryptionKey);
+        }
+
+        /// <summary>
+        /// Sets whether this <see cref="DataStreamBase"/> is currently using the Arc4 Encryption on the packets it processes.
+        /// </summary>
+        public void SetEncryption(bool usingEncryption)
+        {
+            UsingEncryption = usingEncryption;
         }
     }
 }
