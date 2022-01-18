@@ -1,8 +1,10 @@
-﻿using LandmarkEmulator.AuthServer.Network;
+﻿using LandmarkEmulator.AuthServer.Command;
+using LandmarkEmulator.AuthServer.Network;
 using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Zone;
 using LandmarkEmulator.Database.Configuration;
 using LandmarkEmulator.Shared;
+using LandmarkEmulator.Shared.Command;
 using LandmarkEmulator.Shared.Configuration;
 using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.GameTable;
@@ -35,13 +37,15 @@ namespace LandmarkEmulator.AuthServer
 
             AuthAssetManager.Instance.Initialise();
 
-            ZoneServerManager.Instance.Initialise();
-            NetworkManager<AuthSession>.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Network);
-
             ThreadManager.Instance.Initialise(lastTick =>
             {
                 NetworkManager<AuthSession>.Instance.Update(lastTick);
             });
+
+            ZoneServerManager.Instance.Initialise();
+            NetworkManager<AuthSession>.Instance.Initialise(ConfigurationManager<AuthServerConfiguration>.Instance.Config.Network);
+
+            CommandManager.Instance.Initialise(new AuthCommandHandler());
 
             log.Info($"Service Started!");
             return Task.CompletedTask;
