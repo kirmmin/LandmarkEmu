@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -30,6 +31,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message
             InitialiseGameMessages();
             InitialiseGameMessageHandlers(ProtocolVersion.LoginUdp_9);
             InitialiseGameMessageHandlers(ProtocolVersion.LoginUdp_10);
+            log.Info($"Initialised {clientMessageHandlers.Values.Sum(x => x.Count)} Auth message handler(s).");
         }
 
         private void InitialiseGameMessages()
@@ -124,7 +126,6 @@ namespace LandmarkEmulator.AuthServer.Network.Message
             }
 
             clientMessageHandlers.Add(version, messageHandlers.ToImmutableDictionary());
-            log.Info($"Initialised {clientMessageHandlers.Count} Auth message handler(s).");
         }
 
         public bool GetOpcode(IWritable message, out AuthMessageOpcode opcode)
