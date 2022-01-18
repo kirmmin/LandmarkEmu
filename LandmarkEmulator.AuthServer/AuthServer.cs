@@ -18,7 +18,7 @@ namespace LandmarkEmulator.AuthServer
         #if DEBUG
         private const string Title = "LandmarkEmulator: Auth Server (DEBUG)";
         #else
-        private const string Title = "LandmarkEmulator: World Server (RELEASE)";
+        private const string Title = "LandmarkEmulator: Auth Server (RELEASE)";
         #endif
 
         private static readonly NLog.ILogger log = LogManager.GetCurrentClassLogger();
