@@ -6,14 +6,14 @@ using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
 {
-    public class GamePacketWriter
+    public class ProtocolPacketWriter
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         private int currentBytePosition;
         private List<byte> stream;
 
-        public GamePacketWriter(List<byte> output)
+        public ProtocolPacketWriter(List<byte> output)
         {
             stream = output;
             ResetBits();
@@ -37,10 +37,19 @@ namespace LandmarkEmulator.Shared.Network
             Write(Convert.ToByte(value));
         }
 
-        public void WriteLE(ushort value)
+        public void Write(ushort value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[2]);
-            BinaryPrimitives.WriteUInt16LittleEndian(spanValue, value);
+            BinaryPrimitives.WriteUInt16BigEndian(spanValue, value);
+
+            foreach (byte i in spanValue)
+                stream.Add(i);
+        }
+
+        public void Write(short value)
+        {
+            Span<byte> spanValue = new Span<byte>(new byte[2]);
+            BinaryPrimitives.WriteInt16BigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -49,7 +58,7 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(uint value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[4]);
-            BinaryPrimitives.WriteUInt32LittleEndian(spanValue, value);
+            BinaryPrimitives.WriteUInt32BigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -58,7 +67,7 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(int value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[4]);
-            BinaryPrimitives.WriteInt32LittleEndian(spanValue, value);
+            BinaryPrimitives.WriteInt32BigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -67,7 +76,7 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(float value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[4]);
-            BinaryPrimitives.WriteSingleLittleEndian(spanValue, value);
+            BinaryPrimitives.WriteSingleBigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -76,7 +85,7 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(ulong value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[8]);
-            BinaryPrimitives.WriteUInt64LittleEndian(spanValue, value);
+            BinaryPrimitives.WriteUInt64BigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -85,7 +94,7 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(long value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[8]);
-            BinaryPrimitives.WriteInt64LittleEndian(spanValue, value);
+            BinaryPrimitives.WriteInt64BigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
@@ -94,24 +103,24 @@ namespace LandmarkEmulator.Shared.Network
         public void Write(double value)
         {
             Span<byte> spanValue = new Span<byte>(new byte[8]);
-            BinaryPrimitives.WriteDoubleLittleEndian(spanValue, value);
+            BinaryPrimitives.WriteDoubleBigEndian(spanValue, value);
 
             foreach (byte i in spanValue)
                 stream.Add(i);
+        }
+
+        public void WriteShortLengthString(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            Write((float)(ushort)value.Length);
+            foreach (byte c in bytes)
+                stream.Add(c);
         }
 
         public void Write(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
             Write((uint)bytes.Length);
-            foreach (byte c in bytes)
-                stream.Add(c);
-        }
-
-        public void WriteLongString(string value)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(value);
-            Write((ulong)bytes.Length);
             foreach (byte c in bytes)
                 stream.Add(c);
         }

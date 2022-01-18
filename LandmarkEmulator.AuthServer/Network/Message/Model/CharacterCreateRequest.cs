@@ -31,27 +31,27 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            ServerId = reader.ReadULongLE();
-            Unknown0 = reader.ReadUIntLE();
+            ServerId = reader.ReadULong();
+            Unknown0 = reader.ReadUInt();
             Unknown1 = reader.ReadByte();
-            BodyType = reader.ReadUIntLE();
-            Gender   = reader.ReadUIntLE();
-            Name     = reader.ReadStringLE();
-            Unknown3 = reader.ReadUIntLE();
-            Unknown4 = reader.ReadUIntLE();
-            Unknown5 = reader.ReadULongLE();
-            Unknown6 = reader.ReadUIntLE();
-            Head     = reader.ReadULongLE();
-            Unknown9 = reader.ReadUIntLE();
-            Hair     = reader.ReadULongLE();
-            Unknown10 = reader.ReadUIntLE();
-            FacialHair = reader.ReadULongLE();
-            Unknown11 = reader.ReadUIntLE();
-            Unknown12 = reader.ReadULongLE();
-            Unknown13 = reader.ReadULongLE();
+            BodyType = reader.ReadUInt();
+            Gender   = reader.ReadUInt();
+            Name     = reader.ReadString();
+            Unknown3 = reader.ReadUInt();
+            Unknown4 = reader.ReadUInt();
+            Unknown5 = reader.ReadULong();
+            Unknown6 = reader.ReadUInt();
+            Head     = reader.ReadULong();
+            Unknown9 = reader.ReadUInt();
+            Hair     = reader.ReadULong();
+            Unknown10 = reader.ReadUInt();
+            FacialHair = reader.ReadULong();
+            Unknown11 = reader.ReadUInt();
+            Unknown12 = reader.ReadULong();
+            Unknown13 = reader.ReadULong();
             Unknown14 = reader.ReadByte();
-            Unknown15 = reader.ReadUIntLE();
-            StartingOutfit = reader.ReadUIntLE();
+            Unknown15 = reader.ReadUInt();
+            StartingOutfit = reader.ReadUInt();
         }
     }
 
@@ -69,24 +69,24 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            ServerId = reader.ReadULongLE();
-            Unknown0 = reader.ReadUIntLE();
+            ServerId = reader.ReadULong();
+            Unknown0 = reader.ReadUInt();
             EmpireId = reader.ReadByte();
-            ProfileTypeId = reader.ReadUIntLE();
-            Gender   = reader.ReadUIntLE();
-            Name     = reader.ReadStringLE();
+            ProfileTypeId = reader.ReadUInt();
+            Gender   = reader.ReadUInt();
+            Name     = reader.ReadString();
 
-            uint customisationCount = reader.ReadUIntLE();
+            uint customisationCount = reader.ReadUInt();
             for (uint i = 0; i < customisationCount; i++)
             {
-                var slotId = reader.ReadUIntLE();
-                var optionId = reader.ReadUIntLE();
-                var tintId = reader.ReadUIntLE();
+                var slotId = reader.ReadUInt();
+                var optionId = reader.ReadUInt();
+                var tintId = reader.ReadUInt();
 
                 CustomisationOptions.Add(new (slotId, optionId, tintId));
             }
             
-            SkinTint = reader.ReadUIntLE();
+            SkinTint = reader.ReadUInt();
         }
     }
 }

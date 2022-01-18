@@ -20,17 +20,17 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(ServerId);
+            writer.Write(ServerId);
             writer.Write(IsLocked);
-            writer.WriteLE(Name);
-            writer.WriteLE(NameId);
-            writer.WriteLE(Description);
-            writer.WriteLE(DescriptionId);
-            writer.WriteLE(ReqFeatureId);
-            writer.WriteLE(ServerInfo);
-            writer.WriteLE(PopulationLevel);
-            writer.WriteLE(PopulationData);
-            writer.WriteLE(AccessExpression);
+            writer.Write(Name);
+            writer.Write(NameId);
+            writer.Write(Description);
+            writer.Write(DescriptionId);
+            writer.Write(ReqFeatureId);
+            writer.Write(ServerInfo);
+            writer.Write(PopulationLevel);
+            writer.Write(PopulationData);
+            writer.Write(AccessExpression);
             writer.Write(AllowedAccess);
         }
     }

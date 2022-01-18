@@ -21,9 +21,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(FirstName);
-            writer.WriteLE(LastName);
-            writer.WriteLE((uint)Result);
+            writer.Write(FirstName);
+            writer.Write(LastName);
+            writer.Write((uint)Result);
         }
     }
 }

@@ -14,11 +14,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            CharacterId = reader.ReadULongLE();
-            ServerId = reader.ReadULongLE();
-            Unknown0 = reader.ReadUIntLE();
-            Locale = reader.ReadStringLE();
-            Unknown2 = reader.ReadULongLE();
+            CharacterId = reader.ReadULong();
+            ServerId = reader.ReadULong();
+            Unknown0 = reader.ReadUInt();
+            Locale = reader.ReadString();
+            Unknown2 = reader.ReadULong();
         }
     }
 }

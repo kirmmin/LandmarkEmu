@@ -13,10 +13,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            SessionId            = reader.ReadStringLE();
-            SystemFingerPrint    = reader.ReadStringLE();
-            Locale               = reader.ReadUIntLE();
-            ThirdPartyAuthTicket = reader.ReadUIntLE();
+            SessionId            = reader.ReadString();
+            SystemFingerPrint    = reader.ReadString();
+            Locale               = reader.ReadUInt();
+            ThirdPartyAuthTicket = reader.ReadUInt();
         }
     }
 }

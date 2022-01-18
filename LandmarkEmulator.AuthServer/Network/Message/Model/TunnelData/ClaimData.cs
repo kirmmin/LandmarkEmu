@@ -42,38 +42,38 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadULongLE();
-                Unknown1 = reader.ReadULongLE();
-                Unknown2 = reader.ReadULongLE();
-                Unknown3 = reader.ReadUIntLE();
-                Unknown4 = reader.ReadUIntLE();
-                Unknown5 = reader.ReadUIntLE();
+                Unknown0 = reader.ReadULong();
+                Unknown1 = reader.ReadULong();
+                Unknown2 = reader.ReadULong();
+                Unknown3 = reader.ReadUInt();
+                Unknown4 = reader.ReadUInt();
+                Unknown5 = reader.ReadUInt();
                 Unknown6 = reader.ReadBool();
-                Unknown7 = reader.ReadStringLE();
+                Unknown7 = reader.ReadString();
                 for (int i = 0; i < Unknown8.Length; i++)
-                    Unknown8[i] = reader.ReadDoubleLE();
+                    Unknown8[i] = reader.ReadDouble();
                 for (int i = 0; i < Unknown9.Length; i++)
-                    Unknown9[i] = reader.ReadDoubleLE();
-                Unknown10 = reader.ReadUIntLE();
-                Unknown11 = reader.ReadUIntLE();
+                    Unknown9[i] = reader.ReadDouble();
+                Unknown10 = reader.ReadUInt();
+                Unknown11 = reader.ReadUInt();
             }
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
-                writer.WriteLE(Unknown2);
-                writer.WriteLE(Unknown3);
-                writer.WriteLE(Unknown4);
-                writer.WriteLE(Unknown5);
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
+                writer.Write(Unknown5);
                 writer.Write(Unknown6);
-                writer.WriteLE(Unknown7);
+                writer.Write(Unknown7);
                 for (int i = 0; i < Unknown8.Length; i++)
-                    writer.WriteLE(Unknown8[i]);
+                    writer.Write(Unknown8[i]);
                 for (int i = 0; i < Unknown9.Length; i++)
-                    writer.WriteLE(Unknown9[i]);
-                writer.WriteLE(Unknown10);
-                writer.WriteLE(Unknown11);
+                    writer.Write(Unknown9[i]);
+                writer.Write(Unknown10);
+                writer.Write(Unknown11);
             }
         }
 
@@ -88,7 +88,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Read(GamePacketReader reader)
         {
-            uint count = reader.ReadUIntLE();
+            uint count = reader.ReadUInt();
             for (int i = 0; i < count; i++)
             {
                 Claims.Add(new Claim());
@@ -97,7 +97,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE((uint)Claims.Count);
+            writer.Write((uint)Claims.Count);
             Claims.ForEach(i => i.Write(writer));
         }
     }

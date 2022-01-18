@@ -8,7 +8,7 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
     {
         public List<ProtocolPacket> Packets { get; } = new();
 
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
             if (options.Compression)
                 reader.ReadByte();
@@ -19,7 +19,7 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
             }
         }
 
-        private void ReadPacket(GamePacketReader reader, PacketOptions options)
+        private void ReadPacket(ProtocolPacketReader reader, PacketOptions options)
         {
             byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
             if (nextLength > reader.BytesRemaining - 2)
@@ -33,7 +33,7 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
                 }));
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
             throw new System.NotImplementedException();
         }

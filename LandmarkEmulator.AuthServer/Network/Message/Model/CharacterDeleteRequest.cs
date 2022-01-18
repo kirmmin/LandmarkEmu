@@ -10,7 +10,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Read(GamePacketReader reader)
         {
-            CharacterId = reader.ReadULongLE();
+            CharacterId = reader.ReadULong();
         }
     }
 }

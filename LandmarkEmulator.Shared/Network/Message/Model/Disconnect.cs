@@ -3,11 +3,11 @@
     [ProtocolMessage(ProtocolMessageOpcode.Disconnect, useEncryption: true)]
     public class Disconnect : IProtocol
     {
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
         }
     }

@@ -74,7 +74,7 @@ namespace LandmarkEmulator.AuthServer.Network
                 return;
             }
 
-            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data).Replace("-", "")}");
+            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})");
 
             var reader = new GamePacketReader(packet.Data);
 
@@ -105,7 +105,7 @@ namespace LandmarkEmulator.AuthServer.Network
             writer.Write((byte)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
-            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(data.ToArray())}");
+            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X})");
 
             PackAndSend(data.ToArray());
         }

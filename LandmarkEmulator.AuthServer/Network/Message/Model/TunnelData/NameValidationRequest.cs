@@ -16,8 +16,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Read(GamePacketReader reader)
         {
-            FirstName = reader.ReadStringLE();
-            LastName  = reader.ReadStringLE();
+            FirstName = reader.ReadString();
+            LastName  = reader.ReadString();
         }
 
         public void Write(GamePacketWriter writer)

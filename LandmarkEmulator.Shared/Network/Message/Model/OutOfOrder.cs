@@ -6,18 +6,18 @@
         public byte CompressionFlag { get; set; } = 0;
         public ushort Sequence { get; set; }
 
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
             if (!options.IsSubpacket)
                 CompressionFlag = reader.ReadByte();
-            Sequence = reader.ReadUShortBE();
+            Sequence = reader.ReadUShort();
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
             if (!options.IsSubpacket)
                 writer.Write(CompressionFlag);
-            writer.WriteBE(Sequence);
+            writer.Write(Sequence);
         }
     }
 }

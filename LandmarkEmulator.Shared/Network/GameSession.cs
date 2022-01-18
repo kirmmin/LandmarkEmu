@@ -138,7 +138,7 @@ namespace LandmarkEmulator.Shared.Network
             IProtocol message = MessageManager.Instance.GetProtocolMessage(packet.Opcode);
             if (message == null)
             {
-                log.Warn($"Received unknown packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
+                log.Warn($"Received unknown protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
                 return;
             }
 
@@ -151,13 +151,13 @@ namespace LandmarkEmulator.Shared.Network
             MessageHandlerDelegate handlerInfo = MessageManager.Instance.GetProtocolMessageHandler(packet.Opcode);
             if (handlerInfo == null)
             {
-                log.Warn($"Received unhandled packet {packet.Opcode}(0x{packet.Opcode:X}).");
+                log.Warn($"Received unhandled protocol packet {packet.Opcode}(0x{packet.Opcode:X}).");
                 return;
             }
 
-            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})");
+            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X})");
 
-            var reader = new GamePacketReader(packet.Data);
+            var reader = new ProtocolPacketReader(packet.Data);
 
             message.Read(reader, packet.PacketOptions);
             if (reader.BytesRemaining > 2)
@@ -192,16 +192,16 @@ namespace LandmarkEmulator.Shared.Network
         protected void SendPacket(ProtocolPacket packet)
         {
             List<byte> data = new();
-            var writer = new GamePacketWriter(data);
+            var writer = new ProtocolPacketWriter(data);
 
-            writer.WriteBE((ushort)packet.Opcode);
+            writer.Write((ushort)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
             byte[] newData = data.ToArray();
             if (packet.UseEncryption)
                 newData = CrcProvider.AppendCRC(newData, 0);
 
-            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(newData)}");
+            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X})");
 
             SendRaw(newData);
         }

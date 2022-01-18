@@ -25,8 +25,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
             }
         }
 
@@ -47,8 +47,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
             }
         }
 
@@ -71,8 +71,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
                 public void Write(GamePacketWriter writer)
                 {
-                    writer.WriteLE(Unknown0);
-                    writer.WriteLE(Unknown1);
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
                 }
             }
 
@@ -95,11 +95,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
-                writer.WriteLE(Unknown2);
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
 
-                writer.WriteLE((uint)Unknown3.Count);
+                writer.Write((uint)Unknown3.Count);
                 Unknown3.ForEach(x => x.Write(writer));
             }
         }
@@ -124,11 +124,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
-                writer.WriteLE(Unknown1);
-                writer.WriteLE(Unknown2);
-                writer.WriteLE(Unknown3);
-                writer.WriteLE(Unknown4);
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -148,7 +148,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Unknown0);
+                writer.Write(Unknown0);
             }
         }
 
@@ -179,16 +179,16 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
                 public void Write(GamePacketWriter writer)
                 {
-                    writer.WriteLE(SemanticName);
-                    writer.WriteLE(Unknown1);
-                    writer.WriteLE(Unknown2);
-                    writer.WriteLE(Unknown3);
-                    writer.WriteLE(EditType);
-                    writer.WriteLE(Unknown4);
-                    writer.WriteLE(R);
-                    writer.WriteLE(G);
-                    writer.WriteLE(B);
-                    writer.WriteLE(A);
+                    writer.Write(SemanticName);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(EditType);
+                    writer.Write(Unknown4);
+                    writer.Write(R);
+                    writer.Write(G);
+                    writer.Write(B);
+                    writer.Write(A);
                 }
             }
 
@@ -213,13 +213,13 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(Id);
-                writer.WriteLE(AliasName);
-                writer.WriteLE(SemanticGroup);
-                writer.WriteLE((uint)ArtTints.Count);
+                writer.Write(Id);
+                writer.Write(AliasName);
+                writer.Write(SemanticGroup);
+                writer.Write((uint)ArtTints.Count);
                 ArtTints.ForEach(x => x.Write(writer));
-                writer.WriteLE(Unknown3);
-                writer.WriteLE(Unknown4);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -270,28 +270,28 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE((uint)Unknown0.Count);
+            writer.Write((uint)Unknown0.Count);
             Unknown0.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)Unknown1.Count);
+            writer.Write((uint)Unknown1.Count);
             Unknown1.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)ArtTintOverrideGroups.Count);
+            writer.Write((uint)ArtTintOverrideGroups.Count);
             ArtTintOverrideGroups.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)Unknown3.Count);
+            writer.Write((uint)Unknown3.Count);
             Unknown3.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)Unknown4.Count);
+            writer.Write((uint)Unknown4.Count);
             Unknown4.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)Unknown5.Count);
+            writer.Write((uint)Unknown5.Count);
             Unknown5.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)ArtTintGroups.Count);
+            writer.Write((uint)ArtTintGroups.Count);
             ArtTintGroups.ForEach(x => x.Write(writer));
 
-            writer.WriteLE((uint)Unknown7.Count);
+            writer.Write((uint)Unknown7.Count);
             Unknown7.ForEach(x => x.Write(writer));
         }
     }

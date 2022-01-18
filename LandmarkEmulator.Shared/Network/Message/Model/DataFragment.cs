@@ -9,28 +9,28 @@
         public byte[] Data { get; set; }
         public PacketOptions PacketOptions { get; private set; }
 
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
             int dataEnd = options.IsSubpacket ? 0 : 2;
 
             if (options.Compression && !options.IsSubpacket)
                 reader.ReadByte();
 
-            Sequence = reader.ReadUShortBE();
+            Sequence = reader.ReadUShort();
             Data     = reader.ReadBytes((uint)(reader.BytesRemaining - dataEnd));
 
             if (!options.IsSubpacket)
-                CRC = reader.ReadUShortBE();
+                CRC = reader.ReadUShort();
 
             PacketOptions = options;
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
             if (options.Compression && !options.IsSubpacket)
-                writer.Write(0);
+                writer.Write((byte)0);
 
-            writer.WriteBE(Sequence);
+            writer.Write(Sequence);
             writer.WriteBytes(Data);
         }
     }

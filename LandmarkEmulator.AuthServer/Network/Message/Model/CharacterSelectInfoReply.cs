@@ -34,17 +34,17 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        writer.WriteLE((uint)Vector3s.Count);
+                        writer.Write((uint)Vector3s.Count);
                         foreach (var v in Vector3s)
                         {
-                            writer.WriteLE(v.X);
-                            writer.WriteLE(v.Y);
-                            writer.WriteLE(v.Z);
+                            writer.Write(v.X);
+                            writer.Write(v.Y);
+                            writer.Write(v.Z);
                         }
-                        writer.WriteLE(Unknown0);
-                        writer.WriteLE(Unknown1);
-                        writer.WriteLE(Unknown2);
-                        writer.WriteLE(Unknown3);
+                        writer.Write(Unknown0);
+                        writer.Write(Unknown1);
+                        writer.Write(Unknown2);
+                        writer.Write(Unknown3);
                     }
                 }
 
@@ -67,14 +67,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        writer.WriteLE(ModelName);
-                        writer.WriteLE(TextureAlias);
-                        writer.WriteLE(Unknown2);
-                        writer.WriteLE(Unknown3);
-                        writer.WriteLE(Unknown4);
-                        writer.WriteLE(Unknown5);
-                        writer.WriteLE((uint)Slot);
-                        writer.WriteLE(Unknown7);
+                        writer.Write(ModelName);
+                        writer.Write(TextureAlias);
+                        writer.Write(Unknown2);
+                        writer.Write(Unknown3);
+                        writer.Write(Unknown4);
+                        writer.Write(Unknown5);
+                        writer.Write((uint)Slot);
+                        writer.Write(Unknown7);
                         writer.Write(Unknown8);
                     }
                 }
@@ -110,30 +110,30 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    writer.WriteLE(GetSize());
-                    writer.WriteLE(Name);
+                    writer.Write(GetSize());
+                    writer.Write(Name);
                     writer.Write(Unknown0);
-                    writer.WriteLE(Unknown1);
-                    writer.WriteLE(Unknown2);
-                    writer.WriteLE(Unknown3);
-                    writer.WriteLE(Unknown4);
-                    writer.WriteLE(Unknown5);
-                    writer.WriteLE(Unknown6);
-                    writer.WriteLE(Unknown7);
-                    writer.WriteLE(Unknown8);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(Unknown4);
+                    writer.Write(Unknown5);
+                    writer.Write(Unknown6);
+                    writer.Write(Unknown7);
+                    writer.Write(Unknown8);
 
-                    writer.WriteLE((uint)Array142C34C30.Count);
-                    Array142C34C30.ForEach(x => writer.WriteLE(x));
+                    writer.Write((uint)Array142C34C30.Count);
+                    Array142C34C30.ForEach(x => writer.Write(x));
 
                     Unknown9.Write(writer);
 
-                    writer.WriteLE((uint)CharacterAttachments.Count);
+                    writer.Write((uint)CharacterAttachments.Count);
                     CharacterAttachments.ForEach(x => x.Write(writer));
 
-                    writer.WriteLE((uint)Friends.Count);
+                    writer.Write((uint)Friends.Count);
                     Friends.ForEach(x => x.Write(writer));
 
-                    writer.WriteLE(UnknownQ);
+                    writer.Write(UnknownQ);
                 }
 
                 public uint GetSize()
@@ -175,10 +175,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(CharacterId);
-                writer.WriteLE(LastServerId);
-                writer.WriteLE(LastLogin);
-                writer.WriteLE(Status);
+                writer.Write(CharacterId);
+                writer.Write(LastServerId);
+                writer.Write(LastLogin);
+                writer.Write(Status);
                 CharacterData.Write(writer);
             }
         }
@@ -189,10 +189,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(Status);
+            writer.Write(Status);
             writer.Write(CanBypassServerLock);
 
-            writer.WriteLE((uint)Characters.Count);
+            writer.Write((uint)Characters.Count);
             Characters.ForEach(x => x.Write(writer));
         }
     }
@@ -222,14 +222,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        writer.WriteLE(ModelName);
-                        writer.WriteLE(TextureAlias);
-                        writer.WriteLE(SemanticTint);
-                        writer.WriteLE(Unknown3);
-                        writer.WriteLE(Unknown4);
-                        writer.WriteLE(Unknown5);
-                        writer.WriteLE((uint)Slot);
-                        writer.WriteLE(Unknown7);
+                        writer.Write(ModelName);
+                        writer.Write(TextureAlias);
+                        writer.Write(SemanticTint);
+                        writer.Write(Unknown3);
+                        writer.Write(Unknown4);
+                        writer.Write(Unknown5);
+                        writer.Write((uint)Slot);
+                        writer.Write(Unknown7);
                     }
                 }
 
@@ -264,37 +264,37 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    writer.WriteLE(GetSize());
-                    writer.WriteLE(Name);
+                    writer.Write(GetSize());
+                    writer.Write(Name);
                     writer.Write(Unknown0);
-                    writer.WriteLE(Unknown1);
-                    writer.WriteLE(HeadId);
-                    writer.WriteLE(ModelId);
-                    writer.WriteLE((uint)Gender);
-                    writer.WriteLE(Unknown5);
-                    writer.WriteLE(Unknown6);
-                    writer.WriteLE(Unknown7);
+                    writer.Write(Unknown1);
+                    writer.Write(HeadId);
+                    writer.Write(ModelId);
+                    writer.Write((uint)Gender);
+                    writer.Write(Unknown5);
+                    writer.Write(Unknown6);
+                    writer.Write(Unknown7);
 
-                    writer.WriteLE((uint)Array142C34C30.Count);
-                    Array142C34C30.ForEach(x => writer.WriteLE(x));
+                    writer.Write((uint)Array142C34C30.Count);
+                    Array142C34C30.ForEach(x => writer.Write(x));
 
-                    writer.WriteLE((uint)Customizations.Count);
+                    writer.Write((uint)Customizations.Count);
                     foreach (var v in Customizations)
                     {
-                        writer.WriteLE(v.Item1);
-                        writer.WriteLE(v.Item2);
-                        writer.WriteLE(v.Item3);
+                        writer.Write(v.Item1);
+                        writer.Write(v.Item2);
+                        writer.Write(v.Item3);
                     }
 
-                    writer.WriteLE(SkinTint);
+                    writer.Write(SkinTint);
 
-                    writer.WriteLE((uint)CharacterAttachments.Count);
+                    writer.Write((uint)CharacterAttachments.Count);
                     CharacterAttachments.ForEach(x => x.Write(writer));
 
-                    writer.WriteLE((uint)Friends.Count);
+                    writer.Write((uint)Friends.Count);
                     Friends.ForEach(x => x.Write(writer));
 
-                    writer.WriteLE(Unknown9);
+                    writer.Write(Unknown9);
                 }
 
                 public uint GetSize()
@@ -337,10 +337,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(CharacterId);
-                writer.WriteLE(LastServerId);
-                writer.WriteLE(LastLogin);
-                writer.WriteLE(Status);
+                writer.Write(CharacterId);
+                writer.Write(LastServerId);
+                writer.Write(LastLogin);
+                writer.Write(Status);
                 CharacterData.Write(writer);
             }
         }
@@ -351,10 +351,10 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(Status);
+            writer.Write(Status);
             writer.Write(CanBypassServerLock);
 
-            writer.WriteLE((uint)Characters.Count);
+            writer.Write((uint)Characters.Count);
             Characters.ForEach(x => x.Write(writer));
         }
     }

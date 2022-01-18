@@ -32,17 +32,17 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                writer.WriteLE(GetSize());
-                writer.WriteLE(ServerAddress);
-                writer.WriteLE(ServerTicket);
-                writer.WriteLE((uint)EncryptionKey.Length);
+                writer.Write(GetSize());
+                writer.Write(ServerAddress);
+                writer.Write(ServerTicket);
+                writer.Write((uint)EncryptionKey.Length);
                 foreach (byte key in EncryptionKey)
                     writer.Write(key);
-                writer.WriteLE(CharacterId);
-                writer.WriteLE(Guid);
-                writer.WriteLE(AccountName);
-                writer.WriteLE(CharacterName);
-                writer.WriteLE(Unknown0);
+                writer.Write(CharacterId);
+                writer.Write(Guid);
+                writer.Write(AccountName);
+                writer.Write(CharacterName);
+                writer.Write(Unknown0);
             }
         }
 
@@ -53,9 +53,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(CharacterId);
-            writer.WriteLE(ServerId);
-            writer.WriteLE((uint)Result);
+            writer.Write(CharacterId);
+            writer.Write(ServerId);
+            writer.Write((uint)Result);
             Server.Write(writer);
         }
     }

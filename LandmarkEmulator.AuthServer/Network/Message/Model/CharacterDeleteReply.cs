@@ -12,9 +12,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(CharacterId);
-            writer.WriteLE(Status);
-            writer.WriteLE(Payload);
+            writer.Write(CharacterId);
+            writer.Write(Status);
+            writer.Write(Payload);
         }
     }
 }

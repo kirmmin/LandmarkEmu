@@ -12,8 +12,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.Shared
 
         public void Read(GamePacketReader reader)
         {
-            ServerId = reader.ReadULongLE();
-            reader.ReadUIntLE(); // Size of TunnelData, but we don't need to use it. Just read, don't store.
+            ServerId = reader.ReadULong();
+            reader.ReadUInt(); // Size of TunnelData, but we don't need to use it. Just read, don't store.
             Type = (TunnelDataType)reader.ReadByte();
 
             Data = TunnelDataManager.Instance.NewEntityCommand(Type);
@@ -25,8 +25,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(ServerId);
-            writer.WriteLE(Data.GetSize() + 1);
+            writer.Write(ServerId);
+            writer.Write(Data.GetSize() + 1);
             writer.Write((byte)Type);
             Data.Write(writer);
         }

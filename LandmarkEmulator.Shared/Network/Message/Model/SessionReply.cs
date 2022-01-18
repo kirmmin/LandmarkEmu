@@ -10,19 +10,19 @@
         public uint UdpLength { get; set; }
         public uint Unknown0 { get; set; } = 3;
 
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
             throw new System.NotImplementedException();
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
-            writer.WriteBE(SessionId);
-            writer.WriteBE(CRCSeed);
+            writer.Write(SessionId);
+            writer.Write(CRCSeed);
             writer.Write(CRCLength);
-            writer.WriteBE(Compression);
-            writer.WriteBE(UdpLength);
-            writer.WriteBE(Unknown0);
+            writer.Write(Compression);
+            writer.Write(UdpLength);
+            writer.Write(Unknown0);
         }
     }
 }

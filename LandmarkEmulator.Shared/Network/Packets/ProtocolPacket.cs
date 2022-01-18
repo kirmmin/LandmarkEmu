@@ -17,9 +17,9 @@ namespace LandmarkEmulator.Shared.Network.Packets
 
         public ProtocolPacket(byte[] data, PacketOptions options = null)
         {
-            var reader = new GamePacketReader(data);
+            var reader = new ProtocolPacketReader(data);
 
-            Opcode        = (ProtocolMessageOpcode)reader.ReadUShortBE();
+            Opcode        = (ProtocolMessageOpcode)reader.ReadUShort();
             Data          = reader.ReadBytes(reader.BytesRemaining);
             Size          = (uint)Data.Length;
             PacketOptions = options;
@@ -31,7 +31,7 @@ namespace LandmarkEmulator.Shared.Network.Packets
             UseEncryption = useEncryption;
 
             List<byte> data = new();
-            var writer = new GamePacketWriter(data);
+            var writer = new ProtocolPacketWriter(data);
             message.Write(writer, options);
 
             Data = data.ToArray();

@@ -19,14 +19,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         public void Write(GamePacketWriter writer)
         {
             writer.Write(LoggedIn);
-            writer.WriteLE(Status);
-            writer.WriteLE(Result);
+            writer.Write(Status);
+            writer.Write(Result);
             writer.Write(IsMember);
             writer.Write(IsInternal);
-            writer.WriteLE(Namespace);
-            writer.WriteLE(0ul); // TODO: Figure out how to write "byteswithlength" type.
-            writer.WriteLE(0ul); // TODO: Figure out how to write "byteswithlength" type.
-            writer.WriteLE(0ul); // TODO: Figure out how to write "byteswithlength" type.
+            writer.Write(Namespace);
+            writer.Write(0ul); // TODO: Figure out how to write "byteswithlength" type.
+            writer.Write(0ul); // TODO: Figure out how to write "byteswithlength" type.
+            writer.Write(0ul); // TODO: Figure out how to write "byteswithlength" type.
         }
     }
 }

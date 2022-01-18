@@ -1,10 +1,10 @@
-﻿using LandmarkEmulator.Shared.Network.Message.Model;
+﻿using LandmarkEmulator.Shared.Network;
 
 namespace LandmarkEmulator.Shared.Network.Message
 {
     public interface IProtocol
     {
-        void Write(GamePacketWriter writer, PacketOptions options);
-        void Read(GamePacketReader reader, PacketOptions options);
+        void Write(ProtocolPacketWriter writer, PacketOptions options);
+        void Read(ProtocolPacketReader reader, PacketOptions options);
     }
 }

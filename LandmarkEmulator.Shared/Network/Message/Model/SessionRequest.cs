@@ -8,15 +8,15 @@
         public uint UdpLength { get; set; }
         public string Protocol { get; set; }
 
-        public void Read(GamePacketReader reader, PacketOptions options)
+        public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
-            CRCLength = reader.ReadUIntBE();
-            SessionId = reader.ReadUIntBE();
-            UdpLength = reader.ReadUIntBE();
+            CRCLength = reader.ReadUInt();
+            SessionId = reader.ReadUInt();
+            UdpLength = reader.ReadUInt();
             Protocol  = reader.ReadNullTerminatedString();
         }
 
-        public void Write(GamePacketWriter writer, PacketOptions options)
+        public void Write(ProtocolPacketWriter writer, PacketOptions options)
         {
             throw new System.NotImplementedException();
         }

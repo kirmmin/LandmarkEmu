@@ -100,8 +100,8 @@ namespace LandmarkEmulator.Shared.Network
             }
             
             bool dataReady = false;
-            var reader = new GamePacketReader(dataPacket.Data);
-            int totalSize = (int)reader.ReadUIntBE();
+            var reader = new ProtocolPacketReader(dataPacket.Data);
+            int totalSize = (int)reader.ReadUInt();
             int dataSize = dataPacket.Data.Length - 4;
 
             List<byte> data = new();
@@ -146,7 +146,7 @@ namespace LandmarkEmulator.Shared.Network
             var newData = new List<byte[]>();
             if (data[0] == 0x00 && data[1] == 0x19)
             {
-                var reader = new GamePacketReader(data.ToArray().AsSpan().Slice(2).ToArray());
+                var reader = new ProtocolPacketReader(data.ToArray().AsSpan().Slice(2).ToArray());
                 while (reader.BytesRemaining != 0)
                 {
                     newData.Add(ReadPacket(reader));
@@ -158,7 +158,7 @@ namespace LandmarkEmulator.Shared.Network
             return newData;
         }
 
-        private byte[] ReadPacket(GamePacketReader reader)
+        private byte[] ReadPacket(ProtocolPacketReader reader)
         {
             byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
             return reader.ReadBytes(nextLength);
@@ -172,9 +172,9 @@ namespace LandmarkEmulator.Shared.Network
                 if (true) // Do we turn off encryption, ever?
                 {
                     // sometimes there's an extra 0x00 byte in the beginning that trips up the RC4
-                    var reader = new GamePacketReader(piece);
+                    var reader = new ProtocolPacketReader(piece);
                     byte[] parsedData = piece;
-                    if (piece.Length > 1 && reader.ReadUShortBE() == 0)
+                    if (piece.Length > 1 && reader.ReadUShort() == 0)
                     {
                         parsedData = new Span<byte>(piece, 1, piece.Length - 1).ToArray();
                         arc4Provider.Decrypt(parsedData);

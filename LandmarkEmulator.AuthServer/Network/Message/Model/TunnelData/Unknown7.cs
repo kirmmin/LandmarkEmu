@@ -16,12 +16,12 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Read(GamePacketReader reader)
         {
-            String = reader.ReadStringLE();
+            String = reader.ReadString();
         }
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE(String);
+            writer.Write(String);
         }
     }
 }

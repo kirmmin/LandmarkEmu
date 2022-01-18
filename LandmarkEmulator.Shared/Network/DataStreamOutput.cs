@@ -48,8 +48,8 @@ namespace LandmarkEmulator.Shared.Network
             }
 
             List<byte> dataFragmentsCombined = new List<byte>();
-            var writer = new GamePacketWriter(dataFragmentsCombined);
-            writer.WriteBE((uint)data.Length);
+            var writer = new ProtocolPacketWriter(dataFragmentsCombined);
+            writer.Write((uint)data.Length);
             dataFragmentsCombined.AddRange(data);
 
             Span<byte> spanData = dataFragmentsCombined.ToArray().AsSpan();

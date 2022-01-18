@@ -12,7 +12,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.WriteLE((uint)Servers.Count);
+            writer.Write((uint)Servers.Count);
             Servers.ForEach(i => i.Write(writer));
         }
     }
