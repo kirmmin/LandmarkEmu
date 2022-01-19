@@ -47,10 +47,21 @@ namespace LandmarkEmulator.Gateway.Network
             incomingPackets.Enqueue(packet);
         }
 
-        protected override void OnProcessPackets(double lastTick)
+        /// <summary>
+        /// This is fired between incoming packets being parsed and outgoing packets being sent, to allow for the Class inheritor to handle its packets.
+        /// </summary>
+        /// <remarks>This is called from within Update().</remarks>
+        protected virtual void OnProcessZonePackets(double lastTick)
+        {
+            // Deliberately left empty
+        }
+
+        protected sealed override void OnProcessPackets(double lastTick)
         {
             while (CanProcessPackets && incomingPackets.TryDequeue(out GatewayPacket packet))
                 HandlePacket(packet);
+
+            OnProcessZonePackets(lastTick);
 
             while (CanProcessPackets && outgoingPackets.TryDequeue(out GatewayPacket packet))
                 SendPacket(packet);
@@ -58,6 +69,14 @@ namespace LandmarkEmulator.Gateway.Network
 
         private void HandlePacket(GatewayPacket packet)
         {
+            // Handle Tunnel Packets slightly separately.
+            if (packet.Opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection)
+            {
+                log.Debug($"Received Gateway packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
+                OnTunnelData(packet.Flags, packet.Data);
+                return;
+            }
+
             IReadable message = GatewayMessageManager.Instance.GetAuthMessage(packet.Opcode, ProtocolVersion);
             if (message == null)
             {
@@ -75,7 +94,6 @@ namespace LandmarkEmulator.Gateway.Network
             log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
 
             var reader = new GamePacketReader(packet.Data);
-
             message.Read(reader);
             if (reader.BytesRemaining > 0)
                 log.Warn($"Failed to read entire contents of Gateway packet {packet.Opcode} ({reader.BytesRemaining} bytes remaining)");
@@ -100,15 +118,18 @@ namespace LandmarkEmulator.Gateway.Network
             List<byte> data = new();
             var writer = new GamePacketWriter(data);
 
-            writer.Write((byte)packet.Opcode);
+            if (packet.Opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)
+                writer.Write((byte)((int)packet.Opcode | packet.Flags << 5));
+            else
+                writer.Write((byte)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
-            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X})");
+            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
 
             PackAndSend(data.ToArray());
         }
 
-        public void EnqueueMessage(IWritable message)
+        public void EnqueueGatewayMessage(IWritable message)
         {
             if (!GatewayMessageManager.Instance.GetOpcode(message, out GatewayMessageOpcode opcode))
             {
@@ -144,7 +165,7 @@ namespace LandmarkEmulator.Gateway.Network
                 if (account != null)
                     loggedIn = true;
 
-                EnqueueMessage(new LoginReply
+                EnqueueGatewayMessage(new LoginReply
                 {
                     LoggedIn = loggedIn
                 });
@@ -173,6 +194,26 @@ namespace LandmarkEmulator.Gateway.Network
         public virtual void OnCharacterLogin(CharacterModel model)
         {
             // Deliberately left empty
+        }
+
+        /// <summary>
+        /// Called when the Gateway receives a <see cref="GatewayMessageOpcode.TunnelPacketFromExternalConnection"/> message.
+        /// </summary>
+        /// <param name="data"></param>
+        public virtual void OnTunnelData(int flags, byte[] data)
+        {
+            // Deliberately left empty
+        }
+
+        /// <summary>
+        /// Packs the provided <see cref="byte[]"/> into a Tunnel Packet to be sent to the Client.
+        /// </summary>
+        protected void PackTunnelPacket(byte[] data)
+        {
+            EnqueueGatewayMessage(new TunnelPacketToExternalConnection
+            {
+                Data = data
+            });
         }
     }
 }

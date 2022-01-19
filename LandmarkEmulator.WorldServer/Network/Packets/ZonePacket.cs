@@ -1,33 +1,30 @@
-﻿using LandmarkEmulator.Gateway.Network.Message;
-using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
+using LandmarkEmulator.WorldServer.Network.Message;
 using System.Collections.Generic;
 
-namespace LandmarkEmulator.Gateway.Network.Packets
+namespace LandmarkEmulator.WorldServer.Network.Packets
 {
-    public class GatewayPacket
+    public class ZonePacket
     {
         /// <summary>
         /// Total size including the header and payload.
         /// </summary>
         public uint Size { get; protected set; }
-        public GatewayMessageOpcode Opcode { get; protected set; }
-        public int Flags { get; protected set; }
+        public ZoneMessageOpcode Opcode { get; protected set; }
 
         public byte[] Data { get; protected set; }
 
-        public GatewayPacket(byte[] data)
+        public ZonePacket(ZoneMessageOpcode opcode, byte[] data)
         {
-            var reader = new GamePacketReader(data);
+            Opcode = opcode;
 
-            byte firstByte = reader.ReadByte();
-            Opcode = (GatewayMessageOpcode)(firstByte & 0x1F);
-            Flags = firstByte >> 5;
+            var reader = new GamePacketReader(data);
             Data = reader.ReadBytes(reader.BytesRemaining);
             Size = (uint)Data.Length;
         }
 
-        public GatewayPacket(GatewayMessageOpcode opcode, IWritable message)
+        public ZonePacket(ZoneMessageOpcode opcode, IWritable message)
         {
             Opcode = opcode;
 

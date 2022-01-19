@@ -7,6 +7,7 @@ using LandmarkEmulator.Shared.GameTable;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.WorldServer.Network;
+using LandmarkEmulator.WorldServer.Network.Message;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using System.Threading;
@@ -30,7 +31,7 @@ namespace LandmarkEmulator.WorldServer
 
             MessageManager.Instance.Initialise();
             GatewayProvider.Instance.Initialise();
-            //TunnelDataManager.Instance.Initialise();
+            ZoneMessageManager.Instance.Initialise();
 
             //AuthAssetManager.Instance.Initialise();
 
