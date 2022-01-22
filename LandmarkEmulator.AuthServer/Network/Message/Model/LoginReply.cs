@@ -4,7 +4,7 @@ using LandmarkEmulator.Shared.Network.Message;
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
     [AuthMessage(AuthMessageOpcode.LoginReply, ProtocolVersion.LOGIN_ALL)]
-    public class LoginReply : IWritable
+    public class LoginReply : IWritable, IReadable
     {
         public bool LoggedIn { get; set; }
         public uint Status { get; set; }
@@ -15,6 +15,16 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         public ulong AccountFeatures { get; set; } // KVP?
         public byte[] Payload { get; set; } // XML
         public ulong ErrorDetails { get; set; } // KVP?
+
+        public void Read(GamePacketReader reader)
+        {
+            LoggedIn = reader.ReadBool();
+            Status = reader.ReadUInt();
+            Result = reader.ReadUInt();
+            IsMember = reader.ReadBool();
+            IsInternal = reader.ReadBool();
+            Namespace = reader.ReadString();
+        }
 
         public void Write(GamePacketWriter writer)
         {

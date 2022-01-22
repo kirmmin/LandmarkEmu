@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Haukcode.PcapngUtils" Version="1.3.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LandmarkEmulator.AuthServer\LandmarkEmulator.AuthServer.csproj" />
+    <ProjectReference Include="..\LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

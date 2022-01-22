@@ -12,7 +12,12 @@
 
         public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
-            throw new System.NotImplementedException();
+            SessionId = reader.ReadUInt();
+            CRCSeed = reader.ReadUInt();
+            CRCLength = reader.ReadByte();
+            Compression = reader.ReadUShort();
+            UdpLength = reader.ReadUInt();
+            Unknown0 = reader.ReadUInt();
         }
 
         public void Write(ProtocolPacketWriter writer, PacketOptions options)

@@ -20,7 +20,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadString();
             }
 
             public void Write(GamePacketWriter writer)
@@ -42,7 +43,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -66,7 +68,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
                 public void Read(GamePacketReader reader)
                 {
-                    throw new NotImplementedException();
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -90,7 +93,17 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Unknown0 = (int)reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+
+                var overrideCount = reader.ReadUInt();
+                for (int i = 0; i < overrideCount; i++)
+                {
+                    var ato = new ArtTintOverrideEntry();
+                    ato.Read(reader);
+                    Unknown3.Add(ato);
+                }
             }
 
             public void Write(GamePacketWriter writer)
@@ -119,7 +132,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Unknown0 = reader.ReadULong();
+                Unknown1 = reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+                Unknown3 = reader.ReadUInt();
+                Unknown4 = reader.ReadUInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -143,7 +160,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Unknown0 = reader.ReadString();
             }
 
             public void Write(GamePacketWriter writer)
@@ -174,7 +191,16 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
                 public void Read(GamePacketReader reader)
                 {
-                    throw new NotImplementedException();
+                    SemanticName = reader.ReadString();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadUInt();
+                    Unknown3 = reader.ReadUInt();
+                    EditType = reader.ReadString();
+                    Unknown4 = reader.ReadUInt();
+                    R = reader.ReadSingle();
+                    G = reader.ReadSingle();
+                    B = reader.ReadSingle();
+                    A = reader.ReadSingle();
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -208,7 +234,21 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                throw new NotImplementedException();
+                Id = (int)reader.ReadUInt();
+                AliasName = reader.ReadString();
+                SemanticGroup = reader.ReadString();
+
+                var tintCount = reader.ReadUInt();
+                for (int i = 0; i < tintCount; i++)
+                {
+                    var tint = new TintSemanticEntry();
+                    tint.Read(reader);
+                    ArtTints.Add(tint);
+                }
+
+
+                Unknown3 = reader.ReadUInt();
+                Unknown4 = reader.ReadUInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -265,7 +305,69 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public void Read(GamePacketReader reader)
         {
-            throw new NotImplementedException();
+            var unk0Count = reader.ReadUInt();
+            for (int i = 0; i < unk0Count; i++)
+            {
+                var unk0 = new UnknownStruct_142C36820();
+                unk0.Read(reader);
+                Unknown0.Add(unk0);
+            }
+
+            var unk1Count = reader.ReadUInt();
+            for (int i = 0; i < unk1Count; i++)
+            {
+                var unk1 = new UnknownStruct_142C351D0();
+                unk1.Read(reader);
+                Unknown1.Add(unk1);
+            }
+
+            var artTintORCount = reader.ReadUInt();
+            for (int i = 0; i < artTintORCount; i++)
+            {
+                var atog = new ArtTintOverrideGroupEntry();
+                atog.Read(reader);
+                ArtTintOverrideGroups.Add(atog);
+            }
+
+            var unk3Count = reader.ReadUInt();
+            for (int i = 0; i < unk3Count; i++)
+            {
+                var unk3 = new UnknownStruct_142C3FE00();
+                unk3.Read(reader);
+                Unknown3.Add(unk3);
+            }
+
+            var unk4Count = reader.ReadUInt();
+            for (int i = 0; i < unk4Count; i++)
+            {
+                var unk4 = new UnknownStruct_142C3BAC0();
+                unk4.Read(reader);
+                Unknown4.Add(unk4);
+            }
+
+            var unk5Count = reader.ReadUInt();
+            for (int i = 0; i < unk5Count; i++)
+            {
+                var unk5 = new UnknownStruct_142C3BAC0();
+                unk5.Read(reader);
+                Unknown5.Add(unk5);
+            }
+
+            var artTintGroupCount = reader.ReadUInt();
+            for (int i = 0; i < artTintGroupCount; i++)
+            {
+                var tintG = new TintSemanticGroupEntry();
+                tintG.Read(reader);
+                ArtTintGroups.Add(tintG);
+            }
+
+            var unk7Count = reader.ReadUInt();
+            for (int i = 0; i < unk7Count; i++)
+            {
+                var unk7 = new UnknownStruct_142C351D0();
+                unk7.Read(reader);
+                Unknown7.Add(unk7);
+            }
         }
 
         public void Write(GamePacketWriter writer)

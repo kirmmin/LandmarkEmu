@@ -50,7 +50,8 @@ namespace LandmarkEmulator.Shared.Network
             if (sequence > NextSequence)
             {
                 log.Warn($"Sequence out of order, expected {NextSequence} but received {sequence}");
-                OnOutOfOrder(sequence);
+                if (OnOutOfOrder != null)
+                    OnOutOfOrder(sequence);
                 return;
             }
 
@@ -68,7 +69,7 @@ namespace LandmarkEmulator.Shared.Network
             if (ack > lastAck)
             {
                 LastAck = ack;
-                _session.EnqueueProtocolMessage(new Ack
+                _session?.EnqueueProtocolMessage(new Ack
                 {
                     Sequence = ack
                 }, new Message.PacketOptions());
@@ -101,7 +102,7 @@ namespace LandmarkEmulator.Shared.Network
             
             bool dataReady = false;
             var reader = new ProtocolPacketReader(dataPacket.Data);
-            int totalSize = (int)reader.ReadUInt();
+            uint totalSize = reader.ReadUInt();
             int dataSize = dataPacket.Data.Length - 4;
 
             List<byte> data = new();
@@ -161,6 +162,8 @@ namespace LandmarkEmulator.Shared.Network
         private byte[] ReadPacket(ProtocolPacketReader reader)
         {
             byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
+            if (nextLength > reader.BytesRemaining)
+                nextLength = (byte)reader.BytesRemaining;
             return reader.ReadBytes(nextLength);
         }
 

@@ -13,14 +13,14 @@ namespace LandmarkEmulator.Shared.Network.Packets
         public ProtocolMessageOpcode Opcode { get; protected set; }
         public byte[] Data { get; protected set; }
         public bool UseEncryption { get; protected set; }
-        public PacketOptions PacketOptions { get; }
+        public PacketOptions PacketOptions { get; set; }
 
         public ProtocolPacket(byte[] data, PacketOptions options = null)
         {
             var reader = new ProtocolPacketReader(data);
 
             Opcode        = (ProtocolMessageOpcode)reader.ReadUShort();
-            Data          = reader.ReadBytes(reader.BytesRemaining);
+            Data          = reader.ReadBytes((uint)reader.BytesRemaining);
             Size          = (uint)Data.Length;
             PacketOptions = options;
         }

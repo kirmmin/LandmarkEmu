@@ -1,4 +1,6 @@
 ﻿using LandmarkEmulator.Shared.Network.Packets;
+using NLog;
+using System;
 using System.Collections.Generic;
 
 namespace LandmarkEmulator.Shared.Network.Message.Model
@@ -6,16 +8,27 @@ namespace LandmarkEmulator.Shared.Network.Message.Model
     [ProtocolMessage(ProtocolMessageOpcode.MutliPacket, useEncryption: true)]
     public class MultiPacket : IProtocol
     {
+        protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
         public List<ProtocolPacket> Packets { get; } = new();
 
         public void Read(ProtocolPacketReader reader, PacketOptions options)
         {
+            byte[] data = reader.GetRemainingData();
+
             if (options.Compression)
                 reader.ReadByte();
 
             while (reader.BytesRemaining > 2)
             {
-                ReadPacket(reader, options);
+                try
+                {
+                    ReadPacket(reader, options);
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"{BitConverter.ToString(data)} : {BitConverter.ToString(reader.GetRemainingData())}");
+                }
             }
         }
 

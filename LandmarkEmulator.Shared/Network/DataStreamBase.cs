@@ -25,12 +25,12 @@ namespace LandmarkEmulator.Shared.Network
 
         public byte[] RC4Key { get; private set; }
 
-        protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue];
+        protected readonly DataPacket[] DataPackets = new DataPacket[ushort.MaxValue + 1];
 
         public DataStreamBase(GameSession session)
         {
             _session = session;
-            RC4Key = Convert.FromBase64String(session.EncryptionKey);
+            RC4Key = Convert.FromBase64String(session?.EncryptionKey ?? "F70IaxuU8C/w7FPXY1ibXw==");
         }
 
         /// <summary>
