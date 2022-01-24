@@ -112,8 +112,12 @@ namespace LandmarkEmulator.Parser
                         return;
                     }
 
-                    lines.Add($"{header} [Zone] {zoneOpcode} (0x{(int)zoneOpcode:X8})");
-                    data = new Span<byte>(data, offset, data.Length - offset).ToArray();
+                    var newData = new Span<byte>(data, offset, data.Length - offset).ToArray();
+                    lines.Add($"{header} [Zone] {zoneOpcode} (0x{(int)zoneOpcode:X8}) | {newData.Length} bytes");
+                    if (zoneOpcode == ZoneMessageOpcode.SendSelfToClient)
+                        File.WriteAllText("SendSelf.bin", BitConverter.ToString(data));
+                    else
+                        lines.Add($"{BitConverter.ToString(data)}");
 
                     var packet = new ZonePacket((ZoneMessageOpcode)zoneOpcode, data);
                     break;
@@ -128,7 +132,7 @@ namespace LandmarkEmulator.Parser
             var opcode = (GatewayMessageOpcode)(data[0] & 0x1F);
             data = new Span<byte>(data, 1, data.Length - 1).ToArray();
 
-            lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
+            //lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
             log.Info($"{header} {opcode} (0x{(int)opcode:X8}) : {BitConverter.ToString(data)}");
 
             // Handle Tunnel Packets slightly separately.
