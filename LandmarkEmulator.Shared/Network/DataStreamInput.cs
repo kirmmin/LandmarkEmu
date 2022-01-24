@@ -161,10 +161,35 @@ namespace LandmarkEmulator.Shared.Network
 
         private byte[] ReadPacket(ProtocolPacketReader reader)
         {
-            byte nextLength = reader.ReadByte(); // TODO: Calculate length of packet appropriately.
+            uint nextLength = ReadLength(reader);
             if (nextLength > reader.BytesRemaining)
                 nextLength = (byte)reader.BytesRemaining;
             return reader.ReadBytes(nextLength);
+        }
+
+        private uint ReadLength(ProtocolPacketReader reader)
+        {
+            var data = reader.GetRemainingData();
+            uint dataLength = reader.ReadByte();
+            int n = 1;
+            if (dataLength == 0xFF)
+            {
+                if (data[0 + 1] == 0xFF && data[0 + 2] == 0xFF)
+                {
+                    // Move the current position 2 bytes forward,
+                    // because length is placed 3 bytes (we read 1 byte at the beginning of method) ahead of beginning
+                    reader.ReadUShort();
+                    dataLength = reader.ReadUInt();
+                    n = 7;
+                }
+                else
+                {
+                    dataLength = reader.ReadUShort();
+                    n = 3;
+                }
+            }
+
+            return dataLength;
         }
 
         private void DecryptData(List<byte[]> data)
