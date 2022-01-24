@@ -4,10 +4,10 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterLoginReply, ProtocolVersion.LoginUdp_9)]
-    public class CharacterLoginReply : IWritable
+    [AuthMessage(AuthMessageOpcode.CharacterLoginReply, ProtocolVersion.LOGIN_ALL)]
+    public class CharacterLoginReply : IWritable, IReadable
     {
-        public class ServerInfo : IWritable, ISize
+        public class ServerInfo : IWritable, IReadable, ISize
         {
             public string ServerAddress { get; set; } = "";
             public string ServerTicket { get; set; } = "";
@@ -30,6 +30,24 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     4u + Unknown0.Length);
             }
 
+            public void Read(GamePacketReader reader)
+            {
+                reader.ReadUInt(); // Size
+                ServerAddress = reader.ReadString();
+                ServerTicket = reader.ReadString();
+
+                uint keyCount = reader.ReadUInt();
+                EncryptionKey = new byte[keyCount];
+                for (int i = 0; i < keyCount; i++)
+                    EncryptionKey[i] = reader.ReadByte();
+
+                CharacterId = reader.ReadULong();
+                Guid = reader.ReadULong();
+                AccountName = reader.ReadString();
+                CharacterName = reader.ReadString();
+                Unknown0 = reader.ReadString();
+            }
+
             public void Write(GamePacketWriter writer)
             {
                 writer.Write(GetSize());
@@ -50,6 +68,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         public ulong ServerId { get; set; }
         public CharacterLoginResult Result { get; set; }
         public ServerInfo Server { get; set; } = new();
+
+        public void Read(GamePacketReader reader)
+        {
+            CharacterId = reader.ReadULong();
+            ServerId = reader.ReadULong();
+            Result = (CharacterLoginResult)reader.ReadUInt();
+            Server.Read(reader);
+        }
         
         public void Write(GamePacketWriter writer)
         {

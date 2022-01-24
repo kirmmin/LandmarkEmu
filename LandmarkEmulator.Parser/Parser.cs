@@ -95,7 +95,7 @@ namespace LandmarkEmulator.Parser
                     if (!zoneServerStream.UsingEncryption)
                         zoneServerStream.SetEncryption(true);
 
-                    lines.Add($"{header} (0x{data[0]:X8})");
+                    lines.Add($"{header} (0x{(data[0] & 0x1F):X8})");
                     lines.Add($"{BitConverter.ToString(data)}");
                     File.WriteAllLines(FileName, lines.ToArray());
                     break;
@@ -107,7 +107,9 @@ namespace LandmarkEmulator.Parser
             string header = isClient ? ClientHeader : ServerHeader;
             var opcode = (AuthMessageOpcode)data[0];
 
+            //log.Info($"{header} {opcode} (0x{data[0]:X8}) : {BitConverter.ToString(data)}");
             lines.Add($"{header} {opcode} (0x{data[0]:X8})");
+            //lines.Add($"{BitConverter.ToString(data)}");
             IReadable message = AuthMessageManager.Instance.GetAuthMessage(opcode, ProtocolVersion.LOGIN_ALL);
             if (message == null)
             {
@@ -118,6 +120,12 @@ namespace LandmarkEmulator.Parser
             data = new Span<byte>(data, 1, data.Length - 1).ToArray();
             var reader = new GamePacketReader(data);
             message.Read(reader);
+
+            if (message is CharacterLoginReply loginReply)
+            {
+                zoneClientStream.SetEncryptionKey(Convert.ToBase64String(loginReply.Server.EncryptionKey));
+                zoneServerStream.SetEncryptionKey(Convert.ToBase64String(loginReply.Server.EncryptionKey));
+            }
 
             lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
         }
@@ -185,9 +193,21 @@ namespace LandmarkEmulator.Parser
             if (packetOptions.GamePacketType == GamePacketType.Zone)
                 packet.PacketOptions.Compression = false;
 
-            log.Trace($"{header} Received protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
+            //log.Trace($"{header} Received protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
             var reader = new ProtocolPacketReader(packet.Data);
             message.Read(reader, packet.PacketOptions);
+
+            if (message is SessionRequest sessionRequest)
+            {
+                lines.Add($"{header} {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
+                lines.Add(JsonConvert.SerializeObject(sessionRequest, Formatting.Indented));
+            }
+
+            if (message is SessionReply sessionReply)
+            {
+                lines.Add($"{header} {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
+                lines.Add(JsonConvert.SerializeObject(sessionReply, Formatting.Indented));
+            }
 
             if (message is MultiPacket multiPacket)
             {

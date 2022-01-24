@@ -30,7 +30,7 @@ namespace LandmarkEmulator.Shared.Network
         public DataStreamBase(GameSession session)
         {
             _session = session;
-            RC4Key = Convert.FromBase64String(session?.EncryptionKey ?? "F70IaxuU8C/w7FPXY1ibXw==");
+            RC4Key = Convert.FromBase64String(_session?.EncryptionKey ?? "F70IaxuU8C/w7FPXY1ibXw==");
         }
 
         /// <summary>

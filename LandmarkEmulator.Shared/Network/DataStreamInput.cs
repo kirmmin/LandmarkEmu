@@ -189,5 +189,15 @@ namespace LandmarkEmulator.Shared.Network
                 OnData(parsedData); // Emit the parsed data packet to subscribers
             }
         }
+
+        public void ResetEncryption()
+        {
+            arc4Provider = new Arc4Provider(RC4Key);
+        }
+
+        public void SetEncryptionKey(string key)
+        {
+            arc4Provider = new Arc4Provider(Convert.FromBase64String(key));
+        }
     }
 }
