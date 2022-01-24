@@ -3,11 +3,15 @@ using Haukcode.PcapngUtils.Common;
 using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.Shared;
+using LandmarkEmulator.Gateway.Network.Message;
 using LandmarkEmulator.Shared.GameTable.Text;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.Shared.Network.Message.Model;
 using LandmarkEmulator.Shared.Network.Packets;
+using LandmarkEmulator.WorldServer.Network;
+using LandmarkEmulator.WorldServer.Network.Message;
+using LandmarkEmulator.WorldServer.Network.Packets;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -35,6 +39,7 @@ namespace LandmarkEmulator.Parser
         public enum GamePacketType
         {
             Auth,
+            Gateway,
             Zone
         };
 
@@ -50,6 +55,8 @@ namespace LandmarkEmulator.Parser
             MessageManager.Instance.Initialise();
             TunnelDataManager.Instance.Initialise();
             AuthMessageManager.Instance.Initialise();
+            GatewayMessageManager.Instance.Initialise();
+            ZoneMessageManager.Instance.Initialise();
 
             authServerStream = new DataStreamInput(null);
             authServerStream.OnData += (gamePacket) =>
@@ -65,13 +72,13 @@ namespace LandmarkEmulator.Parser
             zoneServerStream = new DataStreamInput(null);
             zoneServerStream.OnData += (gamePacket) =>
             {
-                OnGamePacket(gamePacket, GamePacketType.Zone, false);
+                OnGamePacket(gamePacket, GamePacketType.Gateway, false);
             };
             zoneServerStream.SetEncryption(false);
             zoneClientStream = new DataStreamInput(null);
             zoneClientStream.OnData += (gamePacket) =>
             {
-                OnGamePacket(gamePacket, GamePacketType.Zone, true);
+                OnGamePacket(gamePacket, GamePacketType.Gateway, true);
             };
             zoneClientStream.SetEncryption(false);
 
@@ -89,17 +96,61 @@ namespace LandmarkEmulator.Parser
                 case GamePacketType.Auth:
                     HandleAuthMessage(data, isClient);
                     break;
-                case GamePacketType.Zone:
+                case GamePacketType.Gateway:
                     if (!zoneClientStream.UsingEncryption)
                         zoneClientStream.SetEncryption(true);
                     if (!zoneServerStream.UsingEncryption)
                         zoneServerStream.SetEncryption(true);
+                    HandleGatewayPacket(data, isClient);
+                    break;
+                case GamePacketType.Zone:
+                    (ZoneMessageOpcode? zoneOpcode, int offset) = WorldSession.GetOpcode(data);
 
-                    lines.Add($"{header} (0x{(data[0] & 0x1F):X8})");
-                    lines.Add($"{BitConverter.ToString(data)}");
-                    File.WriteAllLines(FileName, lines.ToArray());
+                    if (zoneOpcode == null)
+                    {
+                        log.Warn($"Unknown Zone Packet : {BitConverter.ToString(data)}");
+                        return;
+                    }
+
+                    lines.Add($"{header} [Zone] {zoneOpcode} (0x{(int)zoneOpcode:X8})");
+                    data = new Span<byte>(data, offset, data.Length - offset).ToArray();
+
+                    var packet = new ZonePacket((ZoneMessageOpcode)zoneOpcode, data);
                     break;
             }
+
+            File.WriteAllLines(FileName, lines.ToArray());
+        }
+
+        private static void HandleGatewayPacket(byte[] data, bool isClient)
+        {
+            string header = isClient ? ClientHeader : ServerHeader;
+            var opcode = (GatewayMessageOpcode)(data[0] & 0x1F);
+            data = new Span<byte>(data, 1, data.Length - 1).ToArray();
+
+            lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
+            log.Info($"{header} {opcode} (0x{(int)opcode:X8}) : {BitConverter.ToString(data)}");
+
+            // Handle Tunnel Packets slightly separately.
+            if (opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection || opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)
+            {
+                OnGamePacket(data, GamePacketType.Zone, isClient);
+                return;
+            }
+
+            IReadable message = GatewayMessageManager.Instance.GetGatewayMessage(opcode, ProtocolVersion.ExternalGatewayApi_3);
+            if (message == null)
+            {
+                log.Warn($"Received unknown Gateway packet {opcode:X} : {BitConverter.ToString(data)}");
+                return;
+            }
+
+            //log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
+
+            var reader = new GamePacketReader(data);
+            message.Read(reader);
+
+            lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
         }
 
         private static void HandleAuthMessage(byte[] data, bool isClient)
@@ -108,7 +159,7 @@ namespace LandmarkEmulator.Parser
             var opcode = (AuthMessageOpcode)data[0];
 
             //log.Info($"{header} {opcode} (0x{data[0]:X8}) : {BitConverter.ToString(data)}");
-            lines.Add($"{header} {opcode} (0x{data[0]:X8})");
+            lines.Add($"{header} [Auth] {opcode} (0x{data[0]:X8})");
             //lines.Add($"{BitConverter.ToString(data)}");
             IReadable message = AuthMessageManager.Instance.GetAuthMessage(opcode, ProtocolVersion.LOGIN_ALL);
             if (message == null)
@@ -169,7 +220,7 @@ namespace LandmarkEmulator.Parser
             if (udpHeader.SourcePort == 20042 || udpHeader.DestinationPort == 20042)
                 gamePacketType = GamePacketType.Auth;
             else
-                gamePacketType = GamePacketType.Zone;
+                gamePacketType = GamePacketType.Gateway;
         }
 
         private static void HandleProtocolPacket(ProtocolPacket packet)
@@ -190,22 +241,22 @@ namespace LandmarkEmulator.Parser
             if (message is OutOfOrder)
                 return;
 
-            if (packetOptions.GamePacketType == GamePacketType.Zone)
+            if (packetOptions.GamePacketType == GamePacketType.Gateway)
                 packet.PacketOptions.Compression = false;
 
-            //log.Trace($"{header} Received protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
+            log.Trace($"{header} Received protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
             var reader = new ProtocolPacketReader(packet.Data);
             message.Read(reader, packet.PacketOptions);
 
             if (message is SessionRequest sessionRequest)
             {
-                lines.Add($"{header} {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
+                lines.Add($"{header} [Protocol] {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
                 lines.Add(JsonConvert.SerializeObject(sessionRequest, Formatting.Indented));
             }
 
             if (message is SessionReply sessionReply)
             {
-                lines.Add($"{header} {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
+                lines.Add($"{header} [Protocol] {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
                 lines.Add(JsonConvert.SerializeObject(sessionReply, Formatting.Indented));
             }
 
@@ -216,7 +267,7 @@ namespace LandmarkEmulator.Parser
                     multiPacketPacket.PacketOptions = new ParserPacketOptions
                     {
                         IsSubpacket = true,
-                        Compression = packetOptions.GamePacketType != GamePacketType.Zone,
+                        Compression = packetOptions.GamePacketType != GamePacketType.Gateway,
                         GamePacketType = packetOptions.GamePacketType,
                         IsClient = packetOptions.IsClient
                     };
@@ -233,7 +284,7 @@ namespace LandmarkEmulator.Parser
                     else
                         authServerStream.ProcessDataFragment(dataWhole);
                 }
-                else if (packetOptions.GamePacketType == GamePacketType.Zone)
+                else if (packetOptions.GamePacketType == GamePacketType.Gateway)
                 {
                     if (packetOptions.IsClient)
                         zoneClientStream.ProcessDataFragment(dataWhole);
@@ -251,7 +302,7 @@ namespace LandmarkEmulator.Parser
                     else
                         authServerStream.ProcessDataFragment(fragment);
                 }
-                else if (packetOptions.GamePacketType == GamePacketType.Zone)
+                else if (packetOptions.GamePacketType == GamePacketType.Gateway)
                 {
                     if (packetOptions.IsClient)
                         zoneClientStream.ProcessDataFragment(fragment);

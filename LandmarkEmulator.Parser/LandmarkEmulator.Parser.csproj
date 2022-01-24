@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LandmarkEmulator.AuthServer\LandmarkEmulator.AuthServer.csproj" />
+    <ProjectReference Include="..\LandmarkEmulator.Gateway\LandmarkEmulator.Gateway.csproj" />
     <ProjectReference Include="..\LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj" />
+    <ProjectReference Include="..\LandmarkEmulator.WorldServer\LandmarkEmulator.WorldServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -116,7 +116,7 @@ namespace LandmarkEmulator.WorldServer.Network
             return hexBytes.ToArray();
         }
 
-        private (ZoneMessageOpcode?, int) GetOpcode(byte[] data)
+        public static (ZoneMessageOpcode?, int) GetOpcode(byte[] data)
         {
             if (Enum.IsDefined(typeof(ZoneMessageOpcode), (int)(data[0])))
                 return ((ZoneMessageOpcode)data[0], 2);
