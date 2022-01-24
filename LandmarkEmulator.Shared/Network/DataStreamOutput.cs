@@ -63,8 +63,10 @@ namespace LandmarkEmulator.Shared.Network
                 else
                     NextSequence++;
 
-                int nextSize = i + (int)_fragmentSize > spanData.Length ? spanData.Length - i : i + (int)_fragmentSize;
-                var dataPacket = new DataPacket(spanData.Slice(i, nextSize).ToArray(), true);
+                int nextSize = i +(int)_fragmentSize > spanData.Length ? spanData.Length - i : (int)_fragmentSize;
+                spanData = dataFragmentsCombined.ToArray().AsSpan();
+                var nextSlice = spanData.Slice(i, nextSize).ToArray();
+                var dataPacket = new DataPacket(nextSlice, true);
                 DataPackets[(int)NextSequence] = dataPacket;
                 OnData((ushort)NextSequence, dataPacket);
                 log.Trace($"DataFragment size is {nextSize}");
