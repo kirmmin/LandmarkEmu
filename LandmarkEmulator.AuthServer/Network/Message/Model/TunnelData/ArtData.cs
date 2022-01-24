@@ -10,7 +10,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
     {
         public class UnknownStruct_142C36820 : ITunnelData
         {
-            public uint Unknown0 { get; set; }
+            public int Unknown0 { get; set; }
             public string Unknown1 { get; set; }
 
             public uint GetSize()
@@ -20,7 +20,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadUInt();
+                Unknown0 = reader.ReadInt();
                 Unknown1 = reader.ReadString();
             }
 
@@ -33,8 +33,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public class UnknownStruct_142C351D0 : ITunnelData
         {
-            public uint Unknown0 { get; set; } 
-            public uint Unknown1 { get; set; }
+            public int Unknown0 { get; set; } 
+            public int Unknown1 { get; set; }
 
             public uint GetSize()
             {
@@ -43,8 +43,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadUInt();
-                Unknown1 = reader.ReadUInt();
+                Unknown0 = reader.ReadInt();
+                Unknown1 = reader.ReadInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -58,8 +58,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
         {
             public class ArtTintOverrideEntry : ITunnelData
             {
-                public uint Unknown0 { get; set; }
-                public uint Unknown1 { get; set; }
+                public int Unknown0 { get; set; }
+                public int Unknown1 { get; set; }
 
                 public uint GetSize()
                 {
@@ -68,8 +68,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
                 public void Read(GamePacketReader reader)
                 {
-                    Unknown0 = reader.ReadUInt();
-                    Unknown1 = reader.ReadUInt();
+                    Unknown0 = reader.ReadInt();
+                    Unknown1 = reader.ReadInt();
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -80,8 +80,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             }
 
             public int Unknown0 { get; set; }
-            public uint Unknown1 { get; set; }
-            public uint Unknown2 { get; set; }
+            public int Unknown1 { get; set; }
+            public int Unknown2 { get; set; }
             public List<ArtTintOverrideEntry> Unknown3 { get; set; } = new();
 
             public uint GetSize()
@@ -93,9 +93,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = (int)reader.ReadUInt();
-                Unknown2 = reader.ReadUInt();
-                Unknown2 = reader.ReadUInt();
+                Unknown0 = reader.ReadInt();
+                Unknown2 = reader.ReadInt();
+                Unknown2 = reader.ReadInt();
 
                 var overrideCount = reader.ReadUInt();
                 for (int i = 0; i < overrideCount; i++)
@@ -119,11 +119,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
         public class UnknownStruct_142C3FE00 : ITunnelData
         {
-            public ulong Unknown0 { get; set; }
-            public uint Unknown1 { get; set; }
-            public uint Unknown2 { get; set; }
-            public uint Unknown3 { get; set; }
-            public uint Unknown4 { get; set; }
+            public long Unknown0 { get; set; }
+            public int Unknown1 { get; set; }
+            public int Unknown2 { get; set; }
+            public int Unknown3 { get; set; }
+            public int Unknown4 { get; set; }
 
             public uint GetSize()
             {
@@ -132,11 +132,11 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadULong();
-                Unknown1 = reader.ReadUInt();
-                Unknown2 = reader.ReadUInt();
-                Unknown3 = reader.ReadUInt();
-                Unknown4 = reader.ReadUInt();
+                Unknown0 = reader.ReadLong();
+                Unknown1 = reader.ReadInt();
+                Unknown2 = reader.ReadInt();
+                Unknown3 = reader.ReadInt();
+                Unknown4 = reader.ReadInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -174,15 +174,15 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             public class TintSemanticEntry : ITunnelData
             {
                 public string SemanticName { get; set; }
-                public uint Unknown1 { get; set; } // Id?
-                public uint Unknown2 { get; set; } // TypeId
-                public uint Unknown3 { get; set; } // 
+                public int Unknown1 { get; set; } // Id?
+                public int Unknown2 { get; set; } // TypeId
+                public int Unknown3 { get; set; } // 
                 public string EditType { get; set; }
-                public uint Unknown4 { get; set; }
-                public float R { get; set; }
-                public float G { get; set; }
-                public float B { get; set; }
-                public float A { get; set; }
+                public int Unknown4 { get; set; }
+                public int R { get; set; }
+                public int G { get; set; }
+                public int B { get; set; }
+                public int A { get; set; }
 
                 public uint GetSize()
                 {
@@ -192,15 +192,15 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
                 public void Read(GamePacketReader reader)
                 {
                     SemanticName = reader.ReadString();
-                    Unknown1 = reader.ReadUInt();
-                    Unknown2 = reader.ReadUInt();
-                    Unknown3 = reader.ReadUInt();
+                    Unknown1 = reader.ReadInt();
+                    Unknown2 = reader.ReadInt();
+                    Unknown3 = reader.ReadInt();
                     EditType = reader.ReadString();
-                    Unknown4 = reader.ReadUInt();
-                    R = reader.ReadSingle();
-                    G = reader.ReadSingle();
-                    B = reader.ReadSingle();
-                    A = reader.ReadSingle();
+                    Unknown4 = reader.ReadInt();
+                    R = reader.ReadInt();
+                    G = reader.ReadInt();
+                    B = reader.ReadInt();
+                    A = reader.ReadInt();
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -222,8 +222,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
             public string AliasName { get; set; }
             public string SemanticGroup { get; set; }
             public List<TintSemanticEntry> ArtTints { get; set; } = new();
-            public uint Unknown3 { get; set; }
-            public uint Unknown4 { get; set; }
+            public int Unknown3 { get; set; }
+            public int Unknown4 { get; set; }
 
             public uint GetSize()
             {
@@ -247,8 +247,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model.TunnelData
                 }
 
 
-                Unknown3 = reader.ReadUInt();
-                Unknown4 = reader.ReadUInt();
+                Unknown3 = reader.ReadInt();
+                Unknown4 = reader.ReadInt();
             }
 
             public void Write(GamePacketWriter writer)

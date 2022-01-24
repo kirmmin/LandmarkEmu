@@ -60,6 +60,14 @@ namespace LandmarkEmulator.Shared.Network
             return BinaryPrimitives.ReadUInt32LittleEndian(GetDataBits(bits));
         }
 
+        public int ReadInt(uint bits = 32u)
+        {
+            if (bits > sizeof(uint) * 8)
+                throw new ArgumentException();
+
+            return BinaryPrimitives.ReadInt32LittleEndian(GetDataBits(bits));
+        }
+
         public unsafe float ReadSingle(uint bits = 32u)
         {
             if (bits > sizeof(float) * 8)
@@ -74,6 +82,14 @@ namespace LandmarkEmulator.Shared.Network
                 throw new ArgumentException();
 
             return BinaryPrimitives.ReadUInt64LittleEndian(GetDataBits(bits));
+        }
+
+        public long ReadLong(uint bits = 64u)
+        {
+            if (bits > sizeof(ulong) * 8)
+                throw new ArgumentException();
+
+            return BinaryPrimitives.ReadInt64LittleEndian(GetDataBits(bits));
         }
 
         public unsafe double ReadDouble(uint bits = 64u)

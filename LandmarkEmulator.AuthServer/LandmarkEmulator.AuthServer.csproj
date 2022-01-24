@@ -21,6 +21,9 @@
     <None Update="AuthServer.example.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	  <None Update="Assets/ArtTints.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 
 </Project>
