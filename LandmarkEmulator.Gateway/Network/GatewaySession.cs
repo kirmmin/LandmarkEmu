@@ -77,14 +77,14 @@ namespace LandmarkEmulator.Gateway.Network
                 return;
             }
 
-            IReadable message = GatewayMessageManager.Instance.GetAuthMessage(packet.Opcode, ProtocolVersion);
+            IReadable message = GatewayMessageManager.Instance.GetGatewayMessage(packet.Opcode, ProtocolVersion);
             if (message == null)
             {
                 log.Warn($"Received unknown Gateway packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
                 return;
             }
 
-            GatewayMessageHandlerDelegate handlerInfo = GatewayMessageManager.Instance.GetGameMessageHandler(packet.Opcode, ProtocolVersion);
+            GatewayMessageHandlerDelegate handlerInfo = GatewayMessageManager.Instance.GetGatewayMessageHandler(packet.Opcode, ProtocolVersion);
             if (handlerInfo == null)
             {
                 log.Warn($"Received unhandled Gateway packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}.");

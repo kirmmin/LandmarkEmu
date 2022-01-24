@@ -126,13 +126,13 @@ namespace LandmarkEmulator.Gateway.Network.Message
             return serverMessageOpcodes.TryGetValue(message.GetType(), out opcode);
         }
 
-        public IReadable GetAuthMessage(GatewayMessageOpcode opcode, ProtocolVersion version)
+        public IReadable GetGatewayMessage(GatewayMessageOpcode opcode, ProtocolVersion version)
         {
             return clientMessageFactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
                 ? factory.Invoke() : null;
         }
 
-        public GatewayMessageHandlerDelegate GetGameMessageHandler(GatewayMessageOpcode opcode, ProtocolVersion version)
+        public GatewayMessageHandlerDelegate GetGatewayMessageHandler(GatewayMessageOpcode opcode, ProtocolVersion version)
         {
             if (clientMessageHandlers.TryGetValue(version, out var dict))
                 return dict.TryGetValue(opcode, out GatewayMessageHandlerDelegate handler)
