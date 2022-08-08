@@ -3,7 +3,7 @@ using LandmarkEmulator.Shared.Network.Message;
 
 namespace LandmarkEmulator.AuthServer.Network.Message.Model
 {
-    [AuthMessage(AuthMessageOpcode.CharacterLoginRequest, ProtocolVersion.LoginUdp_9)]
+    [AuthMessage(AuthMessageOpcode.CharacterLoginRequest, ProtocolVersion.LOGIN_ALL)]
     public class CharacterLoginRequest : IReadable
     {
         public ulong CharacterId { get; set; }

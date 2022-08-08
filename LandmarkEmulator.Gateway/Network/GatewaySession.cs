@@ -208,7 +208,7 @@ namespace LandmarkEmulator.Gateway.Network
         /// <summary>
         /// Packs the provided <see cref="byte[]"/> into a Tunnel Packet to be sent to the Client.
         /// </summary>
-        protected void PackTunnelPacket(byte[] data)
+        public void PackTunnelPacket(byte[] data)
         {
             EnqueueGatewayMessage(new TunnelPacketToExternalConnection
             {

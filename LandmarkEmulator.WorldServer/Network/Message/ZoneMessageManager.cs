@@ -29,7 +29,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message
         public void Initialise()
         {
             InitialiseGameMessages();
-            InitialiseGameMessageHandlers(ClientProtocol.ClientProtocol_630);
+            InitialiseGameMessageHandlers(ClientProtocol.LandmarkClientProtocol_709);
             log.Info($"Initialised {clientMessageHandlers.Values.Sum(x => x.Count)} Gateway message handler(s).");
         }
 

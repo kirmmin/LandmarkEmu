@@ -2,8 +2,9 @@
 {
     public enum ClientProtocol
     {
-        ClientProtocol_630 = 630,
+        //ClientProtocol_630 = 630,
+        LandmarkClientProtocol_709 = 709,
 
-        ClientProtocol_ALL = ClientProtocol_630,
+        ClientProtocol_ALL = LandmarkClientProtocol_709
     }
 }

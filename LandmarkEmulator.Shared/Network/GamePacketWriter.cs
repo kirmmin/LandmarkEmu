@@ -125,6 +125,30 @@ namespace LandmarkEmulator.Shared.Network
             stream.Add(0);
         }
 
+        public void WriteUIntWith2BitLength(int value)
+        {
+            value = (int)MathF.Round(value);
+            value = value << 2;
+            var n = 0;
+            if (value > 0xFFFFFF)
+            {
+                n = 3;
+            }
+            else if (value > 0xFFFF)
+            {
+                n = 2;
+            }
+            else if (value > 0xFF)
+            {
+                n = 1;
+            }
+            value |= n;
+            var data = new Span<byte>();
+            BinaryPrimitives.WriteInt32LittleEndian(data, value);
+            foreach (byte d in data.Slice(0, n + 1))
+                stream.Add(d);
+        }
+
         public void WriteBytes(byte[] data, uint length = 0u)
         {
             if (length != 0 && length != data.Length)

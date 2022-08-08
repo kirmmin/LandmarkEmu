@@ -1,13 +1,15 @@
-﻿using LandmarkEmulator.Shared.Network.Cryptography;
+﻿using LandmarkEmulator.Shared.Network;
+using LandmarkEmulator.Shared.Network.Message;
+using LandmarkEmulator.Shared.Network.Cryptography;
 using LandmarkEmulator.Shared.Network.Message.Model;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LandmarkEmulator.Shared.Network
+namespace LandmarkEmulator.Parser
 {
-    public class DataStreamInput : DataStreamBase
+    public class DataStreamParsing : DataStreamBase
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
@@ -26,10 +28,13 @@ namespace LandmarkEmulator.Shared.Network
         private int _lastProcessedFragment = -1;
         private Arc4Provider arc4Provider;
 
-        public DataStreamInput(GameSession session)
+        private string loggerName = "";
+
+        public DataStreamParsing(GameSession session, string name = "")
             : base (session)
         {
             arc4Provider = new Arc4Provider(RC4Key);
+            loggerName = name+": ";
         }
 
         public void ProcessDataFragment(DataWhole dataWhole)
@@ -49,7 +54,7 @@ namespace LandmarkEmulator.Shared.Network
 
             if (sequence > NextSequence && OnOutOfOrder != null)
             {
-                log.Warn($"Sequence out of order, expected {NextSequence} but received {sequence}");
+                log.Warn($"{loggerName}Sequence out of order, expected {NextSequence} but received {sequence}");
                 OnOutOfOrder(sequence);
                 return;
             }
@@ -71,7 +76,7 @@ namespace LandmarkEmulator.Shared.Network
                 _session?.EnqueueProtocolMessage(new Ack
                 {
                     Sequence = ack
-                }, new Message.PacketOptions());
+                }, new PacketOptions());
             }
 
             DataPackets[sequence] = new DataPacket(data, isFragment);
@@ -98,47 +103,61 @@ namespace LandmarkEmulator.Shared.Network
                 DecryptData(finishedData);
                 return;
             }
-            
-            bool dataReady = false;
-            var reader = new ProtocolPacketReader(dataPacket.Data);
-            uint totalSize = reader.ReadUInt();
-            int dataSize = dataPacket.Data.Length - 4;
 
-            List<byte> data = new();
-            for (int i = 4; i < dataPacket.Data.Length; i++)
-                data.Add(dataPacket.Data[i]);
-
-            List<ushort> fragmentIndices = new();
-            for (int i = 1; i <= ushort.MaxValue; i++)
+            try
             {
-                ushort j = (ushort)((nextFragment + i) % 0xFFFF);
-                var fragment = DataPackets[j];
-                if (fragment != null)
+                bool dataReady = false;
+                var reader = new ProtocolPacketReader(dataPacket.Data);
+                uint totalSize = reader.ReadUInt();
+                int dataSize = dataPacket.Data.Length - 4;
+
+                List<byte> data = new();
+                for (int i = 4; i < dataPacket.Data.Length; i++)
+                    data.Add(dataPacket.Data[i]);
+
+                List<ushort> fragmentIndices = new();
+                for (int i = 1; i <= ushort.MaxValue; i++)
                 {
-                    fragmentIndices.Add(j);
-                    for (int m = 0; m < fragment.Data.Length; m++)
-                        data.Add(fragment.Data[m]);
-                    dataSize += fragment.Data.Length;
-
-                    if (dataSize > totalSize)
-                        throw new InvalidPacketValueException("DataSize exceeds TotalSize. We've got a problem!");
-
-                    if (dataSize == totalSize)
+                    ushort j = (ushort)((nextFragment + i) % 0xFFFF);
+                    var fragment = DataPackets[j];
+                    if (fragment != null)
                     {
-                        for (int k = 0; k < fragmentIndices.Count; k++)
-                            DataPackets[fragmentIndices[k]] = null;
-                        _lastProcessedFragment = j;
-                        dataReady = true;
-                        finishedData = ParseChannelData(data);
-                        break;
-                    }
-                }
-                else
-                    break;
-            }
+                        bool dataSizeWillExceed = false;
+                        // For the purpose of the Parser DataStream, we'll ignore CRC fixes or checks. Just shrink the remaining data to fit into totalSize
+                        // When we're able to load into game, this may need fixes but until then, no need
+                        if ((dataSize + fragment.Data.Length) > totalSize)
+                            dataSizeWillExceed = true;
 
-            if (dataReady)
-                DecryptData(finishedData);
+                        fragmentIndices.Add(j);
+                        int sizeToBuild = (int)(dataSizeWillExceed ? totalSize - dataSize : fragment.Data.Length);
+                        for (int m = 0; m < sizeToBuild; m++)
+                            data.Add(fragment.Data[m]);
+                        dataSize += sizeToBuild;
+
+                        if (dataSize > totalSize)
+                            throw new InvalidPacketValueException("DataSize exceeds TotalSize. We've got a problem!");
+
+                        if (dataSize == totalSize)
+                        {
+                            for (int k = 0; k < fragmentIndices.Count; k++)
+                                DataPackets[fragmentIndices[k]] = null;
+                            _lastProcessedFragment = j;
+                            dataReady = true;
+                            finishedData = ParseChannelData(data);
+                            break;
+                        }
+                    }
+                    else
+                        break;
+                }
+
+                if (dataReady)
+                    DecryptData(finishedData);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
         }
 
         private List<byte[]> ParseChannelData(List<byte> data)

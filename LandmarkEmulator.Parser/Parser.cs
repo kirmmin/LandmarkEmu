@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -24,10 +25,10 @@ namespace LandmarkEmulator.Parser
     public class Parser
     {
         protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
-        private static DataStreamInput authServerStream;
-        private static DataStreamInput authClientStream;
-        private static DataStreamInput zoneServerStream;
-        private static DataStreamInput zoneClientStream;
+        private static DataStreamParsing authServerStream;
+        private static DataStreamParsing authClientStream;
+        private static DataStreamParsing zoneServerStream;
+        private static DataStreamParsing zoneClientStream;
 
         public enum Protocol
         {
@@ -48,42 +49,57 @@ namespace LandmarkEmulator.Parser
         private static string FileName = "PacketParse.txt";
         private static List<string> lines = new();
 
+        private static double currentPacket = 0;
+        private static double packetMax = 0;
+
         public static void Main(string[] args)
         {
+            Stopwatch sw = Stopwatch.StartNew();
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("[Landmark RE:Build Packet Parser] Starting Up!");
+
             TextManager.Instance.Initialise();
-            
+
             MessageManager.Instance.Initialise();
             TunnelDataManager.Instance.Initialise();
             AuthMessageManager.Instance.Initialise();
             GatewayMessageManager.Instance.Initialise();
             ZoneMessageManager.Instance.Initialise();
 
-            authServerStream = new DataStreamInput(null);
+            authServerStream = new DataStreamParsing(null, "authServerStream");
             authServerStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket, GamePacketType.Auth, false);
             };
-            authClientStream = new DataStreamInput(null);
+            authClientStream = new DataStreamParsing(null, "authClientStream");
             authClientStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket, GamePacketType.Auth, true);
             };
 
-            zoneServerStream = new DataStreamInput(null);
+            zoneServerStream = new DataStreamParsing(null, "zoneServerStream");
             zoneServerStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket, GamePacketType.Gateway, false);
             };
             zoneServerStream.SetEncryption(false);
-            zoneClientStream = new DataStreamInput(null);
+            zoneClientStream = new DataStreamParsing(null, "zoneClientStream");
             zoneClientStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket, GamePacketType.Gateway, true);
             };
             zoneClientStream.SetEncryption(false);
 
-            OpenPcapORPcapNGFile($"Auth.pcapng", CancellationToken.None);
+            string file = $"\\\\location\\filename.pcapng";
+
+            OpenPcapORPcapNGFile(file, CancellationToken.None);
+            
             File.WriteAllLines(FileName, lines.ToArray());
+            currentPacket = packetMax;
+
+            Console.WriteLine("");
+            Console.WriteLine($"Finished! Completed {packetMax} packets in {sw.Elapsed.ToString("hh\\:mm\\:ss")}");
         }
 
         private static void OnGamePacket(byte[] data, GamePacketType gamePacketType, bool isClient)
@@ -106,7 +122,7 @@ namespace LandmarkEmulator.Parser
                 case GamePacketType.Zone:
                     (ZoneMessageOpcode? zoneOpcode, int offset) = WorldSession.GetOpcode(data);
 
-                    if (zoneOpcode == null)
+                    if (!zoneOpcode.HasValue)
                     {
                         log.Warn($"Unknown Zone Packet : {BitConverter.ToString(data)}");
                         return;
@@ -114,16 +130,26 @@ namespace LandmarkEmulator.Parser
 
                     var newData = new Span<byte>(data, offset, data.Length - offset).ToArray();
                     lines.Add($"{header} [Zone] {zoneOpcode} (0x{(int)zoneOpcode:X8}) | {newData.Length} bytes");
+                    log.Trace($"{header} Parsed Zone packet {zoneOpcode} (0x{(int)zoneOpcode:X8}) | {newData.Length} bytes | {BitConverter.ToString(newData)}");
+
+                    IReadable message = ZoneMessageManager.Instance.GetZoneMessage(zoneOpcode.Value, ClientProtocol.ClientProtocol_ALL);
+                    if (message == null)
+                        return;
+
+                    var msgData = new Span<byte>(data, offset, data.Length - offset).ToArray();
+                    var reader = new GamePacketReader(msgData);
+                    message.Read(reader);
+
                     if (zoneOpcode == ZoneMessageOpcode.SendSelfToClient)
                         File.WriteAllText("SendSelf.bin", BitConverter.ToString(data));
+                    else if (zoneOpcode == ZoneMessageOpcode.TerrainCellModifiedCellManifest)
+                        File.WriteAllText("TerrainCellManifest.bin", BitConverter.ToString(data));
                     else
-                        lines.Add($"{BitConverter.ToString(data)}");
+                        lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
 
-                    var packet = new ZonePacket((ZoneMessageOpcode)zoneOpcode, data);
                     break;
             }
-
-            File.WriteAllLines(FileName, lines.ToArray());
+            currentPacket++;
         }
 
         private static void HandleGatewayPacket(byte[] data, bool isClient)
@@ -133,7 +159,7 @@ namespace LandmarkEmulator.Parser
             data = new Span<byte>(data, 1, data.Length - 1).ToArray();
 
             //lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
-            log.Info($"{header} {opcode} (0x{(int)opcode:X8}) : {BitConverter.ToString(data)}");
+            log.Trace($"{header} Parsed Gateway packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | {BitConverter.ToString(data)}");
 
             // Handle Tunnel Packets slightly separately.
             if (opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection || opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)
@@ -149,7 +175,7 @@ namespace LandmarkEmulator.Parser
                 return;
             }
 
-            //log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
+            //log.Debug($"Received packet {packet.Opcode}(0x{packet.O   pcode:X})  : {BitConverter.ToString(packet.Data)}");
 
             var reader = new GamePacketReader(data);
             message.Read(reader);
@@ -162,9 +188,9 @@ namespace LandmarkEmulator.Parser
             string header = isClient ? ClientHeader : ServerHeader;
             var opcode = (AuthMessageOpcode)data[0];
 
-            //log.Info($"{header} {opcode} (0x{data[0]:X8}) : {BitConverter.ToString(data)}");
+            log.Trace($"{header} Parsed Auth packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | {BitConverter.ToString(data)}");
             lines.Add($"{header} [Auth] {opcode} (0x{data[0]:X8})");
-            //lines.Add($"{BitConverter.ToString(data)}");
+            
             IReadable message = AuthMessageManager.Instance.GetAuthMessage(opcode, ProtocolVersion.LOGIN_ALL);
             if (message == null)
             {
@@ -185,24 +211,86 @@ namespace LandmarkEmulator.Parser
             lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
         }
 
+        private static void AddPacket(object context, IPacket packet)
+        {
+            byte[] ipHeaderData = new Span<byte>(packet.Data, 14, packet.Data.Length - 14).ToArray();
+            var ipHeader = new IpHeader(ipHeaderData, ipHeaderData.Length);
+            if (ipHeader.ProtocolType != Protocol.UDP)
+                return;
+
+            packetMax++;
+        }
+
         private static void OpenPcapORPcapNGFile(string filename, CancellationToken token)
         {
             using (var reader = IReaderFactory.GetReader(filename))
             {
-                reader.OnReadPacketEvent += reader_OnReadPacketEvent;
-                reader.ReadPackets(token);
-                reader.OnReadPacketEvent -= reader_OnReadPacketEvent;
+                try
+                {
+                    reader.OnReadPacketEvent += AddPacket;
+                    reader.ReadPackets(token);
+                }
+                catch (Exception ex)
+                {
+
+                }
+                finally
+                {
+                    reader.OnReadPacketEvent -= AddPacket;
+                }
+            }
+
+            Console.WriteLine($"[Landmark RE:Build Packet Parser] Beginning to parse {filename}");
+
+            Thread trd = new Thread(new ThreadStart(ProgressBarThread));
+            trd.IsBackground = true;
+            trd.Start();
+
+            using (var reader = IReaderFactory.GetReader(filename))
+            {
+                try
+                {
+                    reader.OnReadPacketEvent += reader_OnReadPacketEvent;
+                    reader.ReadPackets(token);
+                }
+                catch (Exception ex)
+                {
+
+                }
+                finally
+                {
+                    reader.OnReadPacketEvent -= reader_OnReadPacketEvent;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Taken from https://gist.github.com/DanielSWolf/0ab6a96899cc5377bf54. Code is under MIT License as of Aug 7, 2022.
+        /// </summary>
+        private static void ProgressBarThread()
+        {
+            using (var progress = new ProgressBar())
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("");
+                Console.Write($"Estimated {packetMax} packets parsing... ");
+                while (currentPacket < packetMax)
+                {
+                    progress.Report(currentPacket / packetMax * 100d);
+                    Thread.Sleep(100);
+                }
+                Console.WriteLine("");
+                Console.WriteLine("");
             }
         }
 
         private static void reader_OnReadPacketEvent(object context, IPacket packet)
         {
-
             byte[] ipHeaderData = new Span<byte>(packet.Data, 14, packet.Data.Length - 14).ToArray();
             var ipHeader = new IpHeader(ipHeaderData, ipHeaderData.Length);
             if (ipHeader.ProtocolType != Protocol.UDP)
                 return;
-            
+
             GetGamePacketType(packet, out GamePacketType gamePacketType, out UdpHeader udpHeader);
             bool isClient = udpHeader.SourcePort > 40000;
 
@@ -214,7 +302,15 @@ namespace LandmarkEmulator.Parser
                 GamePacketType = gamePacketType,
                 IsClient = isClient
             });
-            HandleProtocolPacket(protoPacket);
+
+            try
+            {
+                HandleProtocolPacket(protoPacket);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
         }
 
         private static void GetGamePacketType(IPacket packet, out GamePacketType gamePacketType, out UdpHeader udpHeader)
@@ -232,18 +328,19 @@ namespace LandmarkEmulator.Parser
             var packetOptions = packet.PacketOptions as ParserPacketOptions;
             string header = packetOptions.IsClient ? ClientHeader : ServerHeader;
 
-            //if (packetOptions.IsClient && packetOptions.GamePacketType == GamePacketType.Zone)
-            //    return;
 
             IProtocol message = MessageManager.Instance.GetProtocolMessage(packet.Opcode);
             if (message == null)
             {
+                currentPacket++;
                 log.Warn($"{header} Received unknown protocol packet {packet.Opcode:X} : {BitConverter.ToString(packet.Data)}");
                 return;
             }
 
             if (message is OutOfOrder)
+            {
                 return;
+            }
 
             if (packetOptions.GamePacketType == GamePacketType.Gateway)
                 packet.PacketOptions.Compression = false;
@@ -256,18 +353,21 @@ namespace LandmarkEmulator.Parser
             {
                 lines.Add($"{header} [Protocol] {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
                 lines.Add(JsonConvert.SerializeObject(sessionRequest, Formatting.Indented));
+                currentPacket++;
             }
 
             if (message is SessionReply sessionReply)
             {
                 lines.Add($"{header} [Protocol] {packet.Opcode} (0x{(int)(packet.Opcode):X8})");
                 lines.Add(JsonConvert.SerializeObject(sessionReply, Formatting.Indented));
+                currentPacket++;
             }
 
             if (message is MultiPacket multiPacket)
             {
                 foreach (ProtocolPacket multiPacketPacket in multiPacket.Packets)
                 {
+                    packetMax++;
                     multiPacketPacket.PacketOptions = new ParserPacketOptions
                     {
                         IsSubpacket = true,
@@ -296,7 +396,7 @@ namespace LandmarkEmulator.Parser
                         zoneServerStream.ProcessDataFragment(dataWhole);
                 }
             }
-            
+
             if (message is DataFragment fragment)
             {
                 if (packetOptions.GamePacketType == GamePacketType.Auth)
