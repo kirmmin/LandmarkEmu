@@ -4,7 +4,7 @@ using LandmarkEmulator.Shared.Network.Message;
 namespace LandmarkEmulator.WorldServer.Network.Message.Model
 {
     [ZoneMessage(ZoneMessageOpcode.SendZoneDetails)]
-    public class SendZoneDetails : IReadable
+    public class SendZoneDetails : IReadable, IWritable
     {
         public string Unknown0 { get; set; }
         public uint Unknown1 { get; set; }
@@ -18,7 +18,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public uint Unknown9 { get; set; }
         public Sky SkyData { get; set; }
 
-        public class Sky : IReadable
+        public class Sky : IReadable, IWritable
         {
             public uint Unknown1 { get; set; }
             public uint Unknown2 { get; set; }
@@ -47,6 +47,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             {
 
             }
+
+            public void Write(GamePacketWriter writer)
+            {
+
+            }
         }
 
         public void Read(GamePacketReader reader)
@@ -61,6 +66,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             Unknown7 = reader.ReadUInt();
             Unknown8 = reader.ReadUInt();
             Unknown9 = reader.ReadUInt();
+        }
+
+        public void Write(GamePacketWriter writer)
+        {
+
         }
     }
 }
