@@ -33,6 +33,7 @@ namespace LandmarkEmulator.Shared.Network
         private ushort serverCompression { get; set; } = 0x100;
 
         private bool hasAuthed = false;
+        private int packetPauseCount = 0;
 
         public GameSession(string cryptoKey)
         {
@@ -135,7 +136,9 @@ namespace LandmarkEmulator.Shared.Network
             while (true)
             {
                 if (outgoingPriorityPackets.IsEmpty && outOfOrderPackets.Count == 0 && outgoingDataPackets.IsEmpty)
-                    Thread.Sleep(1);
+                    Thread.Sleep(10);
+
+                packetPauseCount++;
 
                 if (CanProcessPackets && outgoingPriorityPackets.TryDequeue(out ProtocolPacket priorityPacket))
                 {
@@ -151,12 +154,16 @@ namespace LandmarkEmulator.Shared.Network
                 if (CanProcessPackets && outOfOrderPackets.TryDequeue(out ProtocolPacket outOfOrderPacket))
                     SendPacket(outOfOrderPacket);
 
-                //if (outgoingPriorityPackets.IsEmpty && outgoingDataPackets.IsEmpty)
-                //    Thread.Sleep(1);
-
                 if (outOfOrderPackets.Count == 0 && outgoingPriorityPackets.IsEmpty)
                     if (CanProcessPackets && outgoingDataPackets.TryDequeue(out ProtocolPacket outPacket))
                         SendPacket(outPacket);
+
+                // Too many packets in a short period of time overwhelms the client. ResendPacketsOnPing should handle it if this is still too fast.
+                if (packetPauseCount >= 50)
+                {
+                    packetPauseCount = 0;
+                    Thread.Sleep(50);
+                }
 
                 Thread.Sleep(0);
             }
@@ -345,6 +352,9 @@ namespace LandmarkEmulator.Shared.Network
         public void HandlePing(Ping ping)
         {
             EnqueueProtocolMessage(new Ping(), new PacketOptions());
+
+            if (outputStream.MissingAcks)
+                outputStream.ResendDataOnPing();
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.Disconnect)]

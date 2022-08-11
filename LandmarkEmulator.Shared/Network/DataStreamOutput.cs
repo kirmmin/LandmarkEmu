@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LandmarkEmulator.Shared.Network
 {
@@ -14,6 +15,8 @@ namespace LandmarkEmulator.Shared.Network
         /// Raised on data processing complete, and packet available.
         /// </summary>
         public event DataEvent OnData;
+
+        public bool MissingAcks => LastAck != null && DataPackets[(int)LastAck] != null;
 
         private uint _fragmentSize;
         private Arc4Provider arc4Provider;
@@ -108,6 +111,21 @@ namespace LandmarkEmulator.Shared.Network
                     OnData((ushort)i, DataPackets[i], wasOutOfOrder: true);
                 else
                     throw new InvalidOperationException("Cache error, could not resend data!");
+            }
+        }
+
+        /// <summary>
+        /// Used to handle resending of data to the client when it sends an out of order packet
+        /// </summary>
+        public void ResendDataOnPing()
+        {
+            var start = (int)(LastAck);
+            for (var i = start; i <= ushort.MaxValue; i++)
+            {
+                if (DataPackets[i] == null)
+                    break;
+
+                OnData((ushort)i, DataPackets[i], wasOutOfOrder: true);
             }
         }
     }
