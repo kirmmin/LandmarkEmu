@@ -28,7 +28,6 @@ namespace LandmarkEmulator.Shared.GameTable
         {
             TextManager.Instance.Initialise();
             
-            
             log.Info("Loading GameTables...");
 
             Stopwatch sw = Stopwatch.StartNew();

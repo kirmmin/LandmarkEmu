@@ -1,4 +1,6 @@
-﻿using NLog;
+﻿using LandmarkEmulator.Shared.Configuration;
+using Microsoft.Extensions.Configuration;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +22,9 @@ namespace LandmarkEmulator.Shared.GameTable.Text
             Stopwatch sw = Stopwatch.StartNew();
             try
             {
-                LoadDataFile("en_us_data.dat");
+                string path = SharedConfiguration.Configuration.GetValue("GameDataPath", "gameData");
+                string filePath = Path.Combine(path, "en_us_data.dat");
+                LoadDataFile(filePath);
             }
             catch (Exception exception)
             {
