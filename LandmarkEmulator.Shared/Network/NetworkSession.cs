@@ -10,9 +10,17 @@ namespace LandmarkEmulator.Shared.Network
     {
         protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
+        /// <summary>
+        /// Determines if queued packets can be processed.
+        /// </summary>
+        public bool CanProcessPackets => canProcessPackets && (WasConnected && !Disconnected);
+        private bool canProcessPackets = false;
+        protected bool WasConnected = false;
+
         public bool Disconnected { get; private set; }
         public SocketHeartbeat Heartbeat { get; } = new SocketHeartbeat();
         public EndPoint Endpoint { get; private set; }
+        private string endPointRef;
 
         /// <summary>
         /// <see cref="IEvent"/> queue that will be processed during <see cref="NetworkSession"/> update.
@@ -29,6 +37,9 @@ namespace LandmarkEmulator.Shared.Network
         public virtual void OnAccept(EndPoint ep)
         {
             Endpoint = ep;
+            endPointRef = ep.ToString();
+
+            log.Debug($"Client connected: {ep}");
         }
 
         /// <summary>
@@ -79,7 +90,15 @@ namespace LandmarkEmulator.Shared.Network
         {
             Disconnected = true;
 
-            log.Trace("Client disconnected.");
+            log.Debug($"Client disconnected: {endPointRef}");
+        }
+
+        public void TogglePacketProcessing(bool allowed)
+        {
+            if (!WasConnected && allowed)
+                WasConnected = true;
+
+            canProcessPackets = allowed;
         }
     }
 }

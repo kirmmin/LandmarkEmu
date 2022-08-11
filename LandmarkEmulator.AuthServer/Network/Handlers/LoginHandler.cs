@@ -28,7 +28,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         public static void HandleLoginRequest9(AuthSession session, LoginRequest request)
         {
             // prevent packets from being processed until asynchronous account select task is complete
-            session.CanProcessPackets = false;
+            session.TogglePacketProcessing(false);
 
             session.Events.Enqueue(new TaskGenericEvent<AccountModel>(DatabaseManager.Instance.AuthDatabase.GetAccountBySessionKeyAsync(request.SessionId),
                 account =>
@@ -44,7 +44,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                 });
 
                 session.Initialise(account);
-                session.CanProcessPackets = true;
+                session.TogglePacketProcessing(true);
             }));
         }
 
@@ -52,7 +52,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         public static void HandleLoginRequest(AuthSession session, LoginRequest request)
         {
             // prevent packets from being processed until asynchronous account select task is complete
-            session.CanProcessPackets = false;
+            session.TogglePacketProcessing(false);
 
             session.Events.Enqueue(new TaskGenericEvent<AccountModel>(DatabaseManager.Instance.AuthDatabase.GetAccountBySessionKeyAsync(request.SessionId),
                 account =>
@@ -75,7 +75,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                     });
 
                     session.Initialise(account);
-                    session.CanProcessPackets = true;
+                    session.TogglePacketProcessing(true);
                 }));
         }
 
@@ -416,7 +416,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                 return;
             }
 
-            session.CanProcessPackets = false;
+            session.TogglePacketProcessing(false);
 
             void Save(CharacterContext context)
             {
@@ -440,7 +440,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
             session.Events.Enqueue(new TaskEvent(DatabaseManager.Instance.CharacterDatabase.Save(Save),
                 () =>
             {
-                session.CanProcessPackets = true;
+                session.TogglePacketProcessing(true);
 
                 // Send CharacterSelectInfoReply, first, with no characters, otherwise it bugs up.
                 session.EnqueueMessage(new CharacterSelectInfoReply

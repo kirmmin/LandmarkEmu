@@ -7,7 +7,7 @@ using System.IO;
 
 namespace LandmarkEmulator.Shared.Network.Message.Model
 {
-    [ProtocolMessage(ProtocolMessageOpcode.MutliPacket, useEncryption: true)]
+    [ProtocolMessage(ProtocolMessageOpcode.MultiPacket, useEncryption: true)]
     public class MultiPacket : IProtocol
     {
         protected static readonly ILogger log = LogManager.GetCurrentClassLogger();

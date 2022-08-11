@@ -9,7 +9,7 @@ namespace LandmarkEmulator.Shared.Network
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-        public delegate void DataEvent(ushort sequence, DataPacket packet);
+        public delegate void DataEvent(ushort sequence, DataPacket packet, bool wasOutOfOrder = false);
         /// <summary>
         /// Raised on data processing complete, and packet available.
         /// </summary>
@@ -55,7 +55,7 @@ namespace LandmarkEmulator.Shared.Network
             dataFragmentsCombined.AddRange(data);
 
             Span<byte> spanData = dataFragmentsCombined.ToArray().AsSpan();
-            log.Trace($"DataFragment total size is {spanData.Length}");
+            //log.Trace($"DataFragment total size is {spanData.Length}");
             for (var i = 0; i < spanData.Length; i += (int)_fragmentSize)
             {
                 if (NextSequence == null)
@@ -69,7 +69,7 @@ namespace LandmarkEmulator.Shared.Network
                 var dataPacket = new DataPacket(nextSlice, true);
                 DataPackets[(int)NextSequence] = dataPacket;
                 OnData((ushort)NextSequence, dataPacket);
-                log.Trace($"DataFragment size is {nextSize}");
+                //log.Trace($"DataFragment size is {nextSize}");
             }
 
             // TODO: Write and queue DataFragments when size exceeds _fragmentSize
@@ -85,11 +85,14 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public void HandleAck(ushort sequence)
         {
-            while (LastAck <= sequence)
+            if (!LastAck.HasValue)
+                LastAck = 0;
+
+            while (LastAck < sequence)
             {
-                LastAck++;
                 if (DataPackets[(int)LastAck] != null)
                     DataPackets[(int)LastAck] = null;
+                LastAck++;
             }
         }
 
@@ -98,11 +101,11 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public void ResendData(ushort sequence)
         {
-            var start = (int)(LastAck + 1);
-            for (var i = start; i < sequence; i++)
+            var start = (int)(LastAck);
+            for (var i = start; i <= sequence; i++)
             {
                 if (DataPackets[i] != null)
-                    OnData((ushort)NextSequence, DataPackets[i]);
+                    OnData((ushort)i, DataPackets[i], wasOutOfOrder: true);
                 else
                     throw new InvalidOperationException("Cache error, could not resend data!");
             }

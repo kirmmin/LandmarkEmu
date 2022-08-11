@@ -5,20 +5,22 @@ using LandmarkEmulator.Shared.Network.Packets;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
+using System.Threading;
 
 namespace LandmarkEmulator.Shared.Network
 {
     public abstract class GameSession : NetworkSession
     {
-        /// <summary>
-        /// Determines if queued incoming packets can be processed during a world update.
-        /// </summary>
-        public bool CanProcessPackets { get; set; } = true;
         public ProtocolVersion ProtocolVersion { get; private set; }
         public string EncryptionKey { get; protected set; }
 
-        private readonly ConcurrentQueue<ProtocolPacket> incomingPackets = new();
-        private readonly Queue<ProtocolPacket> outgoingPackets = new();
+        Thread outgoingPacketThread = null;
+
+        private readonly ConcurrentQueue<ProtocolPacket> outgoingPriorityPackets = new();
+        private readonly ConcurrentQueue<ProtocolPacket> outgoingDataPackets = new();
+        private readonly ConcurrentQueue<ProtocolPacket> outOfOrderPackets = new();
         private readonly DataStreamInput inputStream;
         private readonly DataStreamOutput outputStream;
 
@@ -53,17 +55,19 @@ namespace LandmarkEmulator.Shared.Network
                 });
             };
             outputStream = new DataStreamOutput(this);
-            outputStream.OnData += (sequence, gamePacket) =>
+            outputStream.OnData += (sequence, gamePacket, outOfOrder) =>
             {
                 if (!gamePacket.IsFragment)
                     EnqueueProtocolMessage(new DataWhole
                     {
                         Sequence = sequence,
-                        Data = gamePacket.Data
+                        Data = gamePacket.Data,
                     }, new PacketOptions
                     {
                         IsSubpacket = false,
-                        Compression = serverCompression != 0
+                        Compression = serverCompression != 0,
+                        WasOutOfOrder = outOfOrder,
+                        Sequence = sequence
                     });
                 else
                     EnqueueProtocolMessage(new DataFragment
@@ -73,7 +77,9 @@ namespace LandmarkEmulator.Shared.Network
                     }, new PacketOptions
                     {
                         IsSubpacket = false,
-                        Compression = serverCompression != 0
+                        Compression = serverCompression != 0,
+                        WasOutOfOrder = outOfOrder,
+                        Sequence = sequence
                     });
             };
         }
@@ -81,7 +87,7 @@ namespace LandmarkEmulator.Shared.Network
         /// <summary>
         /// This is fired to alert the Class inheritor that a packet is here for it to handle.
         /// </summary>
-        /// <remarks>GameSession only handles Protocol packets directly. AuthSession, WorldSession, and any others would handle Game Packets.</remarks>
+        /// <remarks>GameSession only handles Protocol packets directly. AuthSession, WorldSession, and any others handle Game Packets.</remarks>
         protected virtual void OnGamePacket(byte[] data)
         {
             // deliberately empty
@@ -91,13 +97,24 @@ namespace LandmarkEmulator.Shared.Network
         /// This is fired between incoming packets being parsed and outgoing packets being sent, to allow for the Class inheritor to handle its packets.
         /// </summary>
         /// <remarks>This is called from within Update().</remarks>
-        protected virtual void OnProcessPackets(double lastTick)
+        protected virtual void OnProcessPackets()
         {
             // deliberately empty
         }
 
+        /// <summary>
+        /// Handle receiving data from connected client. Packets are processed immediately.
+        /// </summary>
         public override void OnData(byte[] data)
         {
+            // Setup Outgoing Packet Thread
+            if (outgoingPacketThread == null)
+            {
+                outgoingPacketThread = new Thread(new ThreadStart(ProcessOutPackets));
+                outgoingPacketThread.IsBackground = true;
+                outgoingPacketThread.Start();
+            }
+
             Heartbeat.OnHeartbeat();
 
             var packet = new ProtocolPacket(data, new PacketOptions
@@ -105,15 +122,44 @@ namespace LandmarkEmulator.Shared.Network
                 IsSubpacket = false,
                 Compression = serverCompression != 0
             });
-            incomingPackets.Enqueue(packet);
+            HandleProtocolPacket(packet);
 
             base.OnData(data);
         }
 
-        public override void OnDisconnect()
+        /// <summary>
+        /// This runs in its own thread so we can send packets quickly
+        /// </summary>
+        private void ProcessOutPackets()
         {
-            SendPacket(new ProtocolPacket(ProtocolMessageOpcode.Disconnect, new Disconnect(), true, new PacketOptions()));
-            base.OnDisconnect();
+            while (true)
+            {
+                if (outgoingPriorityPackets.IsEmpty && outOfOrderPackets.Count == 0 && outgoingDataPackets.IsEmpty)
+                    Thread.Sleep(1);
+
+                if (CanProcessPackets && outgoingPriorityPackets.TryDequeue(out ProtocolPacket priorityPacket))
+                {
+                    SendPacket(priorityPacket);
+
+                    if (priorityPacket.Opcode == ProtocolMessageOpcode.Disconnect)
+                    {
+                        OnDisconnect();
+                        return;
+                    }
+                }
+
+                if (CanProcessPackets && outOfOrderPackets.TryDequeue(out ProtocolPacket outOfOrderPacket))
+                    SendPacket(outOfOrderPacket);
+
+                //if (outgoingPriorityPackets.IsEmpty && outgoingDataPackets.IsEmpty)
+                //    Thread.Sleep(1);
+
+                if (outOfOrderPackets.Count == 0 && outgoingPriorityPackets.IsEmpty)
+                    if (CanProcessPackets && outgoingDataPackets.TryDequeue(out ProtocolPacket outPacket))
+                        SendPacket(outPacket);
+
+                Thread.Sleep(0);
+            }
         }
 
         /// <summary>
@@ -121,14 +167,8 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public sealed override void Update(double lastTick)
         {
-            // process pending packet queue
-            while (CanProcessPackets && incomingPackets.TryDequeue(out ProtocolPacket packet))
-                HandleProtocolPacket(packet);
-
-            OnProcessPackets(lastTick);
-
-            if (CanProcessPackets && outgoingPackets.TryDequeue(out ProtocolPacket outPacket))
-                SendPacket(outPacket);
+            // We still process packets at regular interval so that things stay in sync.
+            OnProcessPackets();
 
             base.Update(lastTick);
         }
@@ -144,6 +184,7 @@ namespace LandmarkEmulator.Shared.Network
 
             if (!hasAuthed && message is not SessionRequest)
             {
+                log.Debug("Client sent data without session or session requests. Disconnecting.");
                 OnDisconnect();
                 return;
             }
@@ -186,7 +227,25 @@ namespace LandmarkEmulator.Shared.Network
                 return;
             }
 
-            outgoingPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+            if (options.IsPriority)
+            {
+                outgoingPriorityPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+                return;
+            }
+
+            switch (opcodeData.Item1)
+            {
+                case ProtocolMessageOpcode.Ack:
+                case ProtocolMessageOpcode.MultiPacket:
+                    outgoingPriorityPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+                    break;
+                default:
+                    if (options.WasOutOfOrder)
+                        outOfOrderPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+                    else
+                        outgoingDataPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+                    break;
+            }
         }
 
         protected void SendPacket(ProtocolPacket packet)
@@ -201,7 +260,10 @@ namespace LandmarkEmulator.Shared.Network
             if (packet.UseEncryption)
                 newData = CrcProvider.AppendCRC(newData, 0);
 
-            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X})");
+            if (newData == null || newData.Length == 0)
+                return;
+
+            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
 
             SendRaw(newData);
         }
@@ -271,11 +333,12 @@ namespace LandmarkEmulator.Shared.Network
             inputStream.ProcessDataFragment(dataWhole);
         }
 
-        [ProtocolMessageHandler(ProtocolMessageOpcode.MutliPacket)]
+        [ProtocolMessageHandler(ProtocolMessageOpcode.MultiPacket)]
         public void HandleMultiPacket(MultiPacket multiPacket)
         {
+            // Immediately Handle these packets, if we add back to the queue, we get out of order problems.
             foreach (ProtocolPacket packet in multiPacket.Packets)
-                incomingPackets.Enqueue(packet);
+                HandleProtocolPacket(packet);
         }
 
         [ProtocolMessageHandler(ProtocolMessageOpcode.Ping)]
@@ -290,6 +353,17 @@ namespace LandmarkEmulator.Shared.Network
             OnDisconnect();
         }
 
+        public override void OnDisconnect()
+        {
+            if (WasConnected)
+                SendPacket(new ProtocolPacket(ProtocolMessageOpcode.Disconnect, new Disconnect(), true, new PacketOptions
+                {
+                    IsPriority = true
+                }));
+
+            base.OnDisconnect();
+        }
+
         [ProtocolMessageHandler(ProtocolMessageOpcode.Ack)]
         public void HandleAck(Ack ack)
         {
@@ -299,6 +373,9 @@ namespace LandmarkEmulator.Shared.Network
         [ProtocolMessageHandler(ProtocolMessageOpcode.OutOfOrder)]
         public void HandleOutOfOrder(OutOfOrder outOfOrder)
         {
+            if (outOfOrderPackets.Count > 0)
+                return;
+
             outputStream.ResendData(outOfOrder.Sequence);
         }
     }

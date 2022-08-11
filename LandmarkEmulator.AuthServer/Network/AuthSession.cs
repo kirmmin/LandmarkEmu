@@ -16,7 +16,6 @@ namespace LandmarkEmulator.AuthServer.Network
         public AccountModel Account { get; private set; }
         public List<CharacterModel> Characters { get; } = new();
 
-        private readonly ConcurrentQueue<AuthPacket> incomingPackets = new();
         private readonly Queue<AuthPacket> outgoingPackets = new();
 
         public AuthSession() : base(AuthServer.EncryptionKey)
@@ -37,8 +36,6 @@ namespace LandmarkEmulator.AuthServer.Network
         public override void OnAccept(EndPoint ep)
         {
             base.OnAccept(ep);
-
-            log.Debug($"New session received on {ep}");
         }
 
         protected override void OnGamePacket(byte[] data)
@@ -46,14 +43,11 @@ namespace LandmarkEmulator.AuthServer.Network
             base.OnGamePacket(data);
             
             var packet = new AuthPacket(data);
-            incomingPackets.Enqueue(packet);
+            HandleAuthPacket(packet);
         }
 
-        protected override void OnProcessPackets(double lastTick)
+        protected override void OnProcessPackets()
         {
-            while (CanProcessPackets && incomingPackets.TryDequeue(out AuthPacket packet))
-                HandleAuthPacket(packet);
-
             while (CanProcessPackets && outgoingPackets.TryDequeue(out AuthPacket packet))
                 SendPacket(packet);
         }

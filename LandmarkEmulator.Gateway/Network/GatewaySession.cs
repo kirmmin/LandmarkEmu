@@ -44,24 +44,21 @@ namespace LandmarkEmulator.Gateway.Network
             base.OnGamePacket(data);
 
             var packet = new GatewayPacket(data);
-            incomingPackets.Enqueue(packet);
+            HandlePacket(packet);
         }
 
         /// <summary>
         /// This is fired between incoming packets being parsed and outgoing packets being sent, to allow for the Class inheritor to handle its packets.
         /// </summary>
         /// <remarks>This is called from within Update().</remarks>
-        protected virtual void OnProcessZonePackets(double lastTick)
+        protected virtual void OnProcessZonePackets()
         {
             // Deliberately left empty
         }
 
-        protected sealed override void OnProcessPackets(double lastTick)
+        protected sealed override void OnProcessPackets()
         {
-            while (CanProcessPackets && incomingPackets.TryDequeue(out GatewayPacket packet))
-                HandlePacket(packet);
-
-            OnProcessZonePackets(lastTick);
+            OnProcessZonePackets();
 
             while (CanProcessPackets && outgoingPackets.TryDequeue(out GatewayPacket packet))
                 SendPacket(packet);
@@ -72,7 +69,7 @@ namespace LandmarkEmulator.Gateway.Network
             // Handle Tunnel Packets slightly separately.
             if (packet.Opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection)
             {
-                log.Debug($"Received Gateway packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
+                log.Trace($"Received Gateway packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
                 OnTunnelData(packet.Flags, packet.Data);
                 return;
             }
@@ -91,7 +88,7 @@ namespace LandmarkEmulator.Gateway.Network
                 return;
             }
 
-            log.Debug($"Received packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
+            log.Trace($"Received packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
 
             var reader = new GamePacketReader(packet.Data);
             message.Read(reader);
@@ -124,12 +121,12 @@ namespace LandmarkEmulator.Gateway.Network
                 writer.Write((byte)packet.Opcode);
             writer.WriteBytes(packet.Data);
 
-            log.Debug($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
+            log.Trace($"Sending packet {packet.Opcode}(0x{packet.Opcode:X}) : {BitConverter.ToString(packet.Data)}");
 
             PackAndSend(data.ToArray());
         }
 
-        public void EnqueueGatewayMessage(IWritable message)
+        private void EnqueueGatewayMessage(IWritable message)
         {
             if (!GatewayMessageManager.Instance.GetOpcode(message, out GatewayMessageOpcode opcode))
             {
@@ -208,7 +205,7 @@ namespace LandmarkEmulator.Gateway.Network
         /// <summary>
         /// Packs the provided <see cref="byte[]"/> into a Tunnel Packet to be sent to the Client.
         /// </summary>
-        public void PackTunnelPacket(byte[] data)
+        protected void PackTunnelPacket(byte[] data)
         {
             EnqueueGatewayMessage(new TunnelPacketToExternalConnection
             {

@@ -24,6 +24,7 @@ namespace LandmarkEmulator.Shared.Network
             connection = new Connection(IPAddress.Parse(config.Host), config.Port);
             connection.OnMessage += (remoteEP, message) =>
             {
+                // Existing session, pass data for processing
                 if (sessions.TryGetValue(remoteEP, out T session))
                     session.OnData(message);
                 else
@@ -31,7 +32,13 @@ namespace LandmarkEmulator.Shared.Network
                     var newSession = new T();
                     newSession.OnAccept(remoteEP);
 
-                    pendingAdd.Enqueue(newSession);
+                    // Add new Session, setup Event Handler, and send received data
+                    sessions.Add(newSession.Endpoint, newSession);
+                    newSession.OnSend += (endpoint, data) =>
+                    {
+                        connection.SendBytes(endpoint, data);
+                    };
+                    newSession.TogglePacketProcessing(true);
                     newSession.OnData(message);
                 }
             };
@@ -61,15 +68,6 @@ namespace LandmarkEmulator.Shared.Network
         /// </summary>
         public void Update(double lastTick)
         {
-            // Add new sessions to be operated on.
-            while (pendingAdd.TryDequeue(out T session))
-            {
-                sessions.Add(session.Endpoint, session);
-                session.OnSend += (endpoint, data) =>
-                {
-                    connection.SendBytes(endpoint, data);
-                };
-            }
 
             // Operate on existing sessions.
             foreach (T session in sessions.Values)

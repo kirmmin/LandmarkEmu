@@ -4,7 +4,7 @@
     {
         SessionRequest   = 0x01,
         SessionReply     = 0x02,
-        MutliPacket      = 0x03,
+        MultiPacket      = 0x03,
         Disconnect       = 0x05,
         Ping             = 0x06,
         NetStatusRequest = 0x07,
