@@ -1,9 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+	  <ContentWithTargetPath Include="Resources\**">
+	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <TargetPath>Resources\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+	  </ContentWithTargetPath>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LandmarkEmulator.Gateway\LandmarkEmulator.Gateway.csproj" />
