@@ -24,8 +24,11 @@ namespace LandmarkEmulator.WorldServer
 
         public const string EncryptionKey = "F70IaxuU8C/w7FPXY1ibXw==";
 
+        public static double StartTime = 0;
+
         static void Main(string[] args)
         {
+            StartTime = (DateTime.Now.Ticks - DateTime.UnixEpoch.Ticks) / 1000;
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
             ConfigurationManager<WorldServerConfiguration>.Instance.Initialise("WorldServer.json");
 
@@ -57,6 +60,17 @@ namespace LandmarkEmulator.WorldServer
             {
                 log.Fatal(e);
             }
+        }
+
+        public static double GetServerTime()
+        {
+            double delta = GetCurrentServerTime() - StartTime;
+            return GetCurrentServerTime() + delta;
+        }
+
+        public static double GetCurrentServerTime()
+        {
+            return (DateTime.Now.Ticks - DateTime.UnixEpoch.Ticks) / 1000;
         }
     }
 }
