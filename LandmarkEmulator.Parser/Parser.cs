@@ -1,5 +1,6 @@
 ﻿using Haukcode.PcapngUtils;
 using Haukcode.PcapngUtils.Common;
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using LandmarkEmulator.AuthServer.Network.Message;
 using LandmarkEmulator.AuthServer.Network.Message.Model;
 using LandmarkEmulator.AuthServer.Network.Message.Model.Shared;
@@ -124,6 +125,10 @@ namespace LandmarkEmulator.Parser
 
                     if (!zoneOpcode.HasValue)
                     {
+                        if (data.Length > 5000)
+                            File.WriteAllBytes($"packets\\{currentPacket}-unknown", data);
+
+                        lines.Add($"{header} [Zone] Unknown packet | {data.Length} bytes");
                         log.Warn($"Unknown Zone Packet : {BitConverter.ToString(data)}");
                         return;
                     }
@@ -132,6 +137,14 @@ namespace LandmarkEmulator.Parser
                     lines.Add($"{header} [Zone] {zoneOpcode} (0x{(int)zoneOpcode:X8}) | {newData.Length} bytes");
                     log.Trace($"{header} Parsed Zone packet {zoneOpcode} (0x{(int)zoneOpcode:X8}) | {newData.Length} bytes | {BitConverter.ToString(newData)}");
 
+                    if (newData.Length > 5000)
+                        File.WriteAllBytes($"packets\\{currentPacket}-{zoneOpcode}", data);
+
+                    if (zoneOpcode == ZoneMessageOpcode.SendSelfToClient)
+                        File.WriteAllBytes("SendSelf.bin", data);
+                    else if (zoneOpcode == ZoneMessageOpcode.TerrainCellModifiedCellManifest)
+                        File.WriteAllBytes("TerrainCellManifest.bin", data);
+
                     IReadable message = ZoneMessageManager.Instance.GetZoneMessage(zoneOpcode.Value, ClientProtocol.ClientProtocol_ALL);
                     if (message == null)
                         return;
@@ -139,13 +152,8 @@ namespace LandmarkEmulator.Parser
                     var msgData = new Span<byte>(data, offset, data.Length - offset).ToArray();
                     var reader = new GamePacketReader(msgData);
                     message.Read(reader);
-
-                    if (zoneOpcode == ZoneMessageOpcode.SendSelfToClient)
-                        File.WriteAllText("SendSelf.bin", BitConverter.ToString(data));
-                    else if (zoneOpcode == ZoneMessageOpcode.TerrainCellModifiedCellManifest)
-                        File.WriteAllText("TerrainCellManifest.bin", BitConverter.ToString(data));
-                    else
-                        lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
+                    
+                    lines.Add(JsonConvert.SerializeObject(message, Formatting.Indented));
 
                     break;
             }
@@ -157,9 +165,10 @@ namespace LandmarkEmulator.Parser
             string header = isClient ? ClientHeader : ServerHeader;
             var opcode = (GatewayMessageOpcode)(data[0] & 0x1F);
             data = new Span<byte>(data, 1, data.Length - 1).ToArray();
+            var flags = data[0] >> 5;
 
             //lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
-            log.Trace($"{header} Parsed Gateway packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | {BitConverter.ToString(data)}");
+            log.Trace($"{header} Parsed Gateway packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | Flags: {flags} | {BitConverter.ToString(data)}");
 
             // Handle Tunnel Packets slightly separately.
             if (opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection || opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)
@@ -289,7 +298,10 @@ namespace LandmarkEmulator.Parser
             byte[] ipHeaderData = new Span<byte>(packet.Data, 14, packet.Data.Length - 14).ToArray();
             var ipHeader = new IpHeader(ipHeaderData, ipHeaderData.Length);
             if (ipHeader.ProtocolType != Protocol.UDP)
+            {
+                lines.Add($"Unreadable packet | {ipHeader.SourceAddress} -> {ipHeader.DestinationAddress} | {ipHeader.ProtocolType} | {packet.Data.Length} bytes");
                 return;
+            }
 
             GetGamePacketType(packet, out GamePacketType gamePacketType, out UdpHeader udpHeader);
             bool isClient = udpHeader.SourcePort > 40000;
@@ -414,6 +426,15 @@ namespace LandmarkEmulator.Parser
                         zoneServerStream.ProcessDataFragment(fragment);
                 }
             }
+        }
+
+        public static byte[] ZLibDotnetDecompress(byte[] data)
+        {
+            MemoryStream compressed = new MemoryStream(data);
+            MemoryStream decompressed = new MemoryStream();
+            InflaterInputStream inputStream = new InflaterInputStream(compressed);
+            inputStream.CopyTo(decompressed);
+            return decompressed.ToArray();
         }
     }
 }
