@@ -22,7 +22,9 @@ namespace LandmarkEmulator.Shared.GameTable.Text
             Stopwatch sw = Stopwatch.StartNew();
             try
             {
-                string path = SharedConfiguration.Configuration.GetValue("GameDataPath", "gameData");
+                string path = "";
+                if (SharedConfiguration.Configuration != null)
+                    path = SharedConfiguration.Configuration.GetValue("GameDataPath", "gameData");
                 string filePath = Path.Combine(path, "en_us_data.dat");
                 LoadDataFile(filePath);
             }
