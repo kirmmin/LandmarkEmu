@@ -8,21 +8,21 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
     public class GameTimeSync : IWritable, IReadable
     {
         public double Time { get; set; }
-        public float Unknown0 { get; set; } = 12f;
-        public bool Unknown1 { get; set; }
+        public float CycleSpeed { get; set; }
+        public bool Unknown0 { get; set; }
 
         public void Read(GamePacketReader reader)
         {
             Time = reader.ReadDouble();
-            Unknown0 = reader.ReadSingle();
-            Unknown1 = reader.ReadBool();
+            CycleSpeed = reader.ReadSingle();
+            Unknown0 = reader.ReadBool();
         }
 
         public void Write(GamePacketWriter writer)
         {
-            writer.Write(Math.Floor(DateTime.Now.Ticks / 1000d));
+            writer.Write(Time);
+            writer.Write(CycleSpeed);
             writer.Write(Unknown0);
-            writer.Write(Unknown1);
         }
     }
 }
