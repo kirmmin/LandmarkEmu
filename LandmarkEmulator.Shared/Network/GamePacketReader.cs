@@ -157,5 +157,12 @@ namespace LandmarkEmulator.Shared.Network
             currentBytePosition += (byte)bits / 8;
             return new ReadOnlySpan<byte>(data);
         }
+
+        public byte[] GetRemainingData()
+        {
+            byte[] data = new byte[BytesRemaining];
+            Buffer.BlockCopy(stream, currentBytePosition, data, 0, data.Length);
+            return data;
+        }
     }
 }
