@@ -14,6 +14,7 @@ namespace LandmarkEmulator.Shared.Network.Packets
         public byte[] Data { get; protected set; }
         public bool UseEncryption { get; protected set; }
         public PacketOptions PacketOptions { get; set; }
+        public bool Ignore { get; set; } = false;
 
         public ProtocolPacket(byte[] data, PacketOptions options = null)
         {

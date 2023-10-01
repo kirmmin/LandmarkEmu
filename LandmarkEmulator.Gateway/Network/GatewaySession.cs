@@ -26,7 +26,7 @@ namespace LandmarkEmulator.Gateway.Network
         public ClientProtocol ClientProtocol { get; private set; }
         public string ClientBuild { get; private set; }
 
-        public GatewaySession(string cryptoKey) : base(cryptoKey)
+        public GatewaySession(string cryptoKey) : base(cryptoKey, subPacketAcks: true)
         {
             // We initialise with Arc4 Encryption off, because the initial Data Packet which includes the LoginRequest comes in un-encrypted.
             ToggleEncryption(false);

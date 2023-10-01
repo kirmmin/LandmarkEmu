@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -35,11 +36,11 @@ namespace LandmarkEmulator.Shared.Network
         private bool hasAuthed = false;
         private int packetPauseCount = 0;
 
-        public GameSession(string cryptoKey)
+        public GameSession(string cryptoKey, bool subPacketAcks = false)
         {
             EncryptionKey = cryptoKey;
 
-            inputStream = new DataStreamInput(this);
+            inputStream = new DataStreamInput(this, subPacketAcks);
             inputStream.OnData += (gamePacket) =>
             {
                 OnGamePacket(gamePacket);
@@ -142,13 +143,17 @@ namespace LandmarkEmulator.Shared.Network
 
                 if (CanProcessPackets && outgoingPriorityPackets.TryDequeue(out ProtocolPacket priorityPacket))
                 {
-                    SendPacket(priorityPacket);
-
-                    if (priorityPacket.Opcode == ProtocolMessageOpcode.Disconnect)
+                    if (!priorityPacket.Ignore)
                     {
-                        OnDisconnect();
-                        return;
+                        SendPacket(priorityPacket);
+
+                        if (priorityPacket.Opcode == ProtocolMessageOpcode.Disconnect)
+                        {
+                            OnDisconnect();
+                            return;
+                        }
                     }
+
                 }
 
                 if (CanProcessPackets && outOfOrderPackets.TryDequeue(out ProtocolPacket outOfOrderPacket))
@@ -243,6 +248,12 @@ namespace LandmarkEmulator.Shared.Network
             switch (opcodeData.Item1)
             {
                 case ProtocolMessageOpcode.Ack:
+                    foreach (var packet in outgoingPriorityPackets.ToList())
+                        if (packet.Opcode == ProtocolMessageOpcode.Ack)
+                            packet.Ignore = true;
+
+                    outgoingPriorityPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
+                    break;
                 case ProtocolMessageOpcode.MultiPacket:
                     outgoingPriorityPackets.Enqueue(new ProtocolPacket(opcodeData.Item1, message, opcodeData.Item2, options));
                     break;

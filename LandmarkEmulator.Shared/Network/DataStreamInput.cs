@@ -26,10 +26,13 @@ namespace LandmarkEmulator.Shared.Network
         private int _lastProcessedFragment = -1;
         private Arc4Provider arc4Provider;
 
-        public DataStreamInput(GameSession session)
+        bool _subPacketAcks = false;
+
+        public DataStreamInput(GameSession session, bool subPacketAcks = false)
             : base (session)
         {
             arc4Provider = new Arc4Provider(RC4Key);
+            _subPacketAcks = subPacketAcks;
         }
 
         public void ProcessDataFragment(DataWhole dataWhole)
@@ -71,7 +74,10 @@ namespace LandmarkEmulator.Shared.Network
                 _session?.EnqueueProtocolMessage(new Ack
                 {
                     Sequence = ack
-                }, new Message.PacketOptions());
+                }, new Message.PacketOptions
+                {
+                    IsSubpacket = _subPacketAcks
+                });
             }
 
             DataPackets[sequence] = new DataPacket(data, isFragment);
