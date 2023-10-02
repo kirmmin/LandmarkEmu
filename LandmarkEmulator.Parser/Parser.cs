@@ -165,10 +165,10 @@ namespace LandmarkEmulator.Parser
             string header = isClient ? ClientHeader : ServerHeader;
             var opcode = (GatewayMessageOpcode)(data[0] & 0x1F);
             data = new Span<byte>(data, 1, data.Length - 1).ToArray();
-            var flags = data[0] >> 5;
+            var channel = (Channel)(data[0] >> 5);
 
             //lines.Add($"{header} [Gateway] {opcode} (0x{(int)opcode:X8})");
-            log.Trace($"{header} Parsed Gateway packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | Flags: {flags} | {BitConverter.ToString(data)}");
+            log.Trace($"{header} Parsed Gateway packet {opcode} (0x{(int)opcode:X8}) | {data.Length} bytes | Channel: {channel} | {BitConverter.ToString(data)}");
 
             // Handle Tunnel Packets slightly separately.
             if (opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection || opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)

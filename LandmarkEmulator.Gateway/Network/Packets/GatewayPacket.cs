@@ -12,7 +12,7 @@ namespace LandmarkEmulator.Gateway.Network.Packets
         /// </summary>
         public uint Size { get; protected set; }
         public GatewayMessageOpcode Opcode { get; protected set; }
-        public int Flags { get; protected set; }
+        public Channel Channel { get; protected set; }
 
         public byte[] Data { get; protected set; }
 
@@ -22,7 +22,7 @@ namespace LandmarkEmulator.Gateway.Network.Packets
 
             byte firstByte = reader.ReadByte();
             Opcode = (GatewayMessageOpcode)(firstByte & 0x1F);
-            Flags = firstByte >> 5;
+            Channel = (Channel)(firstByte >> 5);
             Data = reader.ReadBytes(reader.BytesRemaining);
             Size = (uint)Data.Length;
         }

@@ -1,5 +1,6 @@
 ﻿using LandmarkEmulator.Database.Character.Model;
 using LandmarkEmulator.Gateway.Network;
+using LandmarkEmulator.Gateway.Network.Message;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.WorldServer.Network.Message;
@@ -173,7 +174,7 @@ namespace LandmarkEmulator.WorldServer.Network
             PackTunnelPacket(data.ToArray());
         }
 
-        public override void OnTunnelData(int flags, byte[] data)
+        public override void OnTunnelData(Channel channel, byte[] data)
         {
             (ZoneMessageOpcode? opcode, int offset) = GetOpcode(data);
             data = new Span<byte>(data, offset, data.Length - offset).ToArray();

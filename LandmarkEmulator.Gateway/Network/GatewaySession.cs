@@ -69,8 +69,8 @@ namespace LandmarkEmulator.Gateway.Network
             // Handle Tunnel Packets slightly separately.
             if (packet.Opcode == GatewayMessageOpcode.TunnelPacketFromExternalConnection)
             {
-                log.Trace($"Received Gateway packet {packet.Opcode}(0x{packet.Opcode:X})  : {BitConverter.ToString(packet.Data)}");
-                OnTunnelData(packet.Flags, packet.Data);
+                log.Trace($"Received Gateway packet {packet.Opcode}(0x{packet.Opcode:X}) | Channel: {packet.Channel} | {BitConverter.ToString(packet.Data)}");
+                OnTunnelData(packet.Channel, packet.Data);
                 return;
             }
 
@@ -116,7 +116,7 @@ namespace LandmarkEmulator.Gateway.Network
             var writer = new GamePacketWriter(data);
 
             if (packet.Opcode == GatewayMessageOpcode.TunnelPacketToExternalConnection)
-                writer.Write((byte)((int)packet.Opcode | packet.Flags << 5));
+                writer.Write((byte)((int)packet.Opcode | (int)packet.Channel << 5));
             else
                 writer.Write((byte)packet.Opcode);
             writer.WriteBytes(packet.Data);
@@ -197,7 +197,7 @@ namespace LandmarkEmulator.Gateway.Network
         /// Called when the Gateway receives a <see cref="GatewayMessageOpcode.TunnelPacketFromExternalConnection"/> message.
         /// </summary>
         /// <param name="data"></param>
-        public virtual void OnTunnelData(int flags, byte[] data)
+        public virtual void OnTunnelData(Channel channel, byte[] data)
         {
             // Deliberately left empty
         }
