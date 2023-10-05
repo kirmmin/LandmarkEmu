@@ -4,6 +4,7 @@
     {
         Zone           = 0,
         World          = 1,
-        PositionUpdate = 2
+        PositionUpdate = 2,
+        Voxel          = 3
     }
 }
