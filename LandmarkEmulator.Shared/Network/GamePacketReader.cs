@@ -20,6 +20,11 @@ namespace LandmarkEmulator.Shared.Network
             ResetBits();
         }
 
+        public void ReverseBytePosition(int count)
+        {
+            currentBytePosition -= count;
+        }
+
         public void ResetBits()
         {
             if (currentBytePosition > 7)
@@ -50,6 +55,19 @@ namespace LandmarkEmulator.Shared.Network
                 throw new ArgumentException();
 
             return BinaryPrimitives.ReadUInt16LittleEndian(GetDataBits(bits));
+        }
+
+        public uint ReadUInt2BitLength()
+        {
+            var length = (GetDataBits(8u)[0] & 3);
+            var value = 0;
+
+            for (int i = 0; i < length; i++)
+            {
+                value += GetDataBits(8u)[0] << ((i + 1) * 8);
+            }
+
+            return (uint)(value >> 2);
         }
 
         public uint ReadUInt(uint bits = 32u)

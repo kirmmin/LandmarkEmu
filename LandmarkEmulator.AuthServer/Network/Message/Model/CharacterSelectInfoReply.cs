@@ -1,6 +1,7 @@
 ﻿using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
+using LandmarkEmulator.Shared.Network.Message.Model.Shared;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -14,56 +15,6 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         {
             public class CharacterPayload : IWritable, IReadable, ISize
             {
-                public class ModelInfo : IWritable, IReadable, ISize
-                {
-                    public List<(uint, uint, uint)> Customisations { get; set; } = new();
-                    public uint SkinId { get; set; }
-                    public string Unknown1 { get; set; } = "";
-                    public uint Unknown2 { get; set; } = 1;
-                    public uint Unknown3 { get; set; } = 1;
-
-                    public uint GetSize()
-                    {
-                        uint totalSize = 0u;
-
-                        totalSize += 4u; // Vector3s Count
-                        Customisations.ForEach(x => totalSize += 12u); // 3x Float
-
-                        return (uint)(totalSize + 4u + 4u + Unknown1.Length + 4u + 4u);
-                    }
-
-                    public void Read(GamePacketReader reader)
-                    {
-                        var customisationsCount = reader.ReadUInt();
-                        for (int i = 0; i < customisationsCount; i++)
-                        {
-                            var slot = reader.ReadUInt();
-                            var option = reader.ReadUInt();
-                            var tint = reader.ReadUInt();
-                            Customisations.Add(new(slot, option, tint));
-                        }
-                        SkinId = reader.ReadUInt();
-                        Unknown1 = reader.ReadString();
-                        Unknown2 = reader.ReadUInt();
-                        Unknown3 = reader.ReadUInt();
-                    }
-
-                    public void Write(GamePacketWriter writer)
-                    {
-                        writer.Write((uint)Customisations.Count);
-                        foreach (var v in Customisations)
-                        {
-                            writer.Write(v.Item1);
-                            writer.Write(v.Item2);
-                            writer.Write(v.Item3);
-                        }
-                        writer.Write(SkinId);
-                        writer.Write(Unknown1);
-                        writer.Write(Unknown2);
-                        writer.Write(Unknown3);
-                    }
-                }
-
                 public class CharacterAttachment : IWritable, IReadable, ISize
                 {
                     public string ModelName { get; set; } = "";
@@ -133,7 +84,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                 public uint Unknown7 { get; set; }
                 public ulong Unknown8 { get; set; }
                 public List<uint> Array142C34C30 { get; set; } = new();
-                public ModelInfo Model { get; set; } = new();
+                public CharacterModelInfo Model { get; set; } = new();
                 public List<CharacterAttachment> CharacterAttachments { get; set; } = new();
                 public List<Friend> Friends { get; set; } = new();
                 public ulong UnknownQ { get; set; }
