@@ -312,10 +312,128 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
-        public class StructUnknown34 : IReadable, IWritable
+        public class InventoryData : IReadable, IWritable
         {
-            public class StructUnknown34Item : IReadable, IWritable
+            public class InventoryItem : IReadable, IWritable
             {
+                // sub_142C20F60
+                public class UnknownData0 : IReadable, IWritable
+                {
+                    // sub_142C20E60
+                    public class UnknownData0SubData : IReadable, IWritable
+                    {
+                        // sub_142C2FC70
+                        public class UnknownStruct142C2FC70 : IReadable, IWritable
+                        {
+                            public uint Unknown0 { get; set; }
+                            public uint Unknown1 { get; set; }
+                            public uint Unknown2 { get; set; }
+                            public uint Unknown3 { get; set; }
+                            public bool Unknown4 { get; set; }
+                            public uint Unknown5 { get; set; }
+                            public uint Unknown6 { get; set; }
+                            public uint Unknown7 { get; set; }
+
+                            public void Read(GamePacketReader reader)
+                            {
+                                Unknown0 = reader.ReadUInt();
+                                Unknown1 = reader.ReadUInt();
+                                Unknown2 = reader.ReadUInt();
+                                Unknown3 = reader.ReadUInt();
+                                Unknown4 = reader.ReadBool();
+                                Unknown5 = reader.ReadUInt();
+                                Unknown6 = reader.ReadUInt();
+                                Unknown7 = reader.ReadUInt();
+                            }
+
+                            public void Write(GamePacketWriter writer)
+                            {
+                                throw new NotImplementedException();
+                            }
+                        }
+
+                        // sub_142C18530
+                        public class UnknownStruct142C18530 : IReadable, IWritable
+                        {
+                            public uint Unknown0 { get; set; }
+                            public uint Unknown1 { get; set; }
+                            public uint Unknown2 { get; set; }
+
+                            public void Read(GamePacketReader reader)
+                            {
+                                Unknown0 = reader.ReadUInt();
+                                Unknown1 = reader.ReadUInt();
+                                Unknown2 = reader.ReadUInt();
+                            }
+
+                            public void Write(GamePacketWriter writer)
+                            {
+                                throw new NotImplementedException();
+                            }
+                        }
+
+                        public uint Unknown0 { get; set; }
+                        public uint Unknown1 { get; set; }
+                        public uint Unknown2 { get; set; }
+                        public uint Unknown3 { get; set; }
+                        public uint Unknown4 { get; set; }
+                        public List<UnknownStruct142C2FC70> Unknown5 { get; set; } = new();
+                        public List<UnknownStruct142C18530> Unknown6 { get; set; } = new();
+
+                        public void Read(GamePacketReader reader)
+                        {
+                            Unknown0 = reader.ReadUInt();
+                            Unknown1 = reader.ReadUInt();
+                            Unknown2 = reader.ReadUInt();
+                            Unknown3 = reader.ReadUInt();
+                            Unknown4 = reader.ReadUInt();
+
+                            uint unknown5Count = reader.ReadUInt();
+                            for (int i = 0; i < unknown5Count; i++)
+                            {
+                                UnknownStruct142C2FC70 obj = new();
+                                obj.Read(reader);
+                                Unknown5.Add(obj);
+                            }
+
+                            uint unknown6Count = reader.ReadUInt();
+                            for (int i = 0; i < unknown6Count; i++)
+                            {
+                                UnknownStruct142C18530 obj = new();
+                                obj.Read(reader);
+                                Unknown6.Add(obj);
+                            }
+                        }
+
+                        public void Write(GamePacketWriter writer)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    public uint Unknown0 { get; set; }
+                    public uint Unknown1 { get; set; }
+                    public UnknownData0SubData Unknown2 { get; set; } = new();
+                    public UnknownData0SubData Unknown3 { get; set; } = new();
+                    public uint Unknown4 { get; set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        Unknown0 = reader.ReadUInt();
+                        Unknown1 = reader.ReadUInt();
+
+                        Unknown2.Read(reader);
+                        Unknown3.Read(reader);
+
+                        Unknown4 = reader.ReadUInt();
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
                 public class SubData : IReadable, IWritable
                 {
                     public ulong Unknown0 { get; set; }
@@ -379,8 +497,26 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                     }
                 }
 
-                public ulong Unknown0 { get; set; }
-                public uint Unknown1 { get; set; }
+                // sub_14361AAD0
+                public class ExtraData : IReadable, IWritable
+                {
+                    public byte Unknown0 { get; set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        // This data may parse different based on whether it's a weapon or not
+                        Unknown0 = reader.ReadByte();
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public UnknownData0 UnknownData { get; set; } = new();
+                public ulong Guid { get; set; }
+                public uint Count { get; set; }
                 public uint Unknown2 { get; set; }
                 public uint Unknown3 { get; set; }
                 public byte Unknown4 { get; set; }
@@ -399,11 +535,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 public SubData2 SubData2Item { get; set; } = new();
                 public SubData3 SubData3Item { get; set; } = new();
                 public uint Unknown15 { get; set; }
+                public ExtraData _ExtraData { get; set; } = new();
 
                 public void Read(GamePacketReader reader)
                 {
-                    Unknown0 = reader.ReadULong();
-                    Unknown1 = reader.ReadUInt();
+                    UnknownData.Read(reader);
+
+                    Guid = reader.ReadULong();
+                    Count = reader.ReadUInt();
                     Unknown2 = reader.ReadUInt();
                     Unknown3 = reader.ReadUInt();
                     Unknown4 = reader.ReadByte();
@@ -431,7 +570,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     Unknown15 = reader.ReadUInt();
 
-                    reader.ReadBytes(53u);
+                    _ExtraData.Read(reader);
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -442,7 +581,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public List<(uint, bool)> Unknown0 { get; set; } = new();
             public uint ItemCount { get; set; }
-            public List<StructUnknown34Item> Items { get; set; } = new();
+            public List<InventoryItem> Items { get; set; } = new();
 
             public void Read(GamePacketReader reader)
             {
@@ -451,9 +590,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 uint itemCount = reader.ReadUInt();
                 ItemCount = itemCount;
-                for (int i = 0; i < 20; i++)
+                for (int i = 0; i < itemCount; i++)
                 {
-                    StructUnknown34Item structUnknown34Item = new();
+                    InventoryItem structUnknown34Item = new();
                     structUnknown34Item.Read(reader);
                     Items.Add(structUnknown34Item);
                 }
@@ -507,7 +646,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public List<(uint, uint, uint)> Unknown31 { get; set; } = new();
         public uint Unknown32 { get; set; }
         public List<StructUnknown33> Unknown33 { get; set; } = new();
-        public StructUnknown34 Unknown34 { get; set; } = new();
+        public InventoryData Inventory { get; set; } = new();
 
         public void Read(GamePacketReader reader)
         {
@@ -595,7 +734,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown33.Add(unknown33);
             }
 
-            Unknown34.Read(reader);
+            Inventory.Read(reader);
         }
 
         public void Write(GamePacketWriter writer)
