@@ -9,6 +9,7 @@ namespace LandmarkEmulator.Shared.Network
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
+        public uint TotalBytes => (uint)stream.Length;
         public uint BytesRemaining => (uint)(stream.Length - currentBytePosition);
 
         private int currentBytePosition;

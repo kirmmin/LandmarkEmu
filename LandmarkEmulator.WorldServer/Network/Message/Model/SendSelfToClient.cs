@@ -3,6 +3,7 @@ using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.Shared.Network.Message.Model.Shared;
 using LandmarkEmulator.WorldServer.Network.Message.Model.Shared;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -12,6 +13,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
     [ZoneMessage(ZoneMessageOpcode.SendSelfToClient)]
     public class SendSelfToClient : IReadable, IWritable
     {
+        protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
         public class CharacterIdentity : IReadable, IWritable
         {
             public uint Unknown0 { get; set; }
@@ -261,7 +264,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
-        public class StructUnknown34 : IReadable, IWritable
+        public class UnknownStruct34 : IReadable, IWritable
         {
             public ulong Unknown0 { get; private set; }
             public string Unknown1 { get; private set; } = "";
@@ -414,6 +417,158 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
+        public class RecipeData : IReadable, IWritable
+        {
+            // sub_142C1B810
+            public class StructUnknown142C1B810 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; private set; }
+                public uint Unknown1 { get; private set; }
+                public ulong Unknown2 { get; private set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadULong();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            // sub_142C2E640
+            public class Recipe : IReadable, IWritable
+            {
+                // sub_142C2E4E0
+                public class RecipeComponent : IReadable, IWritable
+                {
+                    public uint Index { get; private set; }
+                    public uint Unknown1 { get; private set; }
+                    public uint ItemId { get; private set; }
+                    public uint Quantity { get; private set; }
+                    public string NameId { get; private set; }
+                    public uint IconId { get; private set; }
+                    public uint Unknown6 { get; private set; }
+                    public uint Unknown7 { get; private set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        Index = reader.ReadUInt();
+                        Unknown1 = reader.ReadUInt();
+                        ItemId = reader.ReadUInt();
+                        Quantity = reader.ReadUInt();
+                        NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                        IconId = reader.ReadUInt();
+                        Unknown6 = reader.ReadUInt();
+                        Unknown7 = reader.ReadUInt();
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public uint RecipeId { get; private set; }
+                public uint Unknown1 { get; private set; }
+                public uint Unknown2 { get; private set; }
+                public uint Itemid { get; private set; }
+                public uint Quantity { get; private set; }
+                public string NameId { get; private set; }
+                public string DescriptionId { get; private set; }
+                public uint IconId { get; private set; }
+                public uint Unknown8 { get; private set; }
+                public uint Unknown9 { get; private set; }
+                public List<RecipeComponent> Components { get; private set; } = new();
+                public bool MemberOnly { get; private set; }
+                public uint Unknown12 { get; private set; }
+                public uint Unknown13 { get; private set; }
+                public uint Unknown14 { get; private set; }
+                public uint Unknown15 { get; private set; }
+                public List<uint> Unknown16 { get; private set; } = new();
+                public uint Unknown17 { get; private set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    RecipeId = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadUInt();
+                    Itemid = reader.ReadUInt();
+                    Quantity = reader.ReadUInt();
+                    NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                    DescriptionId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                    IconId = reader.ReadUInt();
+                    Unknown8 = reader.ReadUInt();
+                    Unknown9 = reader.ReadUInt(); // Looks like some form of timestamp? Might be timestamp recipe was acquired or duration remaining.
+
+                    uint recipeComponentsCount = reader.ReadUInt();
+                    for (int i = 0; i < recipeComponentsCount; i++)
+                    {
+                        RecipeComponent component = new();
+                        component.Read(reader);
+                        Components.Add(component);
+                    }
+
+                    MemberOnly = reader.ReadBool();
+                    Unknown12 = reader.ReadUInt(); // Could be crafting station or something. Lots of common values.
+                    Unknown13 = reader.ReadUInt();
+                    Unknown14 = reader.ReadUInt();
+                    Unknown15 = reader.ReadUInt();
+
+                    uint unknown16Count = reader.ReadUInt();
+                    for (int i = 0; i < unknown16Count; i++)
+                        Unknown16.Add(reader.ReadUInt());
+
+                    Unknown17 = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public List<uint> Unknown0 { get; private set; } = new();
+            public List<StructUnknown142C1B810> Unknown1 { get; private set; } = new();
+            public List<uint> Unknown2 { get; private set; } = new();
+            public List<Recipe> RecipeList { get; private set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                uint unknown0Count = reader.ReadUInt();
+                for (int i = 0; i < unknown0Count; i++)
+                    Unknown0.Add(reader.ReadUInt());
+
+                uint unknown1Count = reader.ReadUInt();
+                for (int i = 0; i < unknown1Count; i++)
+                {
+                    StructUnknown142C1B810 unknown1 = new();
+                    unknown1.Read(reader);
+                    Unknown1.Add(unknown1);
+                }
+
+                uint unknown2Count = reader.ReadUInt();
+                for (int i = 0; i < unknown2Count; i++)
+                    Unknown2.Add(reader.ReadUInt());
+
+                uint recipeCount = reader.ReadUInt();
+                for (int i = 0; i < recipeCount; i++)
+                {
+                    Recipe recipe = new();
+                    recipe.Read(reader);
+                    RecipeList.Add(recipe);
+                }
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public uint Unknown0 { get; set; }
         public ulong Guid { get; set; }
         public string AccountName { get; set; }
@@ -463,6 +618,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public uint Achievements { get; set; }
         public List<Achievement> CharacterAchievements { get; set; } = new();
         public uint Acquaintences { get; set; }
+        public RecipeData Recipes { get; set; } = new();
 
         public void Read(GamePacketReader reader)
         {
@@ -578,6 +734,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             {
                 // TODO: Do This
             }
+
+            Recipes.Read(reader);
+
+            log.Info($"{reader.TotalBytes - reader.BytesRemaining} / {reader.TotalBytes} read");
         }
 
         public void Write(GamePacketWriter writer)
