@@ -734,7 +734,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public List<UnknownStruct142C3BF00> Unknown0 { get; set; } = new();
             public List<UnknownStruct142C3F7F0> Unknown1 { get; set; } = new();
-            public byte Unknown2 { get; set; }
+            public byte Unknown2 { get; set; } = 128;
 
             public void Read(GamePacketReader reader)
             {
@@ -755,6 +755,657 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 }
 
                 Unknown2 = reader.ReadByte();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct57 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct58 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+            public uint Unknown2 { get; set; }
+            public uint Unknown3 { get; set; }
+            public uint Unknown4 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+                Unknown3 = reader.ReadUInt();
+                Unknown4 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct59 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public ulong Unknown1 { get; set; }
+            public uint Unknown2 { get; set; }
+            public uint Unknown3 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadULong();
+                Unknown2 = reader.ReadUInt();
+                Unknown3 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct60 : IReadable, IWritable
+        {
+            // sub_142C34E50
+            public class UnknownStruct142C34E50 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public uint Unknown0 { get; set; }
+            public ulong Unknown1 { get; set; }
+            public List<UnknownStruct142C34E50> Unknown2 { get; set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadULong();
+
+                uint unknown2Count = reader.ReadUInt();
+                for (int i = 0; i < unknown2Count; i++)
+                {
+                    UnknownStruct142C34E50 unknown2 = new();
+                    unknown2.Read(reader);
+                    Unknown2.Add(unknown2);
+                }
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct61 : IReadable, IWritable
+        {
+            // sub_142C187F0
+            public class UnknownStruct142C187F0 : IReadable, IWritable
+            {
+                // sub_142C3BB80
+                public class UnknownStruct142C3BB80 : IReadable, IWritable
+                {
+                    // sub_142C1F840
+                    public class UnknownStruct142C1F840 : IReadable, IWritable
+                    {
+                        public uint Unknown0 { get; set; }
+                        public ulong Unknown1 { get; set; }
+                        public string Unknown2 { get; set; }
+                        public string Unknown3 { get; set; }
+
+                        public void Read(GamePacketReader reader)
+                        {
+                            Unknown0 = reader.ReadUInt();
+                            Unknown1 = reader.ReadULong();
+                            Unknown2 = reader.ReadString();
+                            Unknown3 = reader.ReadString();
+                        }
+
+                        public void Write(GamePacketWriter writer)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    public uint Unknown0 { get; set; }
+                    public UnknownStruct142C1F840 Unknown1 { get; set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        Unknown0 = reader.ReadUInt();
+
+                        Unknown1.Read(reader);
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public uint Unknown0 { get; set; }
+                public string Unknown1 { get; set; }
+                public string Unknown2 { get; set; }
+                public List<UnknownStruct142C3BB80> Unknown3 { get; set; } = new();
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadString();
+                    Unknown2 = reader.ReadString();
+
+                    uint unknown3Count = reader.ReadUInt();
+                    for (int i = 0; i < unknown3Count; i++)
+                    {
+                        UnknownStruct142C3BB80 unknown3 = new();
+                        unknown3.Read(reader);
+                        Unknown3.Add(unknown3);
+                    }
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public uint Unknown0 { get; set; }
+            public UnknownStruct142C187F0 Unknown1 { get; set; }
+            public List<UnknownStruct142C187F0> Unknown2 { get; set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+
+                Unknown1.Read(reader);
+
+                uint unknown2Count = reader.ReadUInt();
+                for (int i = 0; i < unknown2Count; i++)
+                {
+                    UnknownStruct142C187F0 unknown2 = new();
+                    unknown2.Read(reader);
+                    Unknown2.Add(unknown2);
+                }
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct62 : IReadable, IWritable
+        {
+            // sub_142C1FA30
+            public class UnknownStruct142C1FA30 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public uint Unknown2 { get; set; }
+                public uint Unknown3 { get; set; }
+                public uint Unknown4 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadUInt();
+                    Unknown3 = reader.ReadUInt();
+                    Unknown4 = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public uint Unknown0 { get; set; }
+            public UnknownStruct142C1FA30 Unknown1 { get; set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+
+                Unknown1.Read(reader);
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct63 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+            public uint Unknown2 { get; set; }
+            public uint Unknown3 { get; set; }
+            public uint Unknown4 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+                Unknown3 = reader.ReadUInt();
+                Unknown4 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct64 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+            public uint Unknown2 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
+                Unknown2 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct65 : IReadable, IWritable
+        {
+            // sub_142C25130
+            public class UnknownStruct142C25130 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public ulong Unknown2 { get; set; }
+                public ulong Unknown3 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadULong();
+                    Unknown3 = reader.ReadULong();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            // sub_142C3BC60
+            public class UnknownStruct142C3BC60 : IReadable, IWritable
+            {
+                // sub_142C25130
+                public class UnknownStruct142C25130 : IReadable, IWritable
+                {
+                    public uint Unknown0 { get; set; }
+                    public uint Unknown1 { get; set; }
+                    public ulong Unknown2 { get; set; }
+                    public ulong Unknown3 { get; set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        Unknown0 = reader.ReadUInt();
+                        Unknown1 = reader.ReadUInt();
+                        Unknown2 = reader.ReadULong();
+                        Unknown3 = reader.ReadULong();
+
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public uint Unknown0 { get; set; }
+                public UnknownStruct142C25130 Unknown1 { get; set; } = new();
+                public uint Unknown2 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+
+                    Unknown1.Read(reader);
+
+                    Unknown2 = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            // sub_142C251E0
+            public class UnknownStruct142C251E0 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public ulong Unknown2 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadULong();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            // sub_142C3BDD0
+            public class UnknownStruct142C3BDD0 : IReadable, IWritable
+            {
+                // sub_142C20DD0
+                public class UnknownStruct142C20DD0 : IReadable, IWritable
+                {
+                    // sub_142C251E0
+                    public class UnknownStruct142C251E0 : IReadable, IWritable
+                    {
+                        public uint Unknown0 { get; set; }
+                        public uint Unknown1 { get; set; }
+                        public ulong Unknown2 { get; set; }
+
+                        public void Read(GamePacketReader reader)
+                        {
+                            Unknown0 = reader.ReadUInt();
+                            Unknown1 = reader.ReadUInt();
+                            Unknown2 = reader.ReadULong();
+                        }
+
+                        public void Write(GamePacketWriter writer)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    public UnknownStruct142C251E0 Unknown0 { get; set; } = new();
+                    public uint Unknown1 { get; set; }
+                    public uint Unknown2 { get; set; }
+
+                    public void Read(GamePacketReader reader)
+                    {
+                        Unknown0.Read(reader);
+
+                        Unknown1 = reader.ReadUInt();
+                        Unknown2 = reader.ReadUInt();
+                    }
+
+                    public void Write(GamePacketWriter writer)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                public uint Unknown0 { get; set; }
+                public UnknownStruct142C20DD0 Unknown1 { get; set; } = new();
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+
+                    Unknown1.Read(reader);
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public UnknownStruct142C25130 Unknown0 { get; set; } = new();
+            public List<UnknownStruct142C3BC60> Unknown1 { get; set; } = new();
+            public UnknownStruct142C251E0 Unknown2 { get; set; } = new();
+            public List<UnknownStruct142C3BDD0> Unknown3 { get; set; } = new();
+            public byte Unknown4 { get; set; } = 128;
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0.Read(reader);
+
+                uint unknown1Count = reader.ReadUInt();
+                for (int i = 0; i < unknown1Count; i++)
+                {
+                    UnknownStruct142C3BC60 unknown1 = new();
+                    unknown1.Read(reader);
+                    Unknown1.Add(unknown1);
+                }
+
+                Unknown2.Read(reader);
+
+                uint unknown3Count = reader.ReadUInt();
+                for (int i = 0; i < unknown3Count; i++)
+                {
+                    UnknownStruct142C3BDD0 unknown3 = new();
+                    unknown3.Read(reader);
+                    Unknown3.Add(unknown3);
+                }
+
+                Unknown4 = reader.ReadByte();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class Loadout : IReadable, IWritable
+        {
+            // sub_142C217F0
+            public class UnknownStruct142C217F0 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public string Unknown2 { get; set; }
+                public uint Unknown3 { get; set; }
+                public List<uint> Unknown4 { get; set; } = new();
+                public List<uint> Unknown5 { get; set; } = new();
+                public List<ulong> Unknown6 { get; set; } = new();
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadString();
+                    Unknown3 = reader.ReadUInt();
+
+                    uint unknown4Count = reader.ReadUInt();
+                    for (int i = 0; i < unknown4Count; i++)
+                        Unknown4.Add(reader.ReadUInt());
+
+                    uint unknown5Count = reader.ReadUInt();
+                    for (int i = 0; i < unknown5Count; i++)
+                        Unknown5.Add(reader.ReadUInt());
+
+                    uint unknown6Count = reader.ReadUInt();
+                    for (int i = 0; i < unknown6Count; i++)
+                        Unknown6.Add(reader.ReadULong());
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public uint Unknown0 { get; set; }
+            public UnknownStruct142C217F0 Unknown1 { get; set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+
+                Unknown1.Read(reader);
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct67 : IReadable, IWritable
+        {
+            // These fields are all objects in the packet, but unused data in packet parses, so lazily written.
+            // TODO: Update this Struct with all inner objects
+
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+            public uint Unknown2 { get; set; }
+            public uint Unknown3 { get; set; }
+            public uint Unknown4 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                uint unknown0Count = reader.ReadUInt();
+                Unknown0 = unknown0Count;
+                for (int i = 0; i < unknown0Count; i++)
+                {
+                    // TODO: Do This
+                }
+
+                uint unknown1Count = reader.ReadUInt();
+                Unknown1 = unknown1Count;
+                for (int i = 0; i < unknown1Count; i++)
+                {
+                    // TODO: Do This
+                }
+
+                uint unknown2Count = reader.ReadUInt();
+                Unknown2 = unknown2Count;
+                for (int i = 0; i < unknown2Count; i++)
+                {
+                    // TODO: Do This
+                }
+
+                uint unknown3Count = reader.ReadUInt();
+                Unknown3 = unknown3Count;
+                for (int i = 0; i < unknown3Count; i++)
+                {
+                    // TODO: Do This
+                }
+
+                uint unknown4Count = reader.ReadUInt();
+                Unknown4 = unknown4Count;
+                for (int i = 0; i < unknown4Count; i++)
+                {
+                    // TODO: Do This
+                }
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct68 : IReadable, IWritable
+        {
+            public ulong Unknown0 { get; set; }
+            public ulong Unknown1 { get; set; }
+            public ulong Unknown2 { get; set; }
+            public ulong Unknown3 { get; set; }
+            public uint Unknown4 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadULong();
+                Unknown1 = reader.ReadULong();
+                Unknown2 = reader.ReadULong();
+                Unknown3 = reader.ReadULong();
+                Unknown4 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct76 : IReadable, IWritable
+        {
+            // sub_142C37990
+            public class UnknownStruct142C37990 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public string Unknown2 { get; set; }
+                public string Unknown3 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadString();
+                    Unknown3 = reader.ReadString();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public List<UnknownStruct142C37990> Unknown0 { get; set; } = new();
+            public uint Unknown1 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                uint unknown0Count = reader.ReadUInt();
+                for (int i = 0; i < unknown0Count; i++)
+                {
+                    UnknownStruct142C37990 unknown0 = new();
+                    unknown0.Read(reader);
+                    Unknown0.Add(unknown0);
+                }
+
+                Unknown1 = reader.ReadUInt();
             }
 
             public void Write(GamePacketWriter writer)
@@ -830,6 +1481,27 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public List<uint> Unknown54 { get; set; } = new();
         public List<bool> Unknown55 { get; set; } = new();
         public UnknownStruct56 Unknown56 { get; set; } = new();
+        public List<UnknownStruct57> Unknown57 { get; set; } = new();
+        public UnknownStruct58 Unknown58 { get; set; } = new();
+        public List<UnknownStruct59> Unknown59 { get; set; } = new();
+        public List<UnknownStruct60> Unknown60 { get; set; } = new();
+        public List<UnknownStruct61> Unknown61 { get; set; } = new();
+        public List<UnknownStruct62> Unknown62 { get; set; } = new();
+        public UnknownStruct63 Unknown63 { get; set; } = new();
+        public UnknownStruct64 Unknown64 { get; set; } = new();
+        public UnknownStruct65 Unknown65 { get; set; } = new();
+        public List<Loadout> Loadouts { get; set; } = new();
+        public UnknownStruct67 Unknown67 { get; set; } = new();
+        public UnknownStruct68 Unknown68 { get; set; } = new();
+        public byte Unknown69 { get; set; }
+        public byte Unknown70 { get; set; }
+        public byte Unknown71 { get; set; }
+        public byte Unknown72 { get; set; }
+        public byte Unknown73 { get; set; }
+        public byte Unknown74 { get; set; }
+        public bool Unknown75 { get; set; }
+        public UnknownStruct76 Unknown76 { get; set; } = new();
+        public string Unknown77 { get; set; }
 
         public void Read(GamePacketReader reader)
         {
@@ -1024,6 +1696,82 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown55.Add(reader.ReadBool());
 
             Unknown56.Read(reader);
+
+            uint unknown57Count = reader.ReadUInt();
+            for (int i = 0; i < unknown57Count; i++)
+            {
+                UnknownStruct57 unknown57 = new();
+                unknown57.Read(reader);
+                Unknown57.Add(unknown57);
+            }
+
+            Unknown58.Read(reader);
+
+            uint unknown59Count = reader.ReadUInt();
+            for (int i = 0; i < unknown59Count; i++)
+            {
+                UnknownStruct59 unknown59 = new();
+                unknown59.Read(reader);
+                Unknown59.Add(unknown59);
+            }
+
+            uint unknown60Count = reader.ReadUInt();
+            for (int i = 0; i < unknown60Count; i++)
+            {
+                UnknownStruct60 unknown60 = new();
+                unknown60.Read(reader);
+                Unknown60.Add(unknown60);
+            }
+
+            uint unknown61Count = reader.ReadUInt();
+            for (int i = 0; i < unknown61Count; i++)
+            {
+                UnknownStruct61 unknown61 = new();
+                unknown61.Read(reader);
+                Unknown61.Add(unknown61);
+            }
+
+            uint unknown62Count = reader.ReadUInt();
+            for (int i = 0; i < unknown62Count; i++)
+            {
+                UnknownStruct62 unknown62 = new();
+                unknown62.Read(reader);
+                Unknown62.Add(unknown62);
+            }
+
+            Unknown63.Read(reader);
+
+            Unknown64.Read(reader);
+
+            Unknown65.Read(reader);
+
+            uint loadoutsCount = reader.ReadUInt();
+            for (int i = 0; i < loadoutsCount; i++)
+            {
+                Loadout loadout = new();
+                loadout.Read(reader);
+                Loadouts.Add(loadout);
+            }
+
+            Unknown67.Read(reader);
+
+            Unknown68.Read(reader);
+
+            Unknown69 = reader.ReadByte();
+            Unknown70 = reader.ReadByte();
+            Unknown71 = reader.ReadByte();
+            Unknown72 = reader.ReadByte();
+            Unknown73 = reader.ReadByte();
+            Unknown74 = reader.ReadByte();
+            Unknown75 = reader.ReadBool();
+
+            Unknown76.Read(reader);
+
+            Unknown77 = reader.ReadString();
+
+            // There is 34 bytes of data left in the packet which doesn't appear to be read by the client.
+            // 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-ff-ff-ff-ff-00-00-00-00-00-01-00-00-00-00-00-00-00
+            reader.ReadBytes(34u);
 
             log.Info($"\n\n   {reader.TotalBytes - reader.BytesRemaining} / {reader.TotalBytes} ({((float)(reader.TotalBytes - reader.BytesRemaining) / (float)reader.TotalBytes) * 100f}%) Bytes Read\n");
         }
