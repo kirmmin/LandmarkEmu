@@ -42,7 +42,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public class Profile : IReadable, IWritable
         {
             public uint Unknown0 { get; set; }
-            public uint Unknown1 { get; set; }
+            public string NameId { get; set; }
             public uint Unknown2 { get; set; }
             public uint Unknown3 { get; set; }
             public uint Unknown4 { get; set; }
@@ -80,7 +80,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public void Read(GamePacketReader reader)
             {
                 Unknown0 = reader.ReadUInt();
-                Unknown1 = reader.ReadUInt();
+                NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
                 Unknown2 = reader.ReadUInt();
                 Unknown3 = reader.ReadUInt();
                 Unknown4 = reader.ReadUInt();
@@ -156,10 +156,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
-        public class StructUnknown33 : IReadable, IWritable
+        public class Buff : IReadable, IWritable
         {
             public ulong Unknown0 { get; set; }
-            public ulong Unknown1 { get; set; }
+            public ulong UnitId { get; set; }
             public uint Unknown2 { get; set; }
             public uint Unknown3 { get; set; }
             public uint Unknown4 { get; set; }
@@ -167,8 +167,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown6 { get; set; }
             public uint Unknown7 { get; set; }
             public uint Unknown8 { get; set; }
-            public ulong Unknown9 { get; set; }
-            public ulong Unknown10 { get; set; }
+            public ulong UnitId2 { get; set; }
+            public ulong UnitId3 { get; set; }
             public uint Unknown11 { get; set; }
             public ulong Unknown12 { get; set; }
             public uint Unknown13 { get; set; }
@@ -180,9 +180,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown19 { get; set; }
             public uint Unknown20 { get; set; }
             public Vector4 Unknown21 { get; set; } = new();
-            public uint Unknown22 { get; set; }
-            public uint Unknown23 { get; set; }
-            public uint Unknown24 { get; set; }
+            public string NameId { get; set; }
+            public string DescriptionId { get; set; }
+            public uint IconId { get; set; }
             public uint Unknown25 { get; set; }
             public bool Unknown26 { get; set; }
             public uint Unknown27 { get; set; }
@@ -194,7 +194,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public void Read(GamePacketReader reader)
             {
                 Unknown0 = reader.ReadULong();
-                Unknown1 = reader.ReadULong();
+                UnitId = reader.ReadULong();
                 Unknown2 = reader.ReadUInt();
                 Unknown3 = reader.ReadUInt();
                 Unknown4 = reader.ReadUInt();
@@ -202,8 +202,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown6 = reader.ReadUInt();
                 Unknown7 = reader.ReadUInt();
                 Unknown8 = reader.ReadUInt();
-                Unknown9 = reader.ReadULong();
-                Unknown10 = reader.ReadULong();
+                UnitId2 = reader.ReadULong();
+                UnitId3 = reader.ReadULong();
                 Unknown11 = reader.ReadUInt();
                 Unknown12 = reader.ReadULong();
                 Unknown13 = reader.ReadUInt();
@@ -219,9 +219,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 Unknown21 = new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
-                Unknown22 = reader.ReadUInt();
-                Unknown23 = reader.ReadUInt();
-                Unknown24 = reader.ReadUInt();
+                NameId    = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                DescriptionId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                IconId    = reader.ReadUInt();
                 Unknown25 = reader.ReadUInt();
                 Unknown26 = reader.ReadBool();
                 Unknown27 = reader.ReadUInt();
@@ -239,22 +239,25 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
         public class InventoryData : IReadable, IWritable
         {
-            public List<(uint, bool)> Unknown0 { get; set; } = new(); // Could be some sort of Container Enable list. It's an ID with a boolean.
+            /// <summary>
+            /// Seems to default to current number of items in container 0 for maxxSize on Containers 7+. Fized size of 10 containers.
+            /// </summary>
+            public List<(uint /*maxSize*/, bool /*visible?*/)> Containers { get; set; } = new();
             public uint ItemCount { get; set; }
             public List<InventoryItem> Items { get; set; } = new();
 
             public void Read(GamePacketReader reader)
             {
                 for (int i = 0; i < 12; i++)
-                    Unknown0.Add((reader.ReadUInt(), reader.ReadBool()));
+                    Containers.Add((reader.ReadUInt(), reader.ReadBool()));
 
                 uint itemCount = reader.ReadUInt();
                 ItemCount = itemCount;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    InventoryItem structUnknown34Item = new();
-                    structUnknown34Item.Read(reader);
-                    Items.Add(structUnknown34Item);
+                    InventoryItem item = new();
+                    item.Read(reader);
+                    Items.Add(item);
                 }
             }
 
@@ -281,7 +284,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
-        public class Quests : IReadable, IWritable
+        public class QuestData : IReadable, IWritable
         {
             public uint QuestList { get; private set; }
             public uint Unknown0 { get; private set; }
@@ -293,11 +296,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public void Read(GamePacketReader reader)
             {
                 uint questCount = reader.ReadUInt();
+                QuestList = questCount;
                 for (int i = 0; i < questCount; i++)
                 {
                     // Do This
+                    throw new NotImplementedException();
                 }
-                QuestList = questCount;
 
                 Unknown0 = reader.ReadUInt();
                 Unknown1 = reader.ReadUInt();
@@ -569,22 +573,25 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
-        public class UnknownStruct43 : IReadable, IWritable
+        public class Hotbar : IReadable, IWritable
         {
             // sub_142C16C60
-            public class UnknownStruct142C16C60 : IReadable, IWritable
+            public class HotbarButton : IReadable, IWritable
             {
-                public uint Unknown0 { get; private set; }
-                public uint Unknown1 { get; private set; }
-                public uint Unknown2 { get; private set; }
-                public ulong Unknown3 { get; private set; }
+                public uint HotbarId { get; private set; }
+                public uint SlotId { get; private set; }
+                /// <summary>
+                /// 0 = None, 1 = ItemId, 2 = ItemGuid
+                /// </summary>
+                public uint ButtonType { get; private set; }
+                public ulong ItemId { get; private set; }
 
                 public void Read(GamePacketReader reader)
                 {
-                    Unknown0 = reader.ReadUInt();
-                    Unknown1 = reader.ReadUInt();
-                    Unknown2 = reader.ReadUInt();
-                    Unknown3 = reader.ReadULong();
+                    HotbarId   = reader.ReadUInt();
+                    SlotId     = reader.ReadUInt();
+                    ButtonType = reader.ReadUInt();
+                    ItemId     = reader.ReadULong();
                 }
 
                 public void Write(GamePacketWriter writer)
@@ -593,19 +600,19 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 }
             }
 
-            public uint Unknown0 { get; private set; }
-            public List<UnknownStruct142C16C60> Unknown1 { get; private set; } = new();
+            public uint HotbarId { get; private set; }
+            public List<HotbarButton> HotbarButtons { get; private set; } = new();
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadUInt();
+                HotbarId = reader.ReadUInt();
 
-                uint unknown1Count = reader.ReadUInt();
-                for (int i = 0; i < unknown1Count; i++)
+                uint hotbarButtonsCount = reader.ReadUInt();
+                for (int i = 0; i < hotbarButtonsCount; i++)
                 {
-                    UnknownStruct142C16C60 unknown1 = new();
-                    unknown1.Read(reader);
-                    Unknown1.Add(unknown1);
+                    HotbarButton hotbarButton = new();
+                    hotbarButton.Read(reader);
+                    HotbarButtons.Add(hotbarButton);
                 }
             }
 
@@ -1308,6 +1315,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 for (int i = 0; i < unknown0Count; i++)
                 {
                     // TODO: Do This
+                    throw new NotImplementedException();
                 }
 
                 uint unknown1Count = reader.ReadUInt();
@@ -1315,6 +1323,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 for (int i = 0; i < unknown1Count; i++)
                 {
                     // TODO: Do This
+                    throw new NotImplementedException();
                 }
 
                 uint unknown2Count = reader.ReadUInt();
@@ -1322,6 +1331,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 for (int i = 0; i < unknown2Count; i++)
                 {
                     // TODO: Do This
+                    throw new NotImplementedException();
                 }
 
                 uint unknown3Count = reader.ReadUInt();
@@ -1329,6 +1339,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 for (int i = 0; i < unknown3Count; i++)
                 {
                     // TODO: Do This
+                    throw new NotImplementedException();
                 }
 
                 uint unknown4Count = reader.ReadUInt();
@@ -1336,6 +1347,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 for (int i = 0; i < unknown4Count; i++)
                 {
                     // TODO: Do This
+                    throw new NotImplementedException();
                 }
             }
 
@@ -1455,19 +1467,18 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public List<Collection> Collections { get; set; } = new();
         public List<(uint, uint, uint)> Unknown31 { get; set; } = new();
         public uint Unknown32 { get; set; }
-        public List<StructUnknown33> Unknown33 { get; set; } = new();
+        public List<Buff> Buffs { get; set; } = new();
         public InventoryData Inventory { get; set; } = new();
         public uint Unknown34 { get; set; }
         public Gender Gender { get; set; } // Probably Gender
-        public Quests CharacterQuests { get; set; } = new();
-        public uint Achievements { get; set; }
-        public List<Achievement> CharacterAchievements { get; set; } = new();
-        public uint Acquaintences { get; set; }
+        public QuestData Quests { get; set; } = new();
+        public List<Achievement> Achievements { get; set; } = new();
+        public uint Acquaintances { get; set; }
         public RecipeData Recipes { get; set; } = new();
         public List<uint> Unknown40 { get; set; } = new();
         public List<uint> Unknown41 { get; set; } = new();
         public List<uint> Unknown42 { get; set; } = new();
-        public List<UnknownStruct43> Unknown43 { get; set; } = new();
+        public List<Hotbar> Hotbars { get; set; } = new();
         public List<Mount> Mounts { get; set; } = new();
         public bool SendFirstTimeEvents { get; set; }
         public List<uint> Unknown46 { get; set; } = new();
@@ -1581,12 +1592,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             Unknown32 = reader.ReadUInt();
 
-            uint unknown33Count = reader.ReadUInt();
-            for (int i = 0; i < unknown33Count; i++)
+            uint buffCount = reader.ReadUInt();
+            for (int i = 0; i < buffCount; i++)
             {
-                StructUnknown33 unknown33 = new();
-                unknown33.Read(reader);
-                Unknown33.Add(unknown33);
+                Buff buff = new();
+                buff.Read(reader);
+                Buffs.Add(buff);
             }
 
             Inventory.Read(reader);
@@ -1596,26 +1607,27 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             for (int i = 0; i < unknown34Count; i++)
             {
                 // TODO: Do This
+                throw new NotImplementedException();
             }
 
             Gender = (Gender)reader.ReadUInt();
 
-            CharacterQuests.Read(reader);
+            Quests.Read(reader);
 
             uint achievementsCount = reader.ReadUInt();
-            Achievements = achievementsCount;
             for (int i = 0; i < achievementsCount; i++)
             {
                 Achievement achievement = new();
                 achievement.Read(reader);
-                CharacterAchievements.Add(achievement);
+                Achievements.Add(achievement);
             }
 
             uint acquaintencesCount = reader.ReadUInt();
-            Acquaintences = acquaintencesCount;
+            Acquaintances = acquaintencesCount;
             for (int i = 0; i < acquaintencesCount; i++)
             {
                 // TODO: Do This
+                throw new NotImplementedException();
             }
 
             Recipes.Read(reader);
@@ -1635,9 +1647,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             uint unknown43Count = reader.ReadUInt();
             for (int i = 0; i < unknown43Count; i++)
             {
-                UnknownStruct43 unknown43 = new();
+                Hotbar unknown43 = new();
                 unknown43.Read(reader);
-                Unknown43.Add(unknown43);
+                Hotbars.Add(unknown43);
             }
 
             uint mountsCount = reader.ReadUInt();

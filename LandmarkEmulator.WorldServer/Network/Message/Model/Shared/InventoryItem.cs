@@ -20,7 +20,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 public class UnknownStruct142C2FC70 : IReadable, IWritable
                 {
                     public uint Unknown0 { get; set; }
-                    public uint Unknown1 { get; set; }
+                    public string Unknown1 { get; set; }
                     public uint Unknown2 { get; set; }
                     public uint Unknown3 { get; set; }
                     public bool Unknown4 { get; set; }
@@ -31,7 +31,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                     public void Read(GamePacketReader reader)
                     {
                         Unknown0 = reader.ReadUInt();
-                        Unknown1 = reader.ReadUInt();
+                        Unknown1 = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
                         Unknown2 = reader.ReadUInt();
                         Unknown3 = reader.ReadUInt();
                         Unknown4 = reader.ReadBool();
@@ -214,9 +214,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         public uint Unknown2 { get; set; }
         public uint Unknown3 { get; set; }
         public byte Unknown4 { get; set; }
-        public uint Unknown5 { get; set; }
+        /// <summary>
+        /// 0 = Inventory, 2 = Equipment, 5 = Collection
+        /// </summary>
+        public uint ContainerId { get; set; }
         public ulong Unknown6 { get; set; }
-        public uint Unknown7 { get; set; }
+        public uint SlotId { get; set; }
         public uint Unknown8 { get; set; }
         public ulong Unknown9 { get; set; }
         public ulong Unknown10 { get; set; }
@@ -240,9 +243,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             Unknown2 = reader.ReadUInt();
             Unknown3 = reader.ReadUInt();
             Unknown4 = reader.ReadByte();
-            Unknown5 = reader.ReadUInt();
+            ContainerId = reader.ReadUInt();
             Unknown6 = reader.ReadULong();
-            Unknown7 = reader.ReadUInt();
+            SlotId = reader.ReadUInt();
             Unknown8 = reader.ReadUInt();
             Unknown9 = reader.ReadULong();
             Unknown10 = reader.ReadULong();
