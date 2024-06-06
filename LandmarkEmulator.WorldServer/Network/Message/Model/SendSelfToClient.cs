@@ -569,6 +569,200 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             }
         }
 
+        public class UnknownStruct43 : IReadable, IWritable
+        {
+            // sub_142C16C60
+            public class UnknownStruct142C16C60 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; private set; }
+                public uint Unknown1 { get; private set; }
+                public uint Unknown2 { get; private set; }
+                public ulong Unknown3 { get; private set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadUInt();
+                    Unknown3 = reader.ReadULong();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public uint Unknown0 { get; private set; }
+            public List<UnknownStruct142C16C60> Unknown1 { get; private set; } = new();
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+
+                uint unknown1Count = reader.ReadUInt();
+                for (int i = 0; i < unknown1Count; i++)
+                {
+                    UnknownStruct142C16C60 unknown1 = new();
+                    unknown1.Read(reader);
+                    Unknown1.Add(unknown1);
+                }
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class TitleData : IReadable, IWritable
+        {
+            public class Title : IReadable, IWritable
+            {
+                public uint TitleId { get; set; }
+                public uint TitleType { get; set; }
+                /// <summary>
+                /// This is an ID reference to a string in the localisation files
+                /// </summary>
+                public uint NameId { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    TitleId = reader.ReadUInt();
+                    TitleType = reader.ReadUInt();
+                    NameId = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public List<Title> TitleList { get; set; } = new();
+            public uint CurrentTitleId { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                uint titleListCount = reader.ReadUInt();
+                for (int i = 0; i < titleListCount; i++)
+                {
+                    Title title = new();
+                    title.Read(reader);
+                    TitleList.Add(title);
+                }
+
+                CurrentTitleId = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct50 : IReadable, IWritable
+        {
+            public uint Unknown0 { get; set; }
+            public uint Unknown1 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                Unknown0 = reader.ReadUInt();
+                Unknown1 = reader.ReadUInt();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class UnknownStruct56 : IReadable, IWritable
+        {
+            // sub_142C3BF00
+            public class UnknownStruct142C3BF00 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public uint Unknown1 { get; set; }
+                public uint Unknown2 { get; set; }
+                public ulong Unknown3 { get; set; }
+                public uint Unknown4 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadUInt();
+                    Unknown2 = reader.ReadUInt();
+                    Unknown3 = reader.ReadULong();
+                    Unknown4 = reader.ReadUInt();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            // sub_142C3F7F0
+            public class UnknownStruct142C3F7F0 : IReadable, IWritable
+            {
+                public uint Unknown0 { get; set; }
+                public byte Unknown1 { get; set; }
+                public uint Unknown2 { get; set; }
+                public uint Unknown3 { get; set; }
+                public ulong Unknown4 { get; set; }
+                public uint Unknown5 { get; set; }
+                public byte Unknown6 { get; set; }
+
+                public void Read(GamePacketReader reader)
+                {
+                    Unknown0 = reader.ReadUInt();
+                    Unknown1 = reader.ReadByte();
+                    Unknown2 = reader.ReadUInt();
+                    Unknown3 = reader.ReadUInt();
+                    Unknown4 = reader.ReadULong();
+                    Unknown5 = reader.ReadUInt();
+                    Unknown6 = reader.ReadByte();
+                }
+
+                public void Write(GamePacketWriter writer)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public List<UnknownStruct142C3BF00> Unknown0 { get; set; } = new();
+            public List<UnknownStruct142C3F7F0> Unknown1 { get; set; } = new();
+            public byte Unknown2 { get; set; }
+
+            public void Read(GamePacketReader reader)
+            {
+                uint unknown0Count = reader.ReadUInt();
+                for (int i = 0; i < unknown0Count; i++)
+                {
+                    UnknownStruct142C3BF00 unknown0 = new();
+                    unknown0.Read(reader);
+                    Unknown0.Add(unknown0);
+                }
+
+                uint unknown1Count = reader.ReadUInt();
+                for (int i = 0; i < unknown1Count; i++)
+                {
+                    UnknownStruct142C3F7F0 unknown1 = new();
+                    unknown1.Read(reader);
+                    Unknown1.Add(unknown1);
+                }
+
+                Unknown2 = reader.ReadByte();
+            }
+
+            public void Write(GamePacketWriter writer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public uint Unknown0 { get; set; }
         public ulong Guid { get; set; }
         public string AccountName { get; set; }
@@ -619,6 +813,23 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public List<Achievement> CharacterAchievements { get; set; } = new();
         public uint Acquaintences { get; set; }
         public RecipeData Recipes { get; set; } = new();
+        public List<uint> Unknown40 { get; set; } = new();
+        public List<uint> Unknown41 { get; set; } = new();
+        public List<uint> Unknown42 { get; set; } = new();
+        public List<UnknownStruct43> Unknown43 { get; set; } = new();
+        public List<Mount> Mounts { get; set; } = new();
+        public bool SendFirstTimeEvents { get; set; }
+        public List<uint> Unknown46 { get; set; } = new();
+        public List<uint> Unknown47 { get; set; } = new();
+        public List<(uint, StatData)> Stats { get; set; } = new();
+        public TitleData Titles { get; set; } = new();
+        public List<UnknownStruct50> Unknown50 { get; set; } = new();
+        public List<uint> Unknown51 { get; set; } = new();
+        public uint Unknown52 { get; set; }
+        public List<uint> Unknown53 { get; set; } = new();
+        public List<uint> Unknown54 { get; set; } = new();
+        public List<bool> Unknown55 { get; set; } = new();
+        public UnknownStruct56 Unknown56 { get; set; } = new();
 
         public void Read(GamePacketReader reader)
         {
@@ -737,7 +948,84 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             Recipes.Read(reader);
 
-            log.Info($"{reader.TotalBytes - reader.BytesRemaining} / {reader.TotalBytes} read");
+            uint unknown40Count = reader.ReadUInt();
+            for (int i = 0; i < unknown40Count; i++)
+                Unknown40.Add(reader.ReadUInt());
+
+            uint unknown41Count = reader.ReadUInt();
+            for (int i = 0; i < unknown41Count; i++)
+                Unknown41.Add(reader.ReadUInt());
+
+            uint unknown42Count = reader.ReadUInt();
+            for (int i = 0; i < unknown42Count; i++)
+                Unknown42.Add(reader.ReadUInt());
+
+            uint unknown43Count = reader.ReadUInt();
+            for (int i = 0; i < unknown43Count; i++)
+            {
+                UnknownStruct43 unknown43 = new();
+                unknown43.Read(reader);
+                Unknown43.Add(unknown43);
+            }
+
+            uint mountsCount = reader.ReadUInt();
+            for (int i = 0; i < mountsCount; i++)
+            {
+                Mount mount= new();
+                mount.Read(reader);
+                Mounts.Add(mount);
+            }
+
+            SendFirstTimeEvents = reader.ReadBool();
+
+            uint unknown46Count = reader.ReadUInt();
+            for (int i = 0; i < unknown46Count; i++)
+                Unknown46.Add(reader.ReadUInt());
+
+            uint unknown47Count = reader.ReadUInt();
+            for (int i = 0; i < unknown47Count; i++)
+                Unknown47.Add(reader.ReadUInt());
+
+            uint statsCount = reader.ReadUInt();
+            for (int i = 0; i < statsCount; i++)
+            {
+                uint statId = reader.ReadUInt();
+                StatData statData = new();
+                statData.Read(reader);
+                Stats.Add((statId, statData));
+            }
+
+            Titles.Read(reader);
+
+            uint unknown50Count = reader.ReadUInt();
+            for (int i = 0; i < unknown50Count; i++)
+            {
+                UnknownStruct50 unknown50 = new();
+                unknown50.Read(reader);
+                Unknown50.Add(unknown50);
+            }
+
+            uint unknown51Count = reader.ReadUInt();
+            for (int i = 0; i < unknown51Count; i++)
+                Unknown51.Add(reader.ReadUInt());
+
+            Unknown52 = reader.ReadUInt();
+
+            uint unknown53Count = reader.ReadUInt();
+            for (int i = 0; i < unknown53Count; i++)
+                Unknown53.Add(reader.ReadUInt());
+
+            uint unknown54Count = reader.ReadUInt();
+            for (int i = 0; i < unknown54Count; i++)
+                Unknown54.Add(reader.ReadUInt());
+
+            uint unknown55Count = reader.ReadUInt();
+            for (int i = 0; i < unknown55Count; i++)
+                Unknown55.Add(reader.ReadBool());
+
+            Unknown56.Read(reader);
+
+            log.Info($"\n\n   {reader.TotalBytes - reader.BytesRemaining} / {reader.TotalBytes} ({((float)(reader.TotalBytes - reader.BytesRemaining) / (float)reader.TotalBytes) * 100f}%) Bytes Read\n");
         }
 
         public void Write(GamePacketWriter writer)
