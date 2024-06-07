@@ -34,7 +34,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new System.NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(FirstName);
+                writer.Write(Unknown3);
             }
         }
 
@@ -122,7 +126,49 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(NameId);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
+                writer.Write(Unknown5);
+                writer.Write(Unknown6);
+                writer.Write(Unknown7);
+                writer.Write(Unknown8);
+                writer.Write(Unknown9);
+
+                writer.Write((uint)Unknown10.Count);
+                foreach (var item in Unknown10)
+                {
+                    writer.Write(item.Item1);
+                    writer.Write(item.Item2);
+                    writer.Write(item.Item3);
+                }
+
+                writer.Write(Unknown11);
+                writer.Write(Unknown12);
+                writer.Write(Unknown13);
+                writer.Write(Unknown14);
+                writer.Write(Unknown15);
+                writer.Write(Unknown16);
+                writer.Write(Unknown17);
+                writer.Write(Unknown18);
+                
+                writer.Write(Unknown19);
+                writer.Write(Unknown20);
+                writer.Write(Unknown21);
+                writer.Write(Unknown22);
+                writer.Write(Unknown23);
+                writer.Write(Unknown24);
+                writer.Write(Unknown25);
+                writer.Write(Unknown26);
+                writer.Write(Unknown27);
+                writer.Write(Unknown28);
+                writer.Write(Unknown29);
+                writer.Write(Unknown30);
+                writer.Write(Unknown31);
+                writer.Write(Unknown32);
+                writer.Write(Unknown33);
             }
         }
 
@@ -152,7 +198,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
+                writer.Write(Unknown5);
+                writer.Write(Unknown6);
+                RewardBundleData.Write(writer);
             }
         }
 
@@ -1469,7 +1522,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public uint Unknown32 { get; set; }
         public List<Buff> Buffs { get; set; } = new();
         public InventoryData Inventory { get; set; } = new();
-        public uint Unknown34 { get; set; }
+        public uint Unknown35 { get; set; }
         public Gender Gender { get; set; } // Probably Gender
         public QuestData Quests { get; set; } = new();
         public List<Achievement> Achievements { get; set; } = new();
@@ -1603,7 +1656,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             Inventory.Read(reader);
 
             uint unknown34Count = reader.ReadUInt();
-            Unknown34 = unknown34Count;
+            Unknown35 = unknown34Count;
             for (int i = 0; i < unknown34Count; i++)
             {
                 // TODO: Do This
@@ -1790,7 +1843,232 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            throw new System.NotImplementedException();
+            writer.Write(Unknown0);
+            writer.Write(Guid);
+            writer.Write(AccountName);
+            writer.Write(CharacterId);
+            writer.WriteUIntWith2BitLength((int)Unknown1);
+            writer.Write(0u); // TODO: Figure out how to write Timestamp
+
+            writer.Write(ModelId);
+            Model.Write(writer);
+
+            writer.Write(Unknown3);
+            writer.Write(Unknown4);
+
+            Identity.Write(writer);
+
+            writer.Write(Unknown5);
+
+            writer.Write((uint)Unknown6.Count);
+            foreach (var item in Unknown6)
+            {
+                writer.Write(item.Item1);
+                writer.Write(item.Item2);
+            }
+
+            writer.Write(Unknown7);
+            writer.Write(Unknown8);
+            writer.Write(Unknown9);
+            writer.Write(Unknown10);
+            writer.Write(Unknown11);
+            writer.Write(Unknown12);
+            writer.Write(Unknown13);
+            writer.Write(Unknown14);
+            writer.Write(Unknown15);
+            writer.Write(Unknown16);
+            writer.Write(Unknown17);
+            writer.Write(Unknown18);
+            writer.Write(Unknown19);
+            writer.Write(Unknown20);
+            writer.Write(Unknown21);
+            writer.Write(Unknown22);
+            writer.Write(Unknown23);
+
+            writer.Write((uint)Unknown24.Count);
+            foreach (var item in Unknown24)
+            {
+                writer.Write(item.Item1);
+                writer.Write(item.Item2);
+                writer.Write(item.Item3);
+            }
+
+            writer.Write(Unknown25);
+            writer.Write(Unknown26);
+            writer.Write(Unknown27);
+            writer.Write(Unknown28);
+
+            writer.Write((uint)Profiles.Count);
+            foreach (Profile profile in Profiles)
+                profile.Write(writer);
+            writer.Write(CurrentProfile);
+
+            writer.Write((uint)Unknown30.Count);
+            foreach (var item in Unknown30)
+            {
+                writer.Write(item.Item1);
+                writer.Write(item.Item2);
+            }
+
+            writer.Write((uint)Collections.Count);
+            foreach (Collection collection in Collections)
+                collection.Write(writer);
+
+            writer.Write((uint)Unknown31.Count);
+            foreach (var item in Unknown31)
+            {
+                writer.Write(item.Item1);
+                writer.Write(item.Item2);
+                writer.Write(item.Item3);
+            }
+
+            writer.Write(Unknown32);
+
+            // TODO: Make writers after this.
+            writer.Write((uint)Buffs.Count);
+            foreach (Buff buff in Buffs)
+                buff.Write(writer);
+
+            Inventory.Write(writer);
+
+            writer.Write((uint)Unknown35);
+            for (int i = 0; i < Unknown35; i++)
+            {
+                // TODO: Do This
+                throw new NotImplementedException();
+            }
+
+            writer.Write((uint)Gender);
+
+            Quests.Write(writer);
+
+            writer.Write((uint)Achievements.Count);
+            foreach (Buff buff in Buffs)
+                buff.Write(writer);
+
+            writer.Write(Acquaintances);
+            for (int i = 0; i < Acquaintances; i++)
+            {
+                // TODO: Do This
+                throw new NotImplementedException();
+            }
+
+            Recipes.Write(writer);
+
+            writer.Write((uint)Unknown40.Count);
+            foreach (var item in Unknown40)
+                writer.Write(item);
+
+            writer.Write((uint)Unknown41.Count);
+            foreach (var item in Unknown41)
+                writer.Write(item);
+
+            writer.Write((uint)Unknown42.Count);
+            foreach (var item in Unknown42)
+                writer.Write(item);
+
+            writer.Write((uint)Hotbars.Count);
+            foreach (Hotbar hotbar in Hotbars)
+                hotbar.Write(writer);
+
+            writer.Write((uint)Mounts.Count);
+            foreach (Mount mount in Mounts)
+                mount.Write(writer);
+
+            writer.Write(SendFirstTimeEvents);
+
+            writer.Write((uint)Unknown46.Count);
+            foreach (var item in Unknown46)
+                writer.Write(item);
+
+            writer.Write((uint)Unknown47.Count);
+            foreach (var item in Unknown47)
+                writer.Write(item);
+
+            writer.Write((uint)Stats.Count);
+            foreach (var stat in Stats)
+            {
+                writer.Write(stat.Item1);
+                stat.Item2.Write(writer);
+            }
+
+            Titles.Write(writer);
+
+            writer.Write((uint)Unknown50.Count);
+            foreach (var unknownStruct50 in Unknown50)
+                unknownStruct50.Write(writer);
+
+            writer.Write((uint)Unknown51.Count);
+            foreach (var item in Unknown51)
+                writer.Write(item);
+
+            writer.Write(Unknown52);
+
+            writer.Write((uint)Unknown53.Count);
+            foreach (var item in Unknown53)
+                writer.Write(item);
+
+            writer.Write((uint)Unknown54.Count);
+            foreach (var item in Unknown54)
+                writer.Write(item);
+
+            writer.Write((uint)Unknown55.Count);
+            foreach (var item in Unknown55)
+                writer.Write(item);
+
+            Unknown56.Write(writer);
+
+            writer.Write((uint)Unknown57.Count);
+            foreach (var unknownStruct57 in Unknown57)
+                unknownStruct57.Write(writer);
+
+            Unknown58.Write(writer);
+
+            writer.Write((uint)Unknown59.Count);
+            foreach (var unknownStruct59 in Unknown59)
+                unknownStruct59.Write(writer);
+
+            writer.Write((uint)Unknown60.Count);
+            foreach (var unknownStruct60 in Unknown60)
+                unknownStruct60.Write(writer);
+
+            writer.Write((uint)Unknown61.Count);
+            foreach (var unknownStruct61 in Unknown61)
+                unknownStruct61.Write(writer);
+
+            writer.Write((uint)Unknown62.Count);
+            foreach (var unknownStruct62 in Unknown62)
+                unknownStruct62.Write(writer);
+
+            Unknown63.Write(writer);
+
+            Unknown64.Write(writer);
+
+            Unknown65.Write(writer);
+
+            writer.Write((uint)Loadouts.Count);
+            foreach (Loadout loadout in Loadouts)
+                loadout.Write(writer);
+
+            Unknown67.Write(writer);
+
+            Unknown68.Write(writer);
+
+            writer.Write(Unknown69);
+            writer.Write(Unknown70);
+            writer.Write(Unknown71);
+            writer.Write(Unknown72);
+            writer.Write(Unknown73);
+            writer.Write(Unknown74);
+            writer.Write(Unknown75);
+
+            Unknown76.Write(writer);
+
+            writer.Write(Unknown77);
+
+            // There is 34 bytes of data left in the packet which doesn't appear to be read by the client.
+            // 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-ff-ff-ff-ff-00-00-00-00-00-01-00-00-00-00-00-00-00
+            writer.WriteBytes(Convert.FromHexString("00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-ff-ff-ff-ff-00-00-00-00-00-01-00-00-00-00-00-00-00".Replace("-", "")));
         }
     }
 }

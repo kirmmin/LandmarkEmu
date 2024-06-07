@@ -2,6 +2,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
@@ -106,6 +107,14 @@ namespace LandmarkEmulator.Shared.Network
             Write((uint)bytes.Length);
             foreach (byte c in bytes)
                 stream.Add(c);
+        }
+
+        public void Write(Vector4 value)
+        {
+            Write(value.X);
+            Write(value.Y);
+            Write(value.Z);
+            Write(value.X);
         }
 
         public void WriteLongString(string value)
