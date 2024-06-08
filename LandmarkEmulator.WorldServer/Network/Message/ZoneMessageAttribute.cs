@@ -8,11 +8,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message
     {
         public ZoneMessageOpcode Opcode { get; }
         public ClientProtocol Version { get; }
+        public bool PrependSize { get; }
 
-        public ZoneMessageAttribute(ZoneMessageOpcode opcode, ClientProtocol version = ClientProtocol.ClientProtocol_ALL)
+        public ZoneMessageAttribute(ZoneMessageOpcode opcode, ClientProtocol version = ClientProtocol.ClientProtocol_ALL, bool prependSize = false)
         {
             Opcode = opcode;
             Version = version;
+            PrependSize = prependSize;
         }
     }
 }

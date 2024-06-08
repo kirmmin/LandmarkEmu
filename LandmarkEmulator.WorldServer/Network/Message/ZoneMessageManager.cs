@@ -21,7 +21,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message
 
         private delegate IReadable MessageFactoryDelegate();
 
-        private ImmutableDictionary<ZoneMessageOpcode, MessageFactoryDelegate> clientMessageFactories;
+        private ImmutableDictionary<ZoneMessageOpcode, (MessageFactoryDelegate, bool)> clientMessageFactories;
         private ImmutableDictionary<Type, ZoneMessageOpcode> serverMessageOpcodes;
 
         private Dictionary<ClientProtocol, ImmutableDictionary<ZoneMessageOpcode, ZoneMessageHandlerDelegate>> clientMessageHandlers = new();
@@ -35,7 +35,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message
 
         private void InitialiseGameMessages()
         {
-            var messageFactories = new Dictionary<ZoneMessageOpcode, MessageFactoryDelegate>();
+            var messageFactories = new Dictionary<ZoneMessageOpcode, (MessageFactoryDelegate, bool)>();
             var messageOpcodes = new Dictionary<Type, ZoneMessageOpcode>();
 
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
@@ -47,7 +47,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message
                 if (typeof(IReadable).IsAssignableFrom(type))
                 {
                     NewExpression @new = Expression.New(type.GetConstructor(Type.EmptyTypes));
-                    messageFactories.Add(attribute.Opcode, Expression.Lambda<MessageFactoryDelegate>(@new).Compile());
+                    messageFactories.Add(attribute.Opcode, (Expression.Lambda<MessageFactoryDelegate>(@new).Compile(), attribute.PrependSize));
                 }
                 messageOpcodes.Add(type, attribute.Opcode);
             }
@@ -129,8 +129,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message
 
         public IReadable GetZoneMessage(ZoneMessageOpcode opcode, ClientProtocol version)
         {
-            return clientMessageFactories.TryGetValue(opcode, out MessageFactoryDelegate factory)
-                ? factory.Invoke() : null;
+            return clientMessageFactories.TryGetValue(opcode, out var factory)
+                ? factory.Item1.Invoke() : null;
         }
 
         public ZoneMessageHandlerDelegate GetZoneMessageHandler(ZoneMessageOpcode opcode, ClientProtocol version)
@@ -140,6 +140,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message
                 ? handler : null;
 
             return null;
+        }
+
+        public bool HasPrependedSize(ZoneMessageOpcode opcode)
+        {
+            return clientMessageFactories.TryGetValue(opcode, out var factory)
+                ? factory.Item2 : false;
         }
     }
 }

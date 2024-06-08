@@ -1810,7 +1810,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public List<Buff> Buffs { get; set; } = new();
         public InventoryData Inventory { get; set; } = new();
         public uint Unknown35 { get; set; }
-        public Gender Gender { get; set; } // Probably Gender
+        public Gender GenderMaybe { get; set; } // Probably Gender
         public QuestData Quests { get; set; } = new();
         public List<Achievement> Achievements { get; set; } = new();
         public uint Acquaintances { get; set; }
@@ -1954,7 +1954,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 throw new NotImplementedException();
             }
 
-            Gender = (Gender)reader.ReadUInt();
+            GenderMaybe = (Gender)reader.ReadUInt();
 
             Quests.Read(reader);
 
@@ -2137,8 +2137,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             writer.Write(Guid);
             writer.Write(AccountName);
             writer.Write(CharacterId);
-            //writer.WriteUIntWith2BitLength((int)Unknown1);
-            writer.Write((byte)16);
+            writer.WriteUIntWith2BitLength((int)Unknown1);
             writer.Write(LastLoginTimeRaw); // TODO: Figure out how to write Timestamp
 
             writer.Write(ModelId);
@@ -2228,7 +2227,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 throw new NotImplementedException();
             }
 
-            writer.Write((uint)Gender);
+            writer.Write((uint)GenderMaybe);
 
             Quests.Write(writer);
 

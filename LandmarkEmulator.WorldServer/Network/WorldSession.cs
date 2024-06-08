@@ -1,13 +1,13 @@
 ﻿using LandmarkEmulator.Database.Character.Model;
 using LandmarkEmulator.Gateway.Network;
 using LandmarkEmulator.Gateway.Network.Message;
+using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.WorldServer.Network.Message;
 using LandmarkEmulator.WorldServer.Network.Message.Model;
 using LandmarkEmulator.WorldServer.Network.Packets;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +43,88 @@ namespace LandmarkEmulator.WorldServer.Network
             EnqueueMessage(ZoneMessageOpcode.ReferenceDataProfileDefinitions, File.ReadAllBytes("Resources\\PacketDumps\\41-ReferenceDataProfileDefinitions").AsSpan().Slice(4).ToArray());
             EnqueueMessage(ZoneMessageOpcode.SkillBase, Convert.FromHexString("05-02-00-00-00-00-00-00-00-04-00-00-00-01-00-00-00-01-00-00-00-44-82-08-00-44-82-08-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-05-00-00-00-05-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-03-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-02-00-00-00-02-00-00-00-44-82-08-00-44-82-08-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-01-00-00-00-05-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-04-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-03-00-00-00-03-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-02-00-00-00-0F-00-00-00-0A-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-05-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-04-00-00-00-04-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-03-00-00-00-1E-00-00-00-0F-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-06-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-01-00-00-00-01-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-01-00-00-00-01-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-01-00-00-00-01-00-00-00-01-00-00-00-44-82-08-00-44-82-08-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-08-00-00-00-13-00-00-00-13-00-00-00-01-00-00-00-00-00-00-00-14-00-00-00-14-00-00-00-01-00-00-00-00-00-00-00-1C-00-00-00-1C-00-00-00-01-00-00-00-00-00-00-00-1D-00-00-00-1D-00-00-00-01-00-00-00-00-00-00-00-1E-00-00-00-1E-00-00-00-01-00-00-00-00-00-00-00-1F-00-00-00-1F-00-00-00-01-00-00-00-00-00-00-00-20-00-00-00-20-00-00-00-01-00-00-00-00-00-00-00-21-00-00-00-21-00-00-00-01-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00".Replace("-", "")));
             EnqueueMessage(ZoneMessageOpcode.CommandBase, File.ReadAllBytes("Resources\\PacketDumps\\44-CommandBase").AsSpan().Slice(2).ToArray());
-            EnqueueMessage(ZoneMessageOpcode.SendSelfToClient, sendSelfPacket.AsSpan().Slice(2).ToArray());
+            //EnqueueMessage(ZoneMessageOpcode.SendSelfToClient, sendSelfPacket.AsSpan().Slice(2).ToArray());
+
+            //var msgData = new Span<byte>(sendSelfPacket, 2, sendSelfPacket.Length - 2).ToArray();
+            //var reader = new GamePacketReader(msgData);
+            //var message = new SendSelfToClient();
+            //message.Read(reader);
+
+            BuildSendToSelfPacket();
+        }
+
+        public void BuildSendToSelfPacket()
+        {
+            uint GetModelForGenderRace(Gender gender, Race race)
+            {
+                switch (gender)
+                {
+                    case Gender.Male:
+                        if (race == Race.Human)
+                            return 390u;
+                        if (race == Race.HumanLarge)
+                            return 1187u;
+
+                        return 390u;
+                    case Gender.Female:
+                        if (race == Race.Human)
+                            return 392u;
+                        if (race == Race.HumanLarge)
+                            return 1204u;
+
+                        return 392u;
+                    default:
+                        return 252u;
+                }
+            }
+
+            var Character = Characters.FirstOrDefault(i => i.Name != null);
+            if (Character == null)
+            {
+                OnDisconnect();
+                return;
+            }
+
+            var message = new SendSelfToClient();
+            message.AccountName = Account.Username;
+            message.CharacterId = Character.Id;
+            message.Guid = 1;
+            message.GenderMaybe = (Shared.Game.Entity.Static.Gender)1; // Character.Gender;
+
+            message.Unknown22 = Character.Gender;
+            message.ModelId = GetModelForGenderRace((Gender)3, (Race)Character.Race);
+            message.Unknown25 = true;
+
+            message.Model = new Shared.Network.Message.Model.Shared.CharacterModelInfo
+            {
+                SkinId = Character.SkinTint
+            };
+            foreach (var customisation in Character.Customisation)
+                message.Model.Customisations.Add((customisation.Slot, customisation.Option, customisation.Tint));
+            log.Info($"{message.Model.Customisations.Count} customisations added");
+            message.Identity.FirstName = Character.Name;
+            
+            message.Profiles.Add(new SendSelfToClient.Profile
+            {
+                Unknown0 = 46,
+                NameId = new Shared.Game.LandmarkText(571666),
+                Unknown3 = 3,
+                Unknown15 = true,
+                Unknown19 = 1077097267,
+                Unknown20 = 1068708659,
+                Unknown21 = 1076887552,
+                Unknown22 = 1,
+                Unknown23 = 1053609165,
+                Unknown24 = 1097859072,
+                Unknown29 = 3,
+                Unknown30 = 3,
+                Unknown31 = 3
+            });
+            message.CurrentProfile = 46;
+            message.Unknown24.Add((46, 46, 0));
+            message.Unknown30.Add((3, 46));
+
+            EnqueueMessage(message);
         }
         #endregion
 
@@ -152,7 +233,7 @@ namespace LandmarkEmulator.WorldServer.Network
                 return;
             }
 
-            outgoingPackets.Enqueue(new ZonePacket(opcode, message));
+            outgoingPackets.Enqueue(new ZonePacket(opcode, message, ZoneMessageManager.Instance.HasPrependedSize(opcode)));
         }
 
         public void EnqueueMessage(ZoneMessageOpcode opcode, byte[] data)
