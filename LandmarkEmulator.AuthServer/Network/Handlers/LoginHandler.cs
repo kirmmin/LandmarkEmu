@@ -10,6 +10,7 @@ using LandmarkEmulator.Shared.Database;
 using LandmarkEmulator.Shared.Game;
 using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Game.Events;
+using LandmarkEmulator.Shared.GameTable;
 using LandmarkEmulator.Shared.Network.Cryptography;
 using LandmarkEmulator.Shared.Network.Message;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -93,13 +94,18 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
         [AuthMessageHandler(AuthMessageOpcode.CharacterSelectInfoRequest, ProtocolVersion.LoginUdp_10)]
         public static void HandleCharacterSelectInfoRequest(AuthSession session, CharacterSelectInfoRequest request)
         {
-            uint GetModelId(Gender gender)
+            uint GetModelForGenderFromProfile(uint profileId, Gender gender)
             {
-                if (gender == Gender.Male)
-                    return 390;
-
-                // Female
-                return 390;
+                var profile = GameTableManager.Instance.ProfileDefinitions.GetEntry(profileId);
+                switch (gender)
+                {
+                    case Gender.Male:
+                        return profile.MaleModelId;
+                    case Gender.Female:
+                        return profile.FemaleModelId;
+                    default:
+                        return 252u;
+                }
             }
 
             session.Events.Enqueue(new TaskGenericEvent<List<CharacterModel>>(DatabaseManager.Instance.CharacterDatabase.GetCharacters(session.Account.Id),
@@ -119,10 +125,14 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                         var characterPayload = new CharacterSelectInfoReply.Character.CharacterPayload
                         {
                             Name = model.Name,
+                            Race = model.Race,
                             Gender = model.Gender,
-                            ModelId = GetModelId((Gender)model.Gender)
+                            ProfileId = model.ProfileTypeId,
+                            ModelId = GetModelForGenderFromProfile(model.ProfileTypeId, (Gender)model.Gender)
                         };
                         characterPayload.Model.SkinId = model.SkinTint;
+                        characterPayload.Model.Race = model.Race;
+                        characterPayload.Model.Gender = model.Gender;
 
                         // Add customisations
                         foreach (var customisation in model.Customisation)
@@ -144,12 +154,12 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                             "Qeynos_000_Heavy",
                             "Colony_000_Heavy"
                         };
-
+                        
                         // Add Attachments; Should only ever be a chest item in character select.
                         characterPayload.CharacterAttachments.Add(new CharacterSelectInfoReply.Character.CharacterPayload.CharacterAttachment
                         {
-                            ModelName = $"Char_Biped_{(Race)model.Race}{(Gender)model.Gender}_Entities_{randomName[new Random().Next(randomName.Count)]}_Chest.adr",
-                            Slot = (AttachmentSlot)1,
+                            ModelName = $"Char_Biped_[RACE][GENDER]_Entities_{randomName[new Random().Next(randomName.Count)]}_Chest.adr",
+                            Slot = AttachmentSlot.Head,
                         });
 
                         // Add character to payload
@@ -312,7 +322,7 @@ namespace LandmarkEmulator.AuthServer.Network.Handlers
                 AccountId = session.Account.Id,
                 Name = request.Name,
                 Gender = (byte)request.Gender,
-                Race = (byte)Race.Human,
+                Race = (byte)request.Race,
                 ProfileTypeId = request.ProfileTypeId,
                 SkinTint = request.SkinTint
             };

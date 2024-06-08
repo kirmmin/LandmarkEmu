@@ -7,8 +7,8 @@ namespace LandmarkEmulator.Shared.Network.Message.Model.Shared
         public List<(uint, uint, uint)> Customisations { get; set; } = new();
         public uint SkinId { get; set; }
         public string Unknown1 { get; set; } = "";
-        public uint Unknown2 { get; set; } = 1;
-        public uint Unknown3 { get; set; } = 1;
+        public uint Race { get; set; } = 1;
+        public uint Gender { get; set; } = 1;
 
         public uint GetSize()
         {
@@ -32,8 +32,8 @@ namespace LandmarkEmulator.Shared.Network.Message.Model.Shared
             }
             SkinId = reader.ReadUInt();
             Unknown1 = reader.ReadString();
-            Unknown2 = reader.ReadUInt();
-            Unknown3 = reader.ReadUInt();
+            Race = reader.ReadUInt();
+            Gender = reader.ReadUInt();
         }
 
         public void Write(GamePacketWriter writer)
@@ -47,8 +47,8 @@ namespace LandmarkEmulator.Shared.Network.Message.Model.Shared
             }
             writer.Write(SkinId);
             writer.Write(Unknown1);
-            writer.Write(Unknown2);
-            writer.Write(Unknown3);
+            writer.Write(Race);
+            writer.Write(Gender);
         }
     }
 }

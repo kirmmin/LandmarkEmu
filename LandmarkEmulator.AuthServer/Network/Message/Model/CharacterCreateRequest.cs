@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared.Game.Entity.Static;
+using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System.Collections.Generic;
 
@@ -11,10 +12,13 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
         public uint Unknown0 { get; set; }
         public byte EmpireId { get; set; }
         public uint ProfileTypeId { get; set; }
-        public uint Gender { get; set; }
+        public uint Unknown1 { get; set; }
         public string Name { get; set; }
         public List<(uint, uint, uint)> CustomisationOptions { get; set; } = new();
         public uint SkinTint { get; set; }
+        public uint Unknown2 { get; set; }
+        public Race Race { get; set; }
+        public Gender Gender { get; set; }
         public uint StartingOutfit { get; set; }
 
         public void Read(GamePacketReader reader)
@@ -23,7 +27,7 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             Unknown0 = reader.ReadUInt();
             EmpireId = reader.ReadByte();
             ProfileTypeId = reader.ReadUInt();
-            Gender   = reader.ReadUInt();
+            Unknown1 = reader.ReadUInt();
             Name     = reader.ReadString();
             uint customisationCount = reader.ReadUInt();
             for (uint i = 0; i < customisationCount; i++)
@@ -36,6 +40,9 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
             }
 
             SkinTint = reader.ReadUInt();
+            Unknown2 = reader.ReadUInt();
+            Race     = (Race)reader.ReadUInt();
+            Gender   = (Gender)reader.ReadUInt();
             StartingOutfit = reader.ReadUInt();
         }
     }

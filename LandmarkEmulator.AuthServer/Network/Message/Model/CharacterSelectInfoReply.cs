@@ -73,14 +73,14 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     }
                 }
 
-                public string Name { get; set; } = "Kirmmin";
+                public string Name { get; set; } = "Player";
                 public byte Unknown0 { get; set; }
                 public uint Unknown1 { get; set; } = 1;
                 public uint HeadId { get; set; }
                 public uint ModelId { get; set; }
                 public uint Gender { get; set; }
-                public uint Unknown5 { get; set; } = 1;
-                public uint Unknown6 { get; set; }
+                public uint Race { get; set; }
+                public uint ProfileId { get; set; }
                 public uint Unknown7 { get; set; }
                 public ulong Unknown8 { get; set; }
                 public List<uint> Array142C34C30 { get; set; } = new();
@@ -98,8 +98,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     HeadId = reader.ReadUInt();
                     ModelId = reader.ReadUInt();
                     Gender = reader.ReadUInt();
-                    Unknown5 = reader.ReadUInt();
-                    Unknown6 = reader.ReadUInt();
+                    Race = reader.ReadUInt();
+                    ProfileId = reader.ReadUInt();
                     Unknown7 = reader.ReadUInt();
                     Unknown8 = reader.ReadULong();
 
@@ -127,8 +127,8 @@ namespace LandmarkEmulator.AuthServer.Network.Message.Model
                     writer.Write(HeadId);
                     writer.Write(ModelId);
                     writer.Write(Gender);
-                    writer.Write(Unknown5);
-                    writer.Write(Unknown6);
+                    writer.Write(Race);
+                    writer.Write(ProfileId);
                     writer.Write(Unknown7);
                     writer.Write(Unknown8);
 
