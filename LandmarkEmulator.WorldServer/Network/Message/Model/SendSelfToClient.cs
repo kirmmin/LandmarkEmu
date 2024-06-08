@@ -23,7 +23,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown1 { get; set; }
             public uint Unknown2 { get; set; }
             public string FirstName { get; set; } = "Player";
-            public string Unknown3 { get; set; } = "";
+            public string LastName { get; set; } = "";
 
             public void Read(GamePacketReader reader)
             {
@@ -31,7 +31,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown1 = reader.ReadUInt();
                 Unknown2 = reader.ReadUInt();
                 FirstName = reader.ReadString();
-                Unknown3 = reader.ReadString();
+                LastName = reader.ReadString();
             }
 
             public void Write(GamePacketWriter writer)
@@ -40,7 +40,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 writer.Write(Unknown1);
                 writer.Write(Unknown2);
                 writer.Write(FirstName);
-                writer.Write(Unknown3);
+                writer.Write(LastName);
             }
         }
 
@@ -67,12 +67,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public byte Unknown17 { get; set; }
             public byte Unknown18 { get; set; }
 
-            public uint Unknown19 { get; set; }
-            public uint Unknown20 { get; set; }
-            public uint Unknown21 { get; set; }
+            public float Unknown19 { get; set; }
+            public float Unknown20 { get; set; }
+            public float Unknown21 { get; set; }
             public uint Unknown22 { get; set; }
-            public uint Unknown23 { get; set; }
-            public uint Unknown24 { get; set; }
+            public float Unknown23 { get; set; }
+            public float Unknown24 { get; set; }
             public uint Unknown25 { get; set; }
             public uint Unknown26 { get; set; }
             public uint Unknown27 { get; set; }
@@ -1768,11 +1768,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public uint Unknown0 { get; set; } = 655356;
         public ulong Guid { get; set; } = 1000000;
         public string AccountName { get; set; } = "TestAccount";
-        public ulong CharacterId { get; set; } = 1;
+        public ulong CharacterId { get; set; }
         public uint Unknown1 { get; set; }
         public ulong LastLoginTimeRaw { get; set; }
         public DateTime LastLoginTime { get; set; } // Epoch Timestamp of last login
-        public uint ModelId { get; set; } = 390;
+        public uint ModelId { get; set; }
         public CharacterModelInfo Model { get; set; } = new();
         public Vector4 Unknown3 { get; set; } // Probably Position
         public Vector4 Unknown4 { get; set; } // Probably Rotation
@@ -1802,7 +1802,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public bool Unknown27 { get; set; }
         public bool Unknown28 { get; set; }
         public List<Profile> Profiles { get; set; } = new();
-        public uint CurrentProfile { get; set; } = 46; // Probably ProfileId in use
+        public uint CurrentProfile { get; set; }
         public List<(uint, uint)> Unknown30 { get; set; } = new();
         public List<Collection> Collections { get; set; } = new();
         public List<(uint, uint, uint)> Unknown31 { get; set; } = new();

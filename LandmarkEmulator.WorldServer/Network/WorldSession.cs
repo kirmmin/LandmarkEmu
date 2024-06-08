@@ -2,6 +2,8 @@
 using LandmarkEmulator.Gateway.Network;
 using LandmarkEmulator.Gateway.Network.Message;
 using LandmarkEmulator.Shared.Game.Entity.Static;
+using LandmarkEmulator.Shared.GameTable;
+using LandmarkEmulator.Shared.GameTable.Model;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.WorldServer.Network.Message;
@@ -55,24 +57,15 @@ namespace LandmarkEmulator.WorldServer.Network
 
         public void BuildSendToSelfPacket()
         {
-            uint GetModelForGenderRace(Gender gender, Race race)
+            // TODO: Replace all this junk below with an actual Player entity.
+            uint GetModelForGenderFromProfile(ProfileDefinitionEntry profile, Gender gender)
             {
                 switch (gender)
                 {
                     case Gender.Male:
-                        if (race == Race.Human)
-                            return 390u;
-                        if (race == Race.HumanLarge)
-                            return 1187u;
-
-                        return 390u;
+                        return profile.MaleModelId;
                     case Gender.Female:
-                        if (race == Race.Human)
-                            return 392u;
-                        if (race == Race.HumanLarge)
-                            return 1204u;
-
-                        return 392u;
+                        return profile.FemaleModelId;
                     default:
                         return 252u;
                 }
@@ -81,48 +74,53 @@ namespace LandmarkEmulator.WorldServer.Network
             var Character = Characters.FirstOrDefault(i => i.Name != null);
             if (Character == null)
             {
+                // TODO: Force Disconnect, not just drop the session.
                 OnDisconnect();
                 return;
             }
 
-            var message = new SendSelfToClient();
-            message.AccountName = Account.Username;
-            message.CharacterId = Character.Id;
-            message.Guid = 1;
-            message.GenderMaybe = (Shared.Game.Entity.Static.Gender)1; // Character.Gender;
+            var ProfileData = GameTableManager.Instance.ProfileDefinitions.GetEntry(Character.ProfileTypeId);
 
-            message.Unknown22 = Character.Gender;
-            message.ModelId = GetModelForGenderRace((Gender)3, (Race)Character.Race);
-            message.Unknown25 = true;
+            var message = new SendSelfToClient();
+            message.Guid = 1;
+            message.CharacterId = Character.Id;
+            message.AccountName = Account.Username;
+            message.GenderMaybe = (Gender)Character.Gender;
+
+            message.Unknown22 = Character.Race;
+            message.ModelId = GetModelForGenderFromProfile(ProfileData, (Gender)Character.Gender);
+            //message.Unknown25 = true;
 
             message.Model = new Shared.Network.Message.Model.Shared.CharacterModelInfo
             {
-                SkinId = Character.SkinTint
+                SkinId = Character.SkinTint,
+                Race   = Character.Race,
+                Gender = Character.Gender
             };
             foreach (var customisation in Character.Customisation)
                 message.Model.Customisations.Add((customisation.Slot, customisation.Option, customisation.Tint));
-            log.Info($"{message.Model.Customisations.Count} customisations added");
             message.Identity.FirstName = Character.Name;
             
             message.Profiles.Add(new SendSelfToClient.Profile
             {
-                Unknown0 = 46,
-                NameId = new Shared.Game.LandmarkText(571666),
-                Unknown3 = 3,
+                Unknown0 = ProfileData.Id,
+                NameId = new Shared.Game.LandmarkText(ProfileData.NameId),
+                Unknown3 = ProfileData.ProfileType,
                 Unknown15 = true,
-                Unknown19 = 1077097267,
-                Unknown20 = 1068708659,
-                Unknown21 = 1076887552,
+                Unknown19 = ProfileData.StandCameraHeight, //1077097267,
+                Unknown20 = ProfileData.LineOfSightHeight, //1068708659,
+                Unknown21 = ProfileData.CapsuleRadius, //1076887552,
                 Unknown22 = 1,
-                Unknown23 = 1053609165,
-                Unknown24 = 1097859072,
-                Unknown29 = 3,
-                Unknown30 = 3,
-                Unknown31 = 3
+                Unknown23 = ProfileData.CrouchCameraHeight, //1053609165,
+                Unknown24 = ProfileData.Mass, //1097859072,
+                Unknown29 = ProfileData.CharSize, //3,
+                Unknown30 = ProfileData.Armor, //3,
+                Unknown31 = ProfileData.Feet, //3
             });
-            message.CurrentProfile = 46;
-            message.Unknown24.Add((46, 46, 0));
-            message.Unknown30.Add((3, 46));
+            message.CurrentProfile = ProfileData.Id;
+            message.Unknown24.Add((ProfileData.Id, ProfileData.Id, 0));
+            message.Unknown30.Add((ProfileData.ProfileType, ProfileData.Id));
+            message.Loadouts[0].Unknown1.Unknown1 = ProfileData.Id;
 
             EnqueueMessage(message);
         }
