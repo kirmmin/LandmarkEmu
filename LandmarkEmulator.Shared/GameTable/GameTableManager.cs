@@ -21,6 +21,9 @@ namespace LandmarkEmulator.Shared.GameTable
         [GameData("BlackListEntries.txt", false)]
         public GameTable<BlackListEntry> BlackList { get; private set; }
 
+        [GameData("ProfileDefinitions.txt")]
+        public GameTable<ProfileDefinitionEntry> ProfileDefinitions { get; private set; }
+
         /// <summary>
         /// Initialises all <see cref="GameTable{T}"/> that the <see cref="GameTableManager"/> caches. This initialises the <see cref="TextManager"/>, first.
         /// </summary>

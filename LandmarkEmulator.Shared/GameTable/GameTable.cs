@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace LandmarkEmulator.Shared.GameTable
 {
     public class GameTable<T> where T : class, new()
     {
+        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
         public IEnumerable<T> Entries => entries.Values.ToList();
         public int RecordCount => entries.Count;
         public ulong MaxId => entries.LastOrDefault().Key;
@@ -69,40 +72,55 @@ namespace LandmarkEmulator.Shared.GameTable
                 for (int i = 0; i < typeFields.Length; i++)
                 {
                     PropertyInfo modelField = typeFields[i];
-                    switch (Type.GetTypeCode(modelField.PropertyType))
+                    try
                     {
-                        case TypeCode.Boolean:
-                            modelField.SetValue(entry, Convert.ToBoolean(Byte.Parse(pieces[i])));
-                            break;
-                        case TypeCode.Byte:
-                            modelField.SetValue(entry, Byte.Parse(pieces[i]));
-                            break;
-                        case TypeCode.SByte:
-                            modelField.SetValue(entry, SByte.Parse(pieces[i]));
-                            break;
-                        case TypeCode.Int16:
-                            modelField.SetValue(entry, Int16.Parse(pieces[i]));
-                            break;
-                        case TypeCode.Int32:
-                            modelField.SetValue(entry, Int32.Parse(pieces[i]));
-                            break;
-                        case TypeCode.Int64:
-                            modelField.SetValue(entry, Int64.Parse(pieces[i]));
-                            break;
-                        case TypeCode.UInt16:
-                            modelField.SetValue(entry, UInt16.Parse(pieces[i]));
-                            break;
-                        case TypeCode.UInt32:
-                            modelField.SetValue(entry, UInt32.Parse(pieces[i]));
-                            break;
-                        case TypeCode.UInt64:
-                            modelField.SetValue(entry, UInt64.Parse(pieces[i]));
-                            break;
-                        case TypeCode.String:
-                        default:
-                            modelField.SetValue(entry, pieces[i]);
-                            break;
+                        switch (Type.GetTypeCode(modelField.PropertyType))
+                        {
+                            case TypeCode.Boolean:
+                                modelField.SetValue(entry, Convert.ToBoolean(Byte.Parse(pieces[i])));
+                                break;
+                            case TypeCode.Byte:
+                                modelField.SetValue(entry, Byte.Parse(pieces[i]));
+                                break;
+                            case TypeCode.SByte:
+                                modelField.SetValue(entry, SByte.Parse(pieces[i]));
+                                break;
+                            case TypeCode.Int16:
+                                modelField.SetValue(entry, Int16.Parse(pieces[i]));
+                                break;
+                            case TypeCode.Int32:
+                                modelField.SetValue(entry, Int32.Parse(pieces[i]));
+                                break;
+                            case TypeCode.Int64:
+                                modelField.SetValue(entry, Int64.Parse(pieces[i]));
+                                break;
+                            case TypeCode.UInt16:
+                                modelField.SetValue(entry, UInt16.Parse(pieces[i]));
+                                break;
+                            case TypeCode.UInt32:
+                                modelField.SetValue(entry, UInt32.Parse(pieces[i]));
+                                break;
+                            case TypeCode.UInt64:
+                                modelField.SetValue(entry, UInt64.Parse(pieces[i]));
+                                break;
+                            case TypeCode.Single:
+                                modelField.SetValue(entry, Single.Parse(pieces[i]));
+                                break;
+                            case TypeCode.Double:
+                                modelField.SetValue(entry, Double.Parse(pieces[i]));
+                                break;
+                            case TypeCode.String:
+                            default:
+                                modelField.SetValue(entry, pieces[i]);
+                                break;
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        log.Error($"{modelField.Name} errored with value {pieces[i]}.");
+                        throw new ArgumentException();
+                    }
+                    
                 }
 
                 var id = (uint)(_hasId ? typeFields[0].GetValue(entry) : recordCount);
