@@ -9,5 +9,6 @@ namespace LandmarkEmulator.Shared.Game.Entity.Static
     public enum Race
     { 
         Human = 1,
+        HumanLarge = 5
     }
 }

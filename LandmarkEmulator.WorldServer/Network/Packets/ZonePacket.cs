@@ -12,6 +12,7 @@ namespace LandmarkEmulator.WorldServer.Network.Packets
         /// </summary>
         public uint Size { get; protected set; }
         public ZoneMessageOpcode Opcode { get; protected set; }
+        public bool PrependSize { get; protected set; }
 
         public byte[] Data { get; protected set; }
 
@@ -24,13 +25,23 @@ namespace LandmarkEmulator.WorldServer.Network.Packets
             Size = (uint)Data.Length;
         }
 
-        public ZonePacket(ZoneMessageOpcode opcode, IWritable message)
+        public ZonePacket(ZoneMessageOpcode opcode, IWritable message, bool prependSize = false)
         {
             Opcode = opcode;
+            PrependSize = prependSize;
 
             List<byte> data = new();
             var writer = new GamePacketWriter(data);
             message.Write(writer);
+
+            if (prependSize)
+            {
+                List<byte> prependData = new();
+                var prependWriter = new GamePacketWriter(prependData);
+                prependWriter.Write((uint)data.Count);
+                prependData.AddRange(data);
+                data = prependData;
+            }
 
             Data = data.ToArray();
             Size = (uint)Data.Length;

@@ -9,6 +9,7 @@ namespace LandmarkEmulator.Shared.Network
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
+        public uint TotalBytes => (uint)stream.Length;
         public uint BytesRemaining => (uint)(stream.Length - currentBytePosition);
 
         private int currentBytePosition;
@@ -18,6 +19,11 @@ namespace LandmarkEmulator.Shared.Network
         {
             stream = input;
             ResetBits();
+        }
+
+        public void ReverseBytePosition(int count)
+        {
+            currentBytePosition -= count;
         }
 
         public void ResetBits()
@@ -52,6 +58,19 @@ namespace LandmarkEmulator.Shared.Network
             return BinaryPrimitives.ReadUInt16LittleEndian(GetDataBits(bits));
         }
 
+        public uint ReadUInt2BitLength()
+        {
+            var length = (GetDataBits(8u)[0] & 3);
+            var value = 0;
+
+            for (int i = 0; i < length; i++)
+            {
+                value += GetDataBits(8u)[0] << ((i + 1) * 8);
+            }
+
+            return (uint)(value >> 2);
+        }
+
         public uint ReadUInt(uint bits = 32u)
         {
             if (bits > sizeof(uint) * 8)
@@ -73,7 +92,7 @@ namespace LandmarkEmulator.Shared.Network
             if (bits > sizeof(float) * 8)
                 throw new ArgumentException();
 
-            return BinaryPrimitives.ReadSingleBigEndian(GetDataBits(bits));
+            return BinaryPrimitives.ReadSingleLittleEndian(GetDataBits(bits));
         }
 
         public ulong ReadULong(uint bits = 64u)
@@ -122,7 +141,10 @@ namespace LandmarkEmulator.Shared.Network
             var length = ReadUShort();
             var value = ReadBytes(length);
 
-            return Encoding.UTF8.GetString(value);
+            if (length > 0)
+                return Encoding.UTF8.GetString(value);
+            else
+                return "";
         }
 
         public string ReadString()
@@ -130,7 +152,10 @@ namespace LandmarkEmulator.Shared.Network
             var length = ReadUInt();
             var value = ReadBytes(length);
 
-            return Encoding.UTF8.GetString(value);
+            if (length > 0)
+                return Encoding.UTF8.GetString(value);
+            else
+                return "";
         }
 
         public string ReadNullTerminatedString()

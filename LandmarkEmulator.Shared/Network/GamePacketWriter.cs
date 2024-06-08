@@ -2,6 +2,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace LandmarkEmulator.Shared.Network
@@ -108,6 +109,14 @@ namespace LandmarkEmulator.Shared.Network
                 stream.Add(c);
         }
 
+        public void Write(Vector4 value)
+        {
+            Write(value.X);
+            Write(value.Y);
+            Write(value.Z);
+            Write(value.W);
+        }
+
         public void WriteLongString(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
@@ -143,7 +152,7 @@ namespace LandmarkEmulator.Shared.Network
                 n = 1;
             }
             value |= n;
-            var data = new Span<byte>();
+            var data = new Span<byte>(new byte[4]);
             BinaryPrimitives.WriteInt32LittleEndian(data, value);
             foreach (byte d in data.Slice(0, n + 1))
                 stream.Add(d);
