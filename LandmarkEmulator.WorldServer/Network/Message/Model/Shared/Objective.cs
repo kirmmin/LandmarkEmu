@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared.Game;
+using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
 
@@ -17,7 +18,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(Index);
+            Objective.Write(writer);
         }
     }
 
@@ -41,13 +43,16 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
             }
         }
 
         public uint ObjectiveId { get; private set; }
-        public uint NameId { get; private set; }
-        public uint DescriptionId { get; private set; }
+        public LandmarkText NameId { get; private set; } = new();
+        public LandmarkText DescriptionId { get; private set; } = new();
         public RewardBundle ObjectiveRewardBundle { get; private set; } = new();
         public uint Unknown5 { get; private set; }
         public uint Unknown6 { get; private set; }
@@ -62,8 +67,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         public void Read(GamePacketReader reader)
         {
             ObjectiveId = reader.ReadUInt();
-            NameId = reader.ReadUInt();
-            DescriptionId = reader.ReadUInt();
+            NameId = new LandmarkText(reader.ReadUInt());
+            DescriptionId = new LandmarkText(reader.ReadUInt());
             
             ObjectiveRewardBundle.Read(reader);
 
@@ -82,7 +87,23 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(ObjectiveId);
+            NameId.Write(writer);
+            DescriptionId.Write(writer);
+
+            ObjectiveRewardBundle.Write(writer);
+
+            writer.Write(Unknown5);
+            writer.Write(Unknown6);
+            writer.Write(Unknown7);
+            writer.Write(Unknown8);
+            writer.Write(Unknown9);
+            writer.Write(Unknown10);
+
+            Unknown11.Write(writer);
+
+            writer.Write(Unknown12);
+            writer.Write(Unknown13);
         }
     }
 }

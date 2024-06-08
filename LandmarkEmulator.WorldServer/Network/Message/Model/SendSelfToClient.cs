@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Game.Entity.Static;
+﻿using LandmarkEmulator.Shared.Game;
+using LandmarkEmulator.Shared.Game.Entity.Static;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.Shared.Network.Message.Model.Shared;
@@ -6,11 +7,12 @@ using LandmarkEmulator.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace LandmarkEmulator.WorldServer.Network.Message.Model
 {
-    [ZoneMessage(ZoneMessageOpcode.SendSelfToClient)]
+    [ZoneMessage(ZoneMessageOpcode.SendSelfToClient, prependSize: true)]
     public class SendSelfToClient : IReadable, IWritable
     {
         protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
@@ -20,8 +22,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown0 { get; set; }
             public uint Unknown1 { get; set; }
             public uint Unknown2 { get; set; }
-            public string FirstName { get; set; }
-            public string Unknown3 { get; set; }
+            public string FirstName { get; set; } = "Player";
+            public string Unknown3 { get; set; } = "";
 
             public void Read(GamePacketReader reader)
             {
@@ -46,7 +48,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public class Profile : IReadable, IWritable
         {
             public uint Unknown0 { get; set; }
-            public string NameId { get; set; }
+            public LandmarkText NameId { get; set; } = new();
             public uint Unknown2 { get; set; }
             public uint Unknown3 { get; set; }
             public uint Unknown4 { get; set; }
@@ -84,7 +86,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public void Read(GamePacketReader reader)
             {
                 Unknown0 = reader.ReadUInt();
-                NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                NameId = new LandmarkText(reader.ReadUInt());
                 Unknown2 = reader.ReadUInt();
                 Unknown3 = reader.ReadUInt();
                 Unknown4 = reader.ReadUInt();
@@ -127,7 +129,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public void Write(GamePacketWriter writer)
             {
                 writer.Write(Unknown0);
-                writer.Write(NameId);
+                NameId.Write(writer);
                 writer.Write(Unknown2);
                 writer.Write(Unknown3);
                 writer.Write(Unknown4);
@@ -233,8 +235,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown19 { get; set; }
             public uint Unknown20 { get; set; }
             public Vector4 Unknown21 { get; set; } = new();
-            public string NameId { get; set; }
-            public string DescriptionId { get; set; }
+            public LandmarkText NameId { get; set; } = new();
+            public LandmarkText DescriptionId { get; set; } = new();
             public uint IconId { get; set; }
             public uint Unknown25 { get; set; }
             public bool Unknown26 { get; set; }
@@ -272,8 +274,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 Unknown21 = new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
-                NameId    = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
-                DescriptionId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                NameId    = new LandmarkText(reader.ReadUInt());
+                DescriptionId = new LandmarkText(reader.ReadUInt());
                 IconId    = reader.ReadUInt();
                 Unknown25 = reader.ReadUInt();
                 Unknown26 = reader.ReadBool();
@@ -286,7 +288,41 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(UnitId);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
+                writer.Write(Unknown5);
+                writer.Write(Unknown6);
+                writer.Write(Unknown7);
+                writer.Write(Unknown8);
+                writer.Write(UnitId2);
+                writer.Write(UnitId3);
+                writer.Write(Unknown11);
+                writer.Write(Unknown12);
+                writer.Write(Unknown13);
+                writer.Write(Unknown14);
+
+                writer.Write(Unknown15);
+
+                writer.Write(Unknown16);
+                writer.Write(Unknown17);
+                writer.Write(Unknown18);
+                writer.Write(Unknown19);
+                writer.Write(Unknown20);
+                
+                writer.Write(Unknown21);
+
+                NameId.Write(writer);
+                DescriptionId.Write(writer);
+                writer.Write(IconId);
+                writer.Write(Unknown26);
+                writer.Write(Unknown27);
+                writer.Write(Unknown28);
+                writer.Write(Unknown29);
+                writer.Write(Unknown30);
+                writer.Write(Unknown31);
             }
         }
 
@@ -295,17 +331,30 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             /// <summary>
             /// Seems to default to current number of items in container 0 for maxxSize on Containers 7+. Fized size of 10 containers.
             /// </summary>
-            public List<(uint /*maxSize*/, bool /*visible?*/)> Containers { get; set; } = new();
-            public uint ItemCount { get; set; }
+            public List<(uint /*maxSize*/, bool /*visible?*/)> Containers { get; set; } = new()
+            {
+                ( 40, false ),
+                ( 60, false ),
+                ( 10, false ),
+                ( 10, false ),
+                ( 10, false ),
+                ( 250, false ),
+                ( 250, false ),
+                ( 0, true),
+                ( 0, true),
+                ( 0, true),
+                ( 0, true),
+                ( 0, true)
+            };
             public List<InventoryItem> Items { get; set; } = new();
 
             public void Read(GamePacketReader reader)
             {
+                Containers = new();
                 for (int i = 0; i < 12; i++)
                     Containers.Add((reader.ReadUInt(), reader.ReadBool()));
 
                 uint itemCount = reader.ReadUInt();
-                ItemCount = itemCount;
                 for (int i = 0; i < itemCount; i++)
                 {
                     InventoryItem item = new();
@@ -316,7 +365,16 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                log.Info($"Writing {Containers.Count} containers");
+                foreach (var item in Containers)
+                {
+                    writer.Write(item.Item1);
+                    writer.Write(item.Item2);
+                }
+
+                writer.Write((uint)Items.Count);
+                foreach (InventoryItem item in Items)
+                    item.Write(writer);
             }
         }
 
@@ -365,7 +423,15 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                // TODO: Add support for Quest packet
+                writer.Write(QuestList);
+                if (QuestList > 0)
+                    throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -384,7 +450,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (uint item in Unknown0)
+                    writer.Write(item);
             }
         }
 
@@ -410,7 +478,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Unknown0);
+                        writer.Write(Unknown1);
+                        writer.Write(Unknown2);
+                        writer.Write(Unknown3);
                     }
                 }
 
@@ -430,7 +501,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write((uint)Unknown0.Count);
+                    foreach (UnknownStruct142C23120 unknown0 in Unknown0)
+                        unknown0.Write(writer);
                 }
             }
 
@@ -451,7 +524,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (var item in Unknown0)
+                {
+                    writer.Write(item.Item1);
+                    item.Item2.Write(writer);
+                }
             }
         }
 
@@ -470,7 +548,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (var item in Unknown0)
+                {
+                    writer.Write(item.Item1);
+                    writer.Write(item.Item2);
+                }
             }
         }
 
@@ -492,7 +575,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
                 }
             }
 
@@ -506,7 +591,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                     public uint Unknown1 { get; private set; }
                     public uint ItemId { get; private set; }
                     public uint Quantity { get; private set; }
-                    public string NameId { get; private set; }
+                    public LandmarkText NameId { get; private set; } = new();
                     public uint IconId { get; private set; }
                     public uint Unknown6 { get; private set; }
                     public uint Unknown7 { get; private set; }
@@ -517,7 +602,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                         Unknown1 = reader.ReadUInt();
                         ItemId = reader.ReadUInt();
                         Quantity = reader.ReadUInt();
-                        NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                        NameId = new LandmarkText(reader.ReadUInt());
                         IconId = reader.ReadUInt();
                         Unknown6 = reader.ReadUInt();
                         Unknown7 = reader.ReadUInt();
@@ -525,7 +610,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Index);
+                        writer.Write(Unknown1);
+                        writer.Write(ItemId);
+                        writer.Write(Quantity);
+                        NameId.Write(writer);
+                        writer.Write(IconId);
+                        writer.Write(Unknown6);
+                        writer.Write(Unknown7);
                     }
                 }
 
@@ -534,8 +626,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 public uint Unknown2 { get; private set; }
                 public uint Itemid { get; private set; }
                 public uint Quantity { get; private set; }
-                public string NameId { get; private set; }
-                public string DescriptionId { get; private set; }
+                public LandmarkText NameId { get; private set; } = new();
+                public LandmarkText DescriptionId { get; private set; } = new();
                 public uint IconId { get; private set; }
                 public uint Unknown8 { get; private set; }
                 public uint Unknown9 { get; private set; }
@@ -555,8 +647,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                     Unknown2 = reader.ReadUInt();
                     Itemid = reader.ReadUInt();
                     Quantity = reader.ReadUInt();
-                    NameId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
-                    DescriptionId = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                    NameId = new LandmarkText(reader.ReadUInt());
+                    DescriptionId = new LandmarkText(reader.ReadUInt());
                     IconId = reader.ReadUInt();
                     Unknown8 = reader.ReadUInt();
                     Unknown9 = reader.ReadUInt(); // Looks like some form of timestamp? Might be timestamp recipe was acquired or duration remaining.
@@ -584,14 +676,39 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(RecipeId);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Itemid);
+                    writer.Write(Quantity);
+                    NameId.Write(writer);
+                    DescriptionId.Write(writer);
+                    writer.Write(IconId);
+                    writer.Write(Unknown8);
+                    writer.Write(Unknown9);
+
+                    writer.Write((uint)Components.Count);
+                    foreach (RecipeComponent component in Components)
+                        component.Write(writer);
+
+                    writer.Write(MemberOnly);
+                    writer.Write(Unknown12);
+                    writer.Write(Unknown13);
+                    writer.Write(Unknown14);
+                    writer.Write(Unknown15);
+
+                    writer.Write((uint)Unknown16.Count);
+                    foreach (uint item in Unknown16)
+                        writer.Write(item);
+
+                    writer.Write(Unknown17);
                 }
             }
 
-            public List<uint> Unknown0 { get; private set; } = new();
-            public List<StructUnknown142C1B810> Unknown1 { get; private set; } = new();
-            public List<uint> Unknown2 { get; private set; } = new();
-            public List<Recipe> RecipeList { get; private set; } = new();
+            public List<uint> Unknown0 { get; set; } = new();
+            public List<StructUnknown142C1B810> Unknown1 { get; set; } = new();
+            public List<uint> Unknown2 { get; set; } = new();
+            public List<Recipe> RecipeList { get; set; } = new();
 
             public void Read(GamePacketReader reader)
             {
@@ -622,7 +739,21 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (uint unknown0 in Unknown0)
+                    writer.Write(unknown0);
+
+                writer.Write((uint)Unknown1.Count);
+                foreach (StructUnknown142C1B810 unknown1 in Unknown1)
+                    unknown1.Write(writer);
+
+                writer.Write((uint)Unknown2.Count);
+                foreach (uint unknown2 in Unknown2)
+                    writer.Write(unknown2);
+
+                writer.Write((uint)RecipeList.Count);
+                foreach (Recipe recipe in RecipeList)
+                    recipe.Write(writer);
             }
         }
 
@@ -631,13 +762,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             // sub_142C16C60
             public class HotbarButton : IReadable, IWritable
             {
-                public uint HotbarId { get; private set; }
-                public uint SlotId { get; private set; }
+                public uint HotbarId { get; set; }
+                public uint SlotId { get; set; }
                 /// <summary>
                 /// 0 = None, 1 = ItemId, 2 = ItemGuid
                 /// </summary>
-                public uint ButtonType { get; private set; }
-                public ulong ItemId { get; private set; }
+                public uint ButtonType { get; set; }
+                public ulong ItemId { get; set; }
 
                 public void Read(GamePacketReader reader)
                 {
@@ -649,7 +780,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(HotbarId);
+                    writer.Write(SlotId);
+                    writer.Write(ButtonType);
+                    writer.Write(ItemId);
                 }
             }
 
@@ -671,7 +805,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(HotbarId);
+
+                writer.Write((uint)HotbarButtons.Count);
+                foreach (HotbarButton button in HotbarButtons)
+                    button.Write(writer);
             }
         }
 
@@ -684,18 +822,20 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 /// <summary>
                 /// This is an ID reference to a string in the localisation files
                 /// </summary>
-                public uint NameId { get; set; }
+                public LandmarkText NameId { get; set; } = new();
 
                 public void Read(GamePacketReader reader)
                 {
                     TitleId = reader.ReadUInt();
                     TitleType = reader.ReadUInt();
-                    NameId = reader.ReadUInt();
+                    NameId = new LandmarkText(reader.ReadUInt());
                 }
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(TitleId);
+                    writer.Write(TitleType);
+                    NameId.Write(writer);
                 }
             }
 
@@ -717,7 +857,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)TitleList.Count);
+                foreach (Title title in TitleList)
+                    title.Write(writer);
+
+                writer.Write(CurrentTitleId);
             }
         }
 
@@ -734,7 +878,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
             }
         }
 
@@ -760,7 +905,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(Unknown4);
                 }
             }
 
@@ -788,7 +937,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(Unknown4);
+                    writer.Write(Unknown5);
+                    writer.Write(Unknown6);
                 }
             }
 
@@ -819,7 +974,15 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (UnknownStruct142C3BF00 unknown0 in Unknown0)
+                    unknown0.Write(writer);
+
+                writer.Write((uint)Unknown1.Count);
+                foreach (UnknownStruct142C3F7F0 unknown1 in Unknown1)
+                    unknown1.Write(writer);
+
+                writer.Write(Unknown2);
             }
         }
 
@@ -836,7 +999,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
             }
         }
 
@@ -859,7 +1023,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -880,7 +1048,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
             }
         }
 
@@ -900,7 +1071,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
                 }
             }
 
@@ -924,7 +1096,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+
+                writer.Write((uint)Unknown2.Count);
+                foreach (UnknownStruct142C34E50 unknown2 in Unknown2)
+                    unknown2.Write(writer);
             }
         }
 
@@ -954,12 +1131,15 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                         public void Write(GamePacketWriter writer)
                         {
-                            throw new NotImplementedException();
+                            writer.Write(Unknown0);
+                            writer.Write(Unknown1);
+                            writer.Write(Unknown2);
+                            writer.Write(Unknown3);
                         }
                     }
 
                     public uint Unknown0 { get; set; }
-                    public UnknownStruct142C1F840 Unknown1 { get; set; }
+                    public UnknownStruct142C1F840 Unknown1 { get; set; } = new();
 
                     public void Read(GamePacketReader reader)
                     {
@@ -970,7 +1150,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Unknown0);
+
+                        Unknown1.Write(writer);
                     }
                 }
 
@@ -996,12 +1178,18 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+
+                    writer.Write((uint)Unknown3.Count);
+                    foreach (UnknownStruct142C3BB80 unknown3 in Unknown3)
+                        unknown3.Write(writer);
                 }
             }
 
             public uint Unknown0 { get; set; }
-            public UnknownStruct142C187F0 Unknown1 { get; set; }
+            public UnknownStruct142C187F0 Unknown1 { get; set; } = new();
             public List<UnknownStruct142C187F0> Unknown2 { get; set; } = new();
 
             public void Read(GamePacketReader reader)
@@ -1021,7 +1209,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+
+                Unknown1.Write(writer);
+
+                writer.Write((uint)Unknown2.Count);
+                foreach (UnknownStruct142C187F0 unknown2 in Unknown2)
+                    unknown2.Write(writer);
             }
         }
 
@@ -1047,7 +1241,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(Unknown4);
                 }
             }
 
@@ -1063,7 +1261,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+
+                Unknown1.Write(writer);
             }
         }
 
@@ -1086,7 +1286,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -1105,7 +1309,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
             }
         }
 
@@ -1129,7 +1335,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
                 }
             }
 
@@ -1155,7 +1364,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Unknown0);
+                        writer.Write(Unknown1);
+                        writer.Write(Unknown2);
+                        writer.Write(Unknown3);
                     }
                 }
 
@@ -1174,7 +1386,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+
+                    Unknown1.Write(writer);
+
+                    writer.Write(Unknown2);
                 }
             }
 
@@ -1194,7 +1410,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
                 }
             }
 
@@ -1220,7 +1438,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                         public void Write(GamePacketWriter writer)
                         {
-                            throw new NotImplementedException();
+                            writer.Write(Unknown0);
+                            writer.Write(Unknown1);
+                            writer.Write(Unknown2);
                         }
                     }
 
@@ -1238,7 +1458,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        Unknown0.Write(writer);
+
+                        writer.Write(Unknown1);
+                        writer.Write(Unknown2);
                     }
                 }
 
@@ -1254,7 +1477,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+
+                    Unknown1.Write(writer);
                 }
             }
 
@@ -1291,7 +1516,19 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                Unknown0.Write(writer);
+                
+                writer.Write((uint)Unknown1.Count);
+                foreach (UnknownStruct142C3BC60 unknown1 in Unknown1)
+                    unknown1.Write(writer);
+
+                Unknown2.Write(writer);
+
+                writer.Write((uint)Unknown3.Count);
+                foreach (UnknownStruct142C3BDD0 unknown3 in Unknown3)
+                    unknown3.Write(writer);
+
+                writer.Write(Unknown4);
             }
         }
 
@@ -1300,13 +1537,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             // sub_142C217F0
             public class UnknownStruct142C217F0 : IReadable, IWritable
             {
-                public uint Unknown0 { get; set; }
-                public uint Unknown1 { get; set; }
-                public string Unknown2 { get; set; }
+                public uint Unknown0 { get; set; } = 1;
+                public uint Unknown1 { get; set; } = 46;
+                public string Unknown2 { get; set; } = "Default Loadout";
                 public uint Unknown3 { get; set; }
-                public List<uint> Unknown4 { get; set; } = new();
-                public List<uint> Unknown5 { get; set; } = new();
-                public List<ulong> Unknown6 { get; set; } = new();
+                public List<uint> Unknown4 { get; set; } = new uint[4].ToList();
+                public List<uint> Unknown5 { get; set; } = new uint[5].ToList();
+                public List<ulong> Unknown6 { get; set; } = new ulong[16].ToList();
 
                 public void Read(GamePacketReader reader)
                 {
@@ -1315,14 +1552,17 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                     Unknown2 = reader.ReadString();
                     Unknown3 = reader.ReadUInt();
 
+                    Unknown4 = new List<uint>();
                     uint unknown4Count = reader.ReadUInt();
                     for (int i = 0; i < unknown4Count; i++)
                         Unknown4.Add(reader.ReadUInt());
 
+                    Unknown5 = new List<uint>();
                     uint unknown5Count = reader.ReadUInt();
                     for (int i = 0; i < unknown5Count; i++)
                         Unknown5.Add(reader.ReadUInt());
 
+                    Unknown6 = new List<ulong>();
                     uint unknown6Count = reader.ReadUInt();
                     for (int i = 0; i < unknown6Count; i++)
                         Unknown6.Add(reader.ReadULong());
@@ -1330,11 +1570,26 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+
+                    writer.Write((uint)Unknown4.Count);
+                    foreach (uint unknown4 in Unknown4)
+                        writer.Write(unknown4);
+
+                    writer.Write((uint)Unknown5.Count);
+                    foreach (uint unknown5 in Unknown5)
+                        writer.Write(unknown5);
+
+                    writer.Write((uint)Unknown6.Count);
+                    foreach (ulong unknown6 in Unknown6)
+                        writer.Write(unknown6);
                 }
             }
 
-            public uint Unknown0 { get; set; }
+            public uint Unknown0 { get; set; } = 1;
             public UnknownStruct142C217F0 Unknown1 { get; set; } = new();
 
             public void Read(GamePacketReader reader)
@@ -1346,7 +1601,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+
+                Unknown1.Write(writer);
             }
         }
 
@@ -1406,7 +1663,25 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                if (Unknown0 != 0u)
+                    throw new NotImplementedException();
+
+                writer.Write(Unknown1);
+                if (Unknown1 != 0u)
+                    throw new NotImplementedException();
+
+                writer.Write(Unknown2);
+                if (Unknown2 != 0u)
+                    throw new NotImplementedException();
+
+                writer.Write(Unknown3);
+                if (Unknown3 != 0u)
+                    throw new NotImplementedException();
+
+                writer.Write(Unknown4);
+                if (Unknown4 != 0u)
+                    throw new NotImplementedException();
             }
         }
 
@@ -1415,7 +1690,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public ulong Unknown0 { get; set; }
             public ulong Unknown1 { get; set; }
             public ulong Unknown2 { get; set; }
-            public ulong Unknown3 { get; set; }
+            public ulong Unknown3 { get; set; } = 1487581831;
             public uint Unknown4 { get; set; }
 
             public void Read(GamePacketReader reader)
@@ -1429,7 +1704,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
+                writer.Write(Unknown3);
+                writer.Write(Unknown4);
             }
         }
 
@@ -1453,7 +1732,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
                 }
             }
 
@@ -1475,17 +1757,22 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write((uint)Unknown0.Count);
+                foreach (UnknownStruct142C37990 unknown0 in Unknown0)
+                    unknown0.Write(writer);
+
+                writer.Write(Unknown1);
             }
         }
 
-        public uint Unknown0 { get; set; }
-        public ulong Guid { get; set; }
-        public string AccountName { get; set; }
-        public ulong CharacterId { get; set; }
+        public uint Unknown0 { get; set; } = 655356;
+        public ulong Guid { get; set; } = 1000000;
+        public string AccountName { get; set; } = "TestAccount";
+        public ulong CharacterId { get; set; } = 1;
         public uint Unknown1 { get; set; }
+        public ulong LastLoginTimeRaw { get; set; }
         public DateTime LastLoginTime { get; set; } // Epoch Timestamp of last login
-        public uint ModelId { get; set; }
+        public uint ModelId { get; set; } = 390;
         public CharacterModelInfo Model { get; set; } = new();
         public Vector4 Unknown3 { get; set; } // Probably Position
         public Vector4 Unknown4 { get; set; } // Probably Rotation
@@ -1515,7 +1802,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public bool Unknown27 { get; set; }
         public bool Unknown28 { get; set; }
         public List<Profile> Profiles { get; set; } = new();
-        public uint CurrentProfile { get; set; } // Probably ProfileId in use
+        public uint CurrentProfile { get; set; } = 46; // Probably ProfileId in use
         public List<(uint, uint)> Unknown30 { get; set; } = new();
         public List<Collection> Collections { get; set; } = new();
         public List<(uint, uint, uint)> Unknown31 { get; set; } = new();
@@ -1554,7 +1841,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public UnknownStruct63 Unknown63 { get; set; } = new();
         public UnknownStruct64 Unknown64 { get; set; } = new();
         public UnknownStruct65 Unknown65 { get; set; } = new();
-        public List<Loadout> Loadouts { get; set; } = new();
+        public List<Loadout> Loadouts { get; set; } = new List<Loadout>
+        {
+            new Loadout()
+        };
         public UnknownStruct67 Unknown67 { get; set; } = new();
         public UnknownStruct68 Unknown68 { get; set; } = new();
         public byte Unknown69 { get; set; }
@@ -1563,9 +1853,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
         public byte Unknown72 { get; set; }
         public byte Unknown73 { get; set; }
         public byte Unknown74 { get; set; }
-        public bool Unknown75 { get; set; }
+        public bool IsAdminMaybe { get; set; }
         public UnknownStruct76 Unknown76 { get; set; } = new();
-        public string Unknown77 { get; set; }
+        public string Unknown77 { get; set; } = "";
 
         public void Read(GamePacketReader reader)
         {
@@ -1574,7 +1864,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             AccountName = reader.ReadString();
             CharacterId = reader.ReadULong();
             Unknown1 = reader.ReadUInt2BitLength();
-            LastLoginTime = DateTimeOffset.FromUnixTimeSeconds((long)reader.ReadULong()).DateTime;
+            LastLoginTimeRaw = reader.ReadULong();
+            LastLoginTime = DateTimeOffset.FromUnixTimeSeconds((long)LastLoginTimeRaw).DateTime;
             ModelId = reader.ReadUInt();
 
             Model.Read(reader);
@@ -1828,7 +2119,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             Unknown72 = reader.ReadByte();
             Unknown73 = reader.ReadByte();
             Unknown74 = reader.ReadByte();
-            Unknown75 = reader.ReadBool();
+            IsAdminMaybe = reader.ReadBool();
 
             Unknown76.Read(reader);
 
@@ -1843,12 +2134,12 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            writer.Write(Unknown0);
             writer.Write(Guid);
             writer.Write(AccountName);
             writer.Write(CharacterId);
-            writer.WriteUIntWith2BitLength((int)Unknown1);
-            writer.Write(0u); // TODO: Figure out how to write Timestamp
+            //writer.WriteUIntWith2BitLength((int)Unknown1);
+            writer.Write((byte)16);
+            writer.Write(LastLoginTimeRaw); // TODO: Figure out how to write Timestamp
 
             writer.Write(ModelId);
             Model.Write(writer);
@@ -1924,7 +2215,6 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
 
             writer.Write(Unknown32);
 
-            // TODO: Make writers after this.
             writer.Write((uint)Buffs.Count);
             foreach (Buff buff in Buffs)
                 buff.Write(writer);
@@ -1943,8 +2233,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             Quests.Write(writer);
 
             writer.Write((uint)Achievements.Count);
-            foreach (Buff buff in Buffs)
-                buff.Write(writer);
+            foreach (Achievement achievement in Achievements)
+                achievement.Write(writer);
 
             writer.Write(Acquaintances);
             for (int i = 0; i < Acquaintances; i++)
@@ -2060,7 +2350,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             writer.Write(Unknown72);
             writer.Write(Unknown73);
             writer.Write(Unknown74);
-            writer.Write(Unknown75);
+            writer.Write(IsAdminMaybe);
 
             Unknown76.Write(writer);
 

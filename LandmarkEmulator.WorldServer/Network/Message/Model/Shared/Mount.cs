@@ -27,7 +27,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(Unknown0);
+            writer.Write(Unknown1);
+            writer.Write(Unknown2);
+            writer.Write(Unknown3);
+            writer.Write(Unknown4);
+            writer.Write(Unknown5);
+            writer.Write(Unknown6);
         }
     }
 }

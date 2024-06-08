@@ -1,4 +1,5 @@
-﻿using LandmarkEmulator.Shared.Network;
+﻿using LandmarkEmulator.Shared.Game;
+using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using System;
 using System.Collections.Generic;
@@ -13,8 +14,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
     {
         public uint AchievementId { get; private set; }
         public byte Unknown1 { get; private set; }
-        public uint NameId { get; private set; }
-        public uint DescriptionId { get; private set; }
+        public LandmarkText NameId { get; private set; }
+        public LandmarkText DescriptionId { get; private set; }
         public ulong TimeStarted { get; private set; }
         public ulong TimeFinished { get; private set; }
         public float Progress { get; private set; }
@@ -58,8 +59,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         {
             AchievementId = reader.ReadUInt();
             Unknown1 = reader.ReadByte();
-            NameId = reader.ReadUInt();
-            DescriptionId = reader.ReadUInt();
+            NameId = new LandmarkText(reader.ReadUInt());
+            DescriptionId = new LandmarkText(reader.ReadUInt());
             TimeStarted = reader.ReadULong();
             TimeFinished = reader.ReadULong();
             Progress = reader.ReadSingle();
@@ -107,7 +108,49 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(AchievementId);
+            writer.Write(Unknown1);
+            NameId.Write(writer);
+            DescriptionId.Write(writer);
+            writer.Write(TimeStarted);
+            writer.Write(TimeFinished);
+            writer.Write(Progress);
+
+            AchievementRewardBundle.Write(writer);
+
+            writer.Write((uint)AchievementObjectives.Count);
+            foreach (ObjectiveEntry objective in AchievementObjectives)
+                objective.Write(writer);
+
+            writer.Write(Unknown9);
+            writer.Write(Unknown10);
+            writer.Write(Unknown11);
+            writer.Write(Unknown12);
+            writer.Write(Unknown13);
+            writer.Write(Unknown14);
+            writer.Write(Unknown15);
+            writer.Write(Unknown16);
+
+            writer.Write(Unknown17);
+            writer.Write(Unknown18);
+            writer.Write(Unknown19);
+            writer.Write(Unknown20);
+            writer.Write(Unknown21);
+            writer.Write(Unknown22);
+            writer.Write(Unknown23);
+            writer.Write(Unknown24);
+            writer.Write(Unknown25);
+            writer.Write(Unknown26);
+
+            writer.Write(Unknown27);
+            writer.Write(Unknown28);
+            writer.Write(Unknown29);
+
+            Unknown30.Write(writer);
+            Unknown31.Write(writer);
+            Unknown32.Write(writer);
+
+            writer.Write(Unknown33);
         }
     }
 }

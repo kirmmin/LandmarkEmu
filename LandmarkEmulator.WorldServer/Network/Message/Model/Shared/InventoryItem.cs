@@ -3,6 +3,7 @@ using LandmarkEmulator.Shared.Network.Message;
 using System;
 using System.Collections.Generic;
 using NLog;
+using LandmarkEmulator.Shared.Game;
 
 namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 {
@@ -20,7 +21,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 public class UnknownStruct142C2FC70 : IReadable, IWritable
                 {
                     public uint Unknown0 { get; set; }
-                    public string Unknown1 { get; set; }
+                    public LandmarkText Unknown1 { get; set; } = new();
                     public uint Unknown2 { get; set; }
                     public uint Unknown3 { get; set; }
                     public bool Unknown4 { get; set; }
@@ -31,7 +32,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                     public void Read(GamePacketReader reader)
                     {
                         Unknown0 = reader.ReadUInt();
-                        Unknown1 = LandmarkEmulator.Shared.GameTable.Text.TextManager.Instance.GetTextForId(reader.ReadUInt());
+                        Unknown1 = new LandmarkText(reader.ReadUInt());
                         Unknown2 = reader.ReadUInt();
                         Unknown3 = reader.ReadUInt();
                         Unknown4 = reader.ReadBool();
@@ -42,7 +43,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Unknown0);
+                        Unknown1.Write(writer);
+                        writer.Write(Unknown2);
+                        writer.Write(Unknown3);
+                        writer.Write(Unknown4);
+                        writer.Write(Unknown5);
+                        writer.Write(Unknown6);
+                        writer.Write(Unknown7);
                     }
                 }
 
@@ -62,7 +70,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
                     public void Write(GamePacketWriter writer)
                     {
-                        throw new NotImplementedException();
+                        writer.Write(Unknown0);
+                        writer.Write(Unknown1);
+                        writer.Write(Unknown2);
                     }
                 }
 
@@ -101,7 +111,20 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
                 public void Write(GamePacketWriter writer)
                 {
-                    throw new NotImplementedException();
+                    writer.Write(Unknown0);
+                    writer.Write(Unknown1);
+                    writer.Write(Unknown2);
+                    writer.Write(Unknown3);
+                    writer.Write(Unknown4);
+
+                    writer.Write((uint)Unknown5.Count);
+                    foreach (UnknownStruct142C2FC70 unknown5 in Unknown5)
+                        unknown5.Write(writer);
+
+                    writer.Write((uint)Unknown6.Count);
+                    foreach (UnknownStruct142C18530 unknown6 in Unknown6)
+                        unknown6.Write(writer);
+
                 }
             }
 
@@ -124,7 +147,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+
+                Unknown2.Write(writer);
+                Unknown3.Write(writer);
+
+                writer.Write(Unknown4);
             }
         }
 
@@ -143,7 +172,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
             }
         }
 
@@ -162,7 +193,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                writer.Write(Unknown1);
+                writer.Write(Unknown2);
             }
         }
 
@@ -187,7 +220,15 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+                if (Unknown0 == 0)
+                    return;
+
+                writer.Write(Unknown1);
+                if (Unknown0 != 1)
+                    return;
+
+                Unknown2.Write(writer);
             }
         }
 
@@ -204,7 +245,11 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Unknown0);
+
+                // TODO: Handle ExtraData not being 0.
+                //if (Unknown0 != 0)
+                //    throw new NotImplementedException();
             }
         }
 
@@ -228,8 +273,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         public byte Unknown13 { get; set; }
         public uint Unknown14 { get; set; }
         public byte subData1Flag { get; set; }
-        public SubData SubDataItem { get; set; } = new();
-        public SubData2 SubData2Item { get; set; } = new();
+        public SubData SubDataItem { get; set; }
+        public SubData2 SubData2Item { get; set; }
         public SubData3 SubData3Item { get; set; } = new();
         public uint Unknown15 { get; set; }
         public ExtraData _ExtraData { get; set; } = new();
@@ -257,11 +302,17 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             byte hasSubData = reader.ReadByte();
             subData1Flag = hasSubData;
             if (hasSubData != 0)
+            {
+                SubDataItem = new();
                 SubDataItem.Read(reader);
+            }
 
             byte hasSubData2 = reader.ReadByte();
             if (hasSubData2 != 0)
+            {
+                SubData2Item = new();
                 SubData2Item.Read(reader);
+            }
 
             SubData3Item.Read(reader);
 
@@ -272,7 +323,47 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            UnknownData.Write(writer);
+
+            writer.Write(Guid);
+            writer.Write(Count);
+            writer.Write(Unknown2);
+            writer.Write(Unknown3);
+            writer.Write(Unknown4);
+            writer.Write(ContainerId);
+            writer.Write(Unknown6);
+            writer.Write(SlotId);
+            writer.Write(Unknown8);
+            writer.Write(Unknown9);
+            writer.Write(Unknown10);
+            writer.Write(Unknown11);
+            writer.Write(Unknown12);
+            writer.Write(Unknown13);
+            writer.Write(Unknown14);
+
+            if (SubDataItem == null)
+                writer.Write((byte)0);
+            else
+            {
+                // TODO: Writer flag to indicate to client there is SubData1
+                writer.Write((byte)1);
+                SubDataItem.Write(writer);
+            }
+
+            if (SubData2Item == null)
+                writer.Write((byte)0);
+            else
+            {
+                // TODO: Writer flag to indicate to client there is SubData1
+                writer.Write((byte)1);
+                SubData2Item.Write(writer);
+            }
+
+            SubData3Item.Write(writer);
+
+            writer.Write(Unknown15);
+
+            _ExtraData.Write(writer);
         }
     }
 }

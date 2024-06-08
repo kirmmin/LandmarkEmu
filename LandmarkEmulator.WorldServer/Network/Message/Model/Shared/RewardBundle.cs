@@ -26,27 +26,34 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(CurrencyId);
+                writer.Write(Quantity);
             }
         }
 
         public class BundleRewardEntry : IReadable, IWritable
         {
             public uint Type { get; set; }
+            public byte[] Data { get; set; }
 
             public void Read(GamePacketReader reader)
             {
                 Type = reader.ReadUInt();
                 if (Type == 1)
                 {
-                    // TODO: Seems to always be 42 bytes when Types i1 but what if type is different?!
-                    reader.ReadBytes(42u);
+                    // TODO: Seems to always be 42 bytes when Type's 1 but what if type is different?!
+                    Data = reader.ReadBytes(42u);
                 }
             }
 
             public void Write(GamePacketWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(Type);
+                if (Type == 1)
+                {
+                    // TODO: Handle the 42 bytes discovered in packets.
+                    writer.WriteBytes(Data);
+                }
             }
         }
 
@@ -111,7 +118,32 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(Unknown0);
+            writer.Write(Unknown1);
+
+            writer.Write((uint)Currencies.Count);
+            foreach (Currency currency in Currencies)
+                currency.Write(writer);
+
+            writer.Write(Unknown2);
+            writer.Write(Unknown3);
+            writer.Write(Unknown4);
+            writer.Write(Unknown5);
+            writer.Write(Unknown6);
+            writer.Write(Unknown7);
+            writer.Write(Unknown8);
+            writer.Write(Unknown9);
+            writer.Write(Unknown10);
+            writer.Write(Unknown11);
+            writer.Write(CharacterId);
+            writer.Write(Unknown13);
+            writer.Write(Unknown14);
+
+            writer.Write((uint)BundleRewardEntries.Count);
+            foreach (BundleRewardEntry bundleRewardEntry in BundleRewardEntries)
+                bundleRewardEntry.Write(writer);
+
+            writer.Write(Unknown16);
         }
     }
 }

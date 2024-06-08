@@ -114,7 +114,7 @@ namespace LandmarkEmulator.Shared.Network
             Write(value.X);
             Write(value.Y);
             Write(value.Z);
-            Write(value.X);
+            Write(value.W);
         }
 
         public void WriteLongString(string value)
@@ -152,7 +152,7 @@ namespace LandmarkEmulator.Shared.Network
                 n = 1;
             }
             value |= n;
-            var data = new Span<byte>();
+            var data = new Span<byte>(new byte[4]);
             BinaryPrimitives.WriteInt32LittleEndian(data, value);
             foreach (byte d in data.Slice(0, n + 1))
                 stream.Add(d);

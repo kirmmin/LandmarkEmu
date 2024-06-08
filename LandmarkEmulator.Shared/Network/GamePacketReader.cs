@@ -92,7 +92,7 @@ namespace LandmarkEmulator.Shared.Network
             if (bits > sizeof(float) * 8)
                 throw new ArgumentException();
 
-            return BinaryPrimitives.ReadSingleBigEndian(GetDataBits(bits));
+            return BinaryPrimitives.ReadSingleLittleEndian(GetDataBits(bits));
         }
 
         public ulong ReadULong(uint bits = 64u)
@@ -141,7 +141,10 @@ namespace LandmarkEmulator.Shared.Network
             var length = ReadUShort();
             var value = ReadBytes(length);
 
-            return Encoding.UTF8.GetString(value);
+            if (length > 0)
+                return Encoding.UTF8.GetString(value);
+            else
+                return "";
         }
 
         public string ReadString()
@@ -149,7 +152,10 @@ namespace LandmarkEmulator.Shared.Network
             var length = ReadUInt();
             var value = ReadBytes(length);
 
-            return Encoding.UTF8.GetString(value);
+            if (length > 0)
+                return Encoding.UTF8.GetString(value);
+            else
+                return "";
         }
 
         public string ReadNullTerminatedString()

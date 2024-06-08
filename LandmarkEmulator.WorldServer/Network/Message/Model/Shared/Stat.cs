@@ -31,7 +31,21 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            throw new System.NotImplementedException();
+            writer.Write(StatId);
+            writer.Write(Type);
+
+            switch (Type)
+            {
+                case 0:
+                    writer.Write((uint)Base);
+                    writer.Write((uint)Modifier);
+                    break;
+                case 1:
+                default:
+                    writer.Write(Base);
+                    writer.Write(Modifier);
+                    break;
+            }
         }
     }
 }
