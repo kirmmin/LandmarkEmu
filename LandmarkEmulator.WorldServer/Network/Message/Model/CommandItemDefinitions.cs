@@ -51,7 +51,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown8 { get; set; }
             public uint Unknown9 { get; set; }
             public uint Unknown10 { get; set; }
-            public uint ItemClassId { get; set; }
+            public uint EquipSlotId { get; set; }
             public string ModelFile { get; set; }
             public string Unknown13 { get; set; }
             public uint Unknown14 { get; set; }
@@ -86,7 +86,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown43 { get; set; }
             public uint Unknown44 { get; set; }
             public uint Unknown45 { get; set; }
-            public uint EquipSlotId { get; set; }
+            public uint Unknown46 { get; set; }
             public List<uint> Unknown47 { get; set; } = new();
             public uint Unknown48 { get; set; }
             public uint Unknown49 { get; set; }
@@ -118,7 +118,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown8 = reader.ReadUInt();
                 Unknown9 = reader.ReadUInt();
                 Unknown10 = reader.ReadUInt();
-                ItemClassId = reader.ReadUInt();
+                EquipSlotId = reader.ReadUInt();
                 ModelFile = reader.ReadString();
                 Unknown13 = reader.ReadString();
                 Unknown14 = reader.ReadUInt();
@@ -153,7 +153,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown43 = reader.ReadUInt();
                 Unknown44 = reader.ReadUInt();
                 Unknown45 = reader.ReadUInt();
-                EquipSlotId = reader.ReadUInt();
+                Unknown46 = reader.ReadUInt();
 
                 var unknown47Count = reader.ReadUInt();
                 for (int i = 0; i < unknown47Count; i++)
