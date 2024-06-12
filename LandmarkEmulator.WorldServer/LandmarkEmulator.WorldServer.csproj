@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="lz4net" Version="1.0.15.93" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LandmarkEmulator.Gateway\LandmarkEmulator.Gateway.csproj" />
     <ProjectReference Include="..\LandmarkEmulator.Shared\LandmarkEmulator.Shared.csproj" />
   </ItemGroup>
