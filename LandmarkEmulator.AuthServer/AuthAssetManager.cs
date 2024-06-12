@@ -28,7 +28,7 @@ namespace LandmarkEmulator.AuthServer
 
         private void InitiailiseArtData()
         {
-            using (StreamReader r = new StreamReader("Assets/ArtTints.json"))
+            using (StreamReader r = new StreamReader("Resources/ArtTints.json"))
             {
                 string json = r.ReadToEnd();
                 ArtData artData = JsonConvert.DeserializeObject<ArtData>(json);
