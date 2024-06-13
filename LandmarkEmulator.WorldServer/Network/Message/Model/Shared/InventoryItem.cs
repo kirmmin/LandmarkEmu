@@ -18,37 +18,37 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             public class UnknownData0SubData : IReadable, IWritable
             {
                 // sub_142C2FC70
-                public class UnknownStruct142C2FC70 : IReadable, IWritable
+                public class CalculatedStat : IReadable, IWritable
                 {
-                    public uint Unknown0 { get; set; }
-                    public LandmarkText Unknown1 { get; set; } = new();
-                    public uint Unknown2 { get; set; }
-                    public uint Unknown3 { get; set; }
+                    public uint StatId { get; set; }
+                    public LandmarkText NameId { get; set; } = new();
+                    public float Value { get; set; }
+                    public float Unknown3 { get; set; }
                     public bool Unknown4 { get; set; }
-                    public uint Unknown5 { get; set; }
-                    public uint Unknown6 { get; set; }
-                    public uint Unknown7 { get; set; }
+                    public float Value2 { get; set; }
+                    public float Unknown6 { get; set; }
+                    public float Unknown7 { get; set; }
 
                     public void Read(GamePacketReader reader)
                     {
-                        Unknown0 = reader.ReadUInt();
-                        Unknown1 = new LandmarkText(reader.ReadUInt());
-                        Unknown2 = reader.ReadUInt();
-                        Unknown3 = reader.ReadUInt();
+                        StatId = reader.ReadUInt();
+                        NameId = new LandmarkText(reader.ReadUInt());
+                        Value = reader.ReadSingle();
+                        Unknown3 = reader.ReadSingle();
                         Unknown4 = reader.ReadBool();
-                        Unknown5 = reader.ReadUInt();
-                        Unknown6 = reader.ReadUInt();
-                        Unknown7 = reader.ReadUInt();
+                        Value2 = reader.ReadSingle();
+                        Unknown6 = reader.ReadSingle();
+                        Unknown7 = reader.ReadSingle();
                     }
 
                     public void Write(GamePacketWriter writer)
                     {
-                        writer.Write(Unknown0);
-                        Unknown1.Write(writer);
-                        writer.Write(Unknown2);
+                        writer.Write(StatId);
+                        NameId.Write(writer);
+                        writer.Write(Value);
                         writer.Write(Unknown3);
                         writer.Write(Unknown4);
-                        writer.Write(Unknown5);
+                        writer.Write(Value2);
                         writer.Write(Unknown6);
                         writer.Write(Unknown7);
                     }
@@ -81,7 +81,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 public uint Unknown2 { get; set; }
                 public uint Unknown3 { get; set; }
                 public uint Unknown4 { get; set; }
-                public List<UnknownStruct142C2FC70> Unknown5 { get; set; } = new();
+                public List<CalculatedStat> CalculatedStats { get; set; } = new();
                 public List<UnknownStruct142C18530> Unknown6 { get; set; } = new();
 
                 public void Read(GamePacketReader reader)
@@ -95,9 +95,9 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                     uint unknown5Count = reader.ReadUInt();
                     for (int i = 0; i < unknown5Count; i++)
                     {
-                        UnknownStruct142C2FC70 obj = new();
+                        CalculatedStat obj = new();
                         obj.Read(reader);
-                        Unknown5.Add(obj);
+                        CalculatedStats.Add(obj);
                     }
 
                     uint unknown6Count = reader.ReadUInt();
@@ -117,8 +117,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                     writer.Write(Unknown3);
                     writer.Write(Unknown4);
 
-                    writer.Write((uint)Unknown5.Count);
-                    foreach (UnknownStruct142C2FC70 unknown5 in Unknown5)
+                    writer.Write((uint)CalculatedStats.Count);
+                    foreach (CalculatedStat unknown5 in CalculatedStats)
                         unknown5.Write(writer);
 
                     writer.Write((uint)Unknown6.Count);
@@ -128,7 +128,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 }
             }
 
-            public uint Unknown0 { get; set; }
+            public uint ItemDefinitionId { get; set; }
             public uint Unknown1 { get; set; }
             public UnknownData0SubData Unknown2 { get; set; } = new();
             public UnknownData0SubData Unknown3 { get; set; } = new();
@@ -136,7 +136,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadUInt();
+                ItemDefinitionId = reader.ReadUInt();
                 Unknown1 = reader.ReadUInt();
 
                 Unknown2.Read(reader);
@@ -147,7 +147,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public void Write(GamePacketWriter writer)
             {
-                writer.Write(Unknown0);
+                writer.Write(ItemDefinitionId);
                 writer.Write(Unknown1);
 
                 Unknown2.Write(writer);
