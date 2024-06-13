@@ -1,4 +1,5 @@
 ﻿using LandmarkEmulator.Shared.Game;
+using LandmarkEmulator.Shared.Game.Inventory.Static;
 using LandmarkEmulator.Shared.Network;
 using LandmarkEmulator.Shared.Network.Message;
 using LandmarkEmulator.WorldServer.Network.Message.Model.Shared;
@@ -80,7 +81,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
             public uint Unknown37 { get; set; }
             public uint Unknown38 { get; set; }
             public uint Unknown39 { get; set; }
-            public uint Unknown40 { get; set; }
+            public ItemQuality Quality { get; set; }
             public uint Unknown41 { get; set; }
             public uint Unknown42 { get; set; }
             public uint Unknown43 { get; set; }
@@ -147,7 +148,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model
                 Unknown37 = reader.ReadUInt();
                 Unknown38 = reader.ReadUInt();
                 Unknown39 = reader.ReadUInt();
-                Unknown40 = reader.ReadUInt();
+                Quality = (ItemQuality)reader.ReadUInt();
                 Unknown41 = reader.ReadUInt();
                 Unknown42 = reader.ReadUInt();
                 Unknown43 = reader.ReadUInt();
