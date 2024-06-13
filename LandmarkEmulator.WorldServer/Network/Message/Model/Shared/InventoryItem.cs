@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using NLog;
 using LandmarkEmulator.Shared.Game;
+using LandmarkEmulator.Shared.Game.Inventory.Static;
 
 namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 {
@@ -12,10 +13,10 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         protected static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         // sub_142C20F60
-        public class UnknownData0 : IReadable, IWritable
+        public class ItemInstanceData : IReadable, IWritable
         {
             // sub_142C20E60
-            public class UnknownData0SubData : IReadable, IWritable
+            public class ItemData : IReadable, IWritable
             {
                 // sub_142C2FC70
                 public class CalculatedStat : IReadable, IWritable
@@ -76,7 +77,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                     }
                 }
 
-                public uint Unknown0 { get; set; }
+                public ItemQuality Quality { get; set; }
                 public uint Unknown1 { get; set; }
                 public uint Unknown2 { get; set; }
                 public uint Unknown3 { get; set; }
@@ -86,14 +87,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
                 public void Read(GamePacketReader reader)
                 {
-                    Unknown0 = reader.ReadUInt();
+                    Quality = (ItemQuality)reader.ReadUInt();
                     Unknown1 = reader.ReadUInt();
                     Unknown2 = reader.ReadUInt();
                     Unknown3 = reader.ReadUInt();
                     Unknown4 = reader.ReadUInt();
 
-                    uint unknown5Count = reader.ReadUInt();
-                    for (int i = 0; i < unknown5Count; i++)
+                    uint calculatedStatsCount = reader.ReadUInt();
+                    for (int i = 0; i < calculatedStatsCount; i++)
                     {
                         CalculatedStat obj = new();
                         obj.Read(reader);
@@ -111,7 +112,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
                 public void Write(GamePacketWriter writer)
                 {
-                    writer.Write(Unknown0);
+                    writer.Write((uint)Quality);
                     writer.Write(Unknown1);
                     writer.Write(Unknown2);
                     writer.Write(Unknown3);
@@ -130,19 +131,19 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
             public uint ItemDefinitionId { get; set; }
             public uint Unknown1 { get; set; }
-            public UnknownData0SubData Unknown2 { get; set; } = new();
-            public UnknownData0SubData Unknown3 { get; set; } = new();
-            public uint Unknown4 { get; set; }
+            public ItemData BaseItemData { get; set; } = new();
+            public ItemData OverrideItemData { get; set; } = new();
+            public float Unknown4 { get; set; }
 
             public void Read(GamePacketReader reader)
             {
                 ItemDefinitionId = reader.ReadUInt();
                 Unknown1 = reader.ReadUInt();
 
-                Unknown2.Read(reader);
-                Unknown3.Read(reader);
+                BaseItemData.Read(reader);
+                OverrideItemData.Read(reader);
 
-                Unknown4 = reader.ReadUInt();
+                Unknown4 = reader.ReadSingle();
             }
 
             public void Write(GamePacketWriter writer)
@@ -150,8 +151,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 writer.Write(ItemDefinitionId);
                 writer.Write(Unknown1);
 
-                Unknown2.Write(writer);
-                Unknown3.Write(writer);
+                BaseItemData.Write(writer);
+                OverrideItemData.Write(writer);
 
                 writer.Write(Unknown4);
             }
@@ -178,24 +179,27 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             }
         }
 
-        public class SubData2 : IReadable, IWritable
+        /// <summary>
+        /// Used to describe a traded player's design. ID seems to reference a design stored on the server. Name and Creator was shown in tooltip.
+        /// </summary>
+        public class DesignData : IReadable, IWritable
         {
-            public ulong Unknown0 { get; set; }
-            public string Unknown1 { get; set; }
-            public string Unknown2 { get; set; }
+            public ulong Id { get; set; }
+            public string Name { get; set; }
+            public string Creator { get; set; }
 
             public void Read(GamePacketReader reader)
             {
-                Unknown0 = reader.ReadULong();
-                Unknown1 = reader.ReadString();
-                Unknown2 = reader.ReadString();
+                Id = reader.ReadULong();
+                Name = reader.ReadString();
+                Creator = reader.ReadString();
             }
 
             public void Write(GamePacketWriter writer)
             {
-                writer.Write(Unknown0);
-                writer.Write(Unknown1);
-                writer.Write(Unknown2);
+                writer.Write(Id);
+                writer.Write(Name);
+                writer.Write(Creator);
             }
         }
 
@@ -253,7 +257,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             }
         }
 
-        public UnknownData0 UnknownData { get; set; } = new();
+        public ItemInstanceData InstanceData { get; set; } = new();
         public ulong Guid { get; set; }
         public uint Count { get; set; }
         public uint Unknown2 { get; set; }
@@ -262,7 +266,7 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         /// <summary>
         /// 0 = Inventory, 2 = Equipment, 5 = Collection
         /// </summary>
-        public uint ContainerId { get; set; }
+        public uint InventoryType { get; set; }
         public ulong Unknown6 { get; set; }
         public uint SlotId { get; set; }
         public uint Unknown8 { get; set; }
@@ -272,23 +276,22 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
         public uint Unknown12 { get; set; }
         public byte Unknown13 { get; set; }
         public uint Unknown14 { get; set; }
-        public byte subData1Flag { get; set; }
         public SubData SubDataItem { get; set; }
-        public SubData2 SubData2Item { get; set; }
+        public DesignData PlayerDesignData { get; set; }
         public SubData3 SubData3Item { get; set; } = new();
         public uint Unknown15 { get; set; }
         public ExtraData _ExtraData { get; set; } = new();
 
         public void Read(GamePacketReader reader)
         {
-            UnknownData.Read(reader);
+            InstanceData.Read(reader);
 
             Guid = reader.ReadULong();
             Count = reader.ReadUInt();
             Unknown2 = reader.ReadUInt();
             Unknown3 = reader.ReadUInt();
             Unknown4 = reader.ReadByte();
-            ContainerId = reader.ReadUInt();
+            InventoryType = reader.ReadUInt(); // Need to use InventoryDefinitions.txt Resource to determine slot for components.
             Unknown6 = reader.ReadULong();
             SlotId = reader.ReadUInt();
             Unknown8 = reader.ReadUInt();
@@ -300,7 +303,6 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             Unknown14 = reader.ReadUInt();
 
             byte hasSubData = reader.ReadByte();
-            subData1Flag = hasSubData;
             if (hasSubData != 0)
             {
                 SubDataItem = new();
@@ -310,8 +312,8 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
             byte hasSubData2 = reader.ReadByte();
             if (hasSubData2 != 0)
             {
-                SubData2Item = new();
-                SubData2Item.Read(reader);
+                PlayerDesignData = new();
+                PlayerDesignData.Read(reader);
             }
 
             SubData3Item.Read(reader);
@@ -323,14 +325,14 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
 
         public void Write(GamePacketWriter writer)
         {
-            UnknownData.Write(writer);
+            InstanceData.Write(writer);
 
             writer.Write(Guid);
             writer.Write(Count);
             writer.Write(Unknown2);
             writer.Write(Unknown3);
             writer.Write(Unknown4);
-            writer.Write(ContainerId);
+            writer.Write(InventoryType);
             writer.Write(Unknown6);
             writer.Write(SlotId);
             writer.Write(Unknown8);
@@ -350,13 +352,13 @@ namespace LandmarkEmulator.WorldServer.Network.Message.Model.Shared
                 SubDataItem.Write(writer);
             }
 
-            if (SubData2Item == null)
+            if (PlayerDesignData == null)
                 writer.Write((byte)0);
             else
             {
                 // TODO: Writer flag to indicate to client there is SubData1
                 writer.Write((byte)1);
-                SubData2Item.Write(writer);
+                PlayerDesignData.Write(writer);
             }
 
             SubData3Item.Write(writer);
